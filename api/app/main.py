@@ -7,6 +7,7 @@ from sqlalchemy import text
 from app.core.db import get_engine
 from app.core.errors import install_error_handlers
 from app.core.redis import close_arq, get_redis
+from app.modules.auth.router import auth_router, me_router
 
 
 @asynccontextmanager
@@ -29,6 +30,8 @@ def create_app() -> FastAPI:
         return {"status": "ok"}
 
     api = APIRouter(prefix="/api/v1")
+    api.include_router(auth_router)
+    api.include_router(me_router)
     app.include_router(api)
     return app
 
