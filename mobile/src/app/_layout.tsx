@@ -2,8 +2,12 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useAuthStore } from '../store/authStore';
+import { useSettingsStore } from '../store/settingsStore';
 import { useLocation } from '../hooks/useLocation';
+import { getMe } from '../api/endpoints/me';
+import { ApiClientError } from '../api/client';
 import '../../global.css';
 
 // Keep the splash screen visible while we fetch resources
@@ -12,8 +16,8 @@ SplashScreen.preventAutoHideAsync();
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: 2,
-      staleTime: 30_000, // 30 seconds
+      retry: 1,
+      staleTime: 30_000,
     },
   },
 });
@@ -23,9 +27,13 @@ export default function RootLayout() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const user = useAuthStore((s) => s.user);
   const hydrate = useAuthStore((s) => s.hydrate);
-  
+  const setUser = useAuthStore((s) => s.setUser);
+  const logout = useAuthStore((s) => s.logout);
+  const onboarded = useSettingsStore((s) => s.onboarded);
+  const settingsHydrated = useSettingsStore((s) => s.hydrated);
+
   const router = useRouter();
-  const segments = useSegments();
+  const segments = useSegments() as string[];
 
   // Initialize location tracking globally
   useLocation();
@@ -35,51 +43,64 @@ export default function RootLayout() {
     hydrate();
   }, [hydrate]);
 
-  // 2. Hide splash screen after hydration is complete
+  // 2. Tokens restored but no profile yet: fetch /me (the client refreshes the access token if needed).
   useEffect(() => {
-    if (isHydrated) {
+    if (!isHydrated || !isAuthenticated || user) return;
+    getMe()
+      .then(setUser)
+      .catch((e: unknown) => {
+        if (e instanceof ApiClientError && e.status === 401) logout();
+      });
+  }, [isHydrated, isAuthenticated, user, setUser, logout]);
+
+  const ready = isHydrated && settingsHydrated && (!isAuthenticated || !!user);
+
+  // 3. Hide splash screen once we know where to go
+  useEffect(() => {
+    if (ready) {
       SplashScreen.hideAsync();
     }
-  }, [isHydrated]);
+  }, [ready]);
 
-  // 3. Auth guard: redirect based on auth state
+  // 4. Auth guard: redirect based on auth state
   useEffect(() => {
-    if (!isHydrated) return;
-
-    // Check if we are inside the (auth) group
+    if (!ready) return;
     const inAuthGroup = segments[0] === '(auth)';
+    const onNickname = segments[1] === 'nickname';
+    const onOnboarding = segments[0] === 'onboarding';
 
-    if (!isAuthenticated && !inAuthGroup) {
-      // Not logged in and not in auth group -> redirect to welcome
-      router.replace('/(auth)/welcome' as any);
-    } else if (isAuthenticated && !user?.nickname && String(segments[1]) !== 'nickname') {
-      // Logged in but no nickname set -> force nickname screen
-      router.replace('/(auth)/nickname' as any);
-    } else if (isAuthenticated && user?.nickname && inAuthGroup) {
-      // Logged in, has nickname, but in auth group -> redirect to main tabs
-      router.replace('/(tabs)' as any);
+    if (!isAuthenticated) {
+      if (!inAuthGroup) router.replace('/(auth)/welcome');
+    } else if (!user?.nickname) {
+      if (!onNickname) router.replace('/(auth)/nickname');
+    } else if (!onboarded) {
+      if (!onOnboarding) router.replace('/onboarding');
+    } else if (inAuthGroup) {
+      router.replace('/(tabs)');
     }
-  }, [isAuthenticated, isHydrated, segments, user, router]);
+  }, [ready, isAuthenticated, user, onboarded, segments, router]);
 
-  if (!isHydrated) {
-    return null; // Render nothing while waiting for hydration (splash screen covers this)
+  if (!ready) {
+    return null; // Splash screen covers this
   }
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(auth)" />
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="task/[taskId]" options={{ presentation: 'card' }} />
-        <Stack.Screen name="camera" options={{ presentation: 'fullScreenModal' }} />
-        <Stack.Screen name="verify/[attemptId]" options={{ presentation: 'card' }} />
-        <Stack.Screen name="result" options={{ presentation: 'card' }} />
-        <Stack.Screen name="next" options={{ presentation: 'card' }} />
-        <Stack.Screen name="shop" options={{ presentation: 'card' }} />
-        <Stack.Screen name="settings" options={{ presentation: 'card' }} />
-        <Stack.Screen name="reel/[reelId]" options={{ presentation: 'fullScreenModal' }} />
-        <Stack.Screen name="onboarding" options={{ presentation: 'fullScreenModal' }} />
-      </Stack>
-    </QueryClientProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <QueryClientProvider client={queryClient}>
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="(auth)" />
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="task/[taskId]" options={{ presentation: 'card' }} />
+          <Stack.Screen name="camera" options={{ presentation: 'fullScreenModal' }} />
+          <Stack.Screen name="verify/[attemptId]" options={{ presentation: 'card', gestureEnabled: false }} />
+          <Stack.Screen name="result" options={{ presentation: 'card', gestureEnabled: false }} />
+          <Stack.Screen name="next" options={{ presentation: 'card' }} />
+          <Stack.Screen name="shop" options={{ presentation: 'card' }} />
+          <Stack.Screen name="settings" options={{ presentation: 'card' }} />
+          <Stack.Screen name="reel/[reelId]" options={{ presentation: 'fullScreenModal' }} />
+          <Stack.Screen name="onboarding" options={{ presentation: 'fullScreenModal' }} />
+        </Stack>
+      </QueryClientProvider>
+    </GestureHandlerRootView>
   );
 }

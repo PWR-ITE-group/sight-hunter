@@ -37,10 +37,13 @@ export default function NextPlacePicker({ options, onSelect }: NextPlacePickerPr
 
   const getSubtitle = (option: NextOption) => {
     if (option.type === 'nearest') {
-      return option.name ? `${option.name} • ${option.distance}` : option.distance;
+      return option.name ? `${option.name} • ${option.distance}` : option.distance ?? 'W pobliżu';
     }
     if (option.type === 'popular') {
-      return option.name ? `${option.name} • ${option.findersCount} łowców` : `${option.findersCount} łowców`;
+      if (option.findersCount !== undefined) {
+        return option.name ? `${option.name} • ${option.findersCount} łowców` : `${option.findersCount} łowców`;
+      }
+      return option.name ?? 'Najczęściej odkrywane';
     }
     if (option.type === 'random') {
       return 'Zaskocz mnie!';
@@ -52,7 +55,7 @@ export default function NextPlacePicker({ options, onSelect }: NextPlacePickerPr
     <View style={styles.container}>
       {options.map((option) => (
         <Pressable
-          key={option.taskId}
+          key={option.type}
           onPress={() => onSelect(option.taskId)}
           style={({ pressed }) => [
             styles.pressableWrapper,

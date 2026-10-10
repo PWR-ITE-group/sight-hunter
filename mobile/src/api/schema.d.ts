@@ -123,6 +123,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/places/next": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Next place to play (agreed 2026-10-10 as a contract addition) */
+        get: operations["getNextPlace"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/tasks/{taskId}": {
         parameters: {
             query?: never;
@@ -185,8 +202,8 @@ export interface paths {
         put?: never;
         /**
          * Reveal the next hint; lowers the round reward, never the balance
-         * @description OPEN QUESTION: whether hints from the player's stock are spent first without a
-         *     penalty, and whether XP is reduced too (prototype vs architecture doc differ).
+         * @description Decided 2026-10-10: no hint stock. Each hint cuts only the round's points by 25% of
+         *     the base (floor 25%); XP is unchanged. Max 3 hints per round.
          */
         post: operations["useHint"];
         delete?: never;
@@ -477,6 +494,9 @@ export interface components {
             /** @description only when found */
             name?: string | null;
             zone: components["schemas"]["Zone"];
+        };
+        NextPlace: components["schemas"]["PlaceMarker"] & {
+            distance_m: number;
         };
         Task: {
             /** Format: uuid */
@@ -793,6 +813,32 @@ export interface operations {
                     };
                 };
             };
+        };
+    };
+    getNextPlace: {
+        parameters: {
+            query: {
+                lat: number;
+                lng: number;
+                /** @description nearest unfound place; most found by all players; random one of the 5 nearest */
+                mode?: "nearest" | "popular" | "random";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description An unfound place as a marker (offset zone, no name) with the distance */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NextPlace"];
+                };
+            };
+            404: components["responses"]["Error"];
         };
     };
     getTask: {

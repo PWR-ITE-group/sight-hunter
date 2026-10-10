@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useCallback, useState } from 'react';
 import { useLocationStore } from '../store/locationStore';
 import { useGameStore } from '../store/gameStore';
 import { useCreateAttempt } from '../api/hooks/useRound';
@@ -6,48 +6,59 @@ import { useSubmitAttempt, usePollAttempt } from '../api/hooks/useAttempt';
 import { usePhotoUpload } from './usePhotoUpload';
 import { ApiClientError } from '../api/client';
 
-export type VerificationStep = 'idle' | 'creating' | 'uploading' | 'submitting' | 'polling' | 'done';
+export type VerificationStep =
+  | 'idle'
+  | 'creating'
+  | 'uploading'
+  | 'submitting'
+  | 'polling'
+  | 'done'
+  | 'failed';
 
+/**
+ * The async verification loop from the contract:
+ * create attempt (geofence) → PUT photo to storage → submit → poll until a verdict.
+ */
 export function useVerificationFlow(roundId: string | null) {
   const [step, setStep] = useState<VerificationStep>('idle');
   const [flowError, setFlowError] = useState<ApiClientError | Error | null>(null);
-  
+
   const effectivePosition = useLocationStore((s) => s.effectivePosition);
-  const { lastPhotoUri, demoMode, activeAttemptId } = useGameStore((s) => ({
-    lastPhotoUri: s.lastPhotoUri,
-    demoMode: s.demoMode,
-    activeAttemptId: s.activeAttemptId
-  }));
+  const lastPhotoUri = useGameStore((s) => s.lastPhotoUri);
+  const demoMode = useGameStore((s) => s.demoMode);
+  const activeAttemptId = useGameStore((s) => s.activeAttemptId);
 
   const createAttempt = useCreateAttempt();
   const { upload } = usePhotoUpload();
   const submitAttempt = useSubmitAttempt();
-  
-  // We use the activeAttemptId from store once created
-  const pollAttemptQuery = usePollAttempt(activeAttemptId);
+  const pollAttemptQuery = usePollAttempt(step === 'polling' ? activeAttemptId : null);
 
-  // Monitor polling status
-  // Derive done step directly from data if possible
-  const currentStep = step === 'polling' && pollAttemptQuery.data && (pollAttemptQuery.data.status === 'accepted' || pollAttemptQuery.data.status === 'rejected') ? 'done' : step;
+  const verdict = pollAttemptQuery.data?.status;
+  const currentStep: VerificationStep =
+    step === 'polling' && (verdict === 'accepted' || verdict === 'rejected') ? 'done' : step;
 
   const start = useCallback(async () => {
-    if (!roundId) return;
-    if (!lastPhotoUri) {
-      setFlowError(new Error('No photo taken'));
+    if (!roundId) {
+      setFlowError(new Error('Brak aktywnej rundy'));
+      setStep('failed');
       return;
     }
-    
+    if (!lastPhotoUri) {
+      setFlowError(new Error('Brak zdjęcia'));
+      setStep('failed');
+      return;
+    }
     const pos = effectivePosition();
     if (!pos) {
-      setFlowError(new Error('No location available'));
+      setFlowError(new Error('Brak lokalizacji'));
+      setStep('failed');
       return;
     }
 
     try {
-      setStep('creating');
       setFlowError(null);
-      
-      const createRes = await createAttempt.mutateAsync({
+      setStep('creating');
+      const created = await createAttempt.mutateAsync({
         roundId,
         data: {
           lat: pos.lat,
@@ -55,25 +66,21 @@ export function useVerificationFlow(roundId: string | null) {
           accuracy_m: pos.accuracy,
           taken_at: new Date().toISOString(),
           mocked: demoMode,
-        }
+        },
       });
-      
+
       setStep('uploading');
-      const uploadSuccess = await upload(lastPhotoUri, createRes.upload_url);
-      
-      if (!uploadSuccess) {
-        throw new Error('Upload failed');
+      const uploaded = await upload(lastPhotoUri, created.upload_url);
+      if (!uploaded) {
+        throw new Error('Nie udało się wysłać zdjęcia');
       }
-      
+
       setStep('submitting');
-      await submitAttempt.mutateAsync(createRes.attempt_id);
-      
+      await submitAttempt.mutateAsync(created.attempt_id);
       setStep('polling');
-      
     } catch (e) {
-      console.error('Verification flow error', e);
-      setFlowError(e instanceof Error ? e : new Error('Unknown error'));
-      setStep('idle');
+      setFlowError(e instanceof Error ? e : new Error('Nieznany błąd'));
+      setStep('failed');
     }
   }, [roundId, lastPhotoUri, effectivePosition, demoMode, createAttempt, upload, submitAttempt]);
 

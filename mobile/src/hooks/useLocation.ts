@@ -57,7 +57,7 @@ export function useLocation() {
         } else {
           sub.remove();
         }
-      } catch (e) {
+      } catch {
         if (isMounted) setError('Błąd pobierania lokalizacji');
       } finally {
         if (isMounted) setIsLoading(false);
@@ -71,6 +71,8 @@ export function useLocation() {
       // We don't remove subscription here to keep it alive across screens,
       // but in a real app you might want more granular control
     };
+    // Store setters are stable; re-run only when the permission changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [permissionStatus]);
 
   return {

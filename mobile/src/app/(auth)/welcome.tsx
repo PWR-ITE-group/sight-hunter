@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Dimensions } from 'react-native';
+import { View, Text } from 'react-native';
 import { Button } from '../../components/ui/Button';
 import { useRouter } from 'expo-router';
 

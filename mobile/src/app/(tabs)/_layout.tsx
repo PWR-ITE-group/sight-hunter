@@ -42,7 +42,7 @@ export default function TabLayout() {
         name="daily"
         options={{
           title: 'Quiz',
-          tabBarIcon: ({ color }) => <TabBarIcon name="brain" size={20} color={color as string} badge={3} />,
+          tabBarIcon: ({ color }) => <TabBarIcon name="brain" size={20} color={color as string} />,
         }}
       />
       <Tabs.Screen

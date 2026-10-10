@@ -3,7 +3,7 @@ import { apiClient } from '../client';
 
 type AttemptRequest = components['schemas']['AttemptRequest'];
 
-export async function useHintEndpoint(
+export async function requestHint(
   roundId: string,
   idempotencyKey: string
 ): Promise<{ hint_text: string; hints_used: number; reward_points: number }> {

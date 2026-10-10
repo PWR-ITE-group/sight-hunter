@@ -1,14 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, Modal, TouchableOpacity, Dimensions } from 'react-native';
 import { X } from 'lucide-react-native';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
-import Animated, { 
-  useSharedValue, 
-  useAnimatedStyle, 
-  withSpring, 
-  withTiming, 
-  runOnJS,
-} from 'react-native-reanimated';
+import Animated, { useSharedValue, useAnimatedStyle, withSpring, withTiming, runOnJS } from 'react-native-reanimated';
 import { Colors } from '../../constants/colors';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -16,47 +10,31 @@ const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 export interface BottomSheetProps {
   visible: boolean;
   onClose: () => void;
-  snapPoints?: number[];
   children: React.ReactNode;
   title?: string;
 }
 
-export function BottomSheet({
-  visible,
-  onClose,
-  snapPoints,
-  children,
-  title,
-}: BottomSheetProps) {
-  const [isRendered, setIsRendered] = useState(visible);
-  
+/**
+ * Modal sheet: slides up on open, closes on backdrop tap or a downward swipe.
+ * Built on RN Modal + reanimated (no @gorhom/bottom-sheet in the dependencies).
+ */
+export function BottomSheet({ visible, onClose, children, title }: BottomSheetProps) {
   const translateY = useSharedValue(SCREEN_HEIGHT);
   const opacity = useSharedValue(0);
 
   useEffect(() => {
-    if (visible && !isRendered) {
-      setIsRendered(true);
-    }
-  }, [visible, isRendered]);
-
-  useEffect(() => {
     if (visible) {
+      translateY.value = SCREEN_HEIGHT;
+      opacity.value = 0;
       translateY.value = withSpring(0, { damping: 50, stiffness: 400 });
       opacity.value = withTiming(1, { duration: 250 });
-    } else if (isRendered) {
-      translateY.value = withTiming(SCREEN_HEIGHT, { duration: 250 });
-      opacity.value = withTiming(0, { duration: 250 }, (finished) => {
-        if (finished) {
-          runOnJS(setIsRendered)(false);
-        }
-      });
     }
-  }, [visible, isRendered, translateY, opacity]);
+  }, [visible, translateY, opacity]);
 
   const panGesture = Gesture.Pan()
     .onUpdate((event) => {
       if (event.translationY > 0) {
-        // @ts-ignore
+        // eslint-disable-next-line react-hooks/immutability -- reanimated shared value, mutated on the UI thread
         translateY.value = event.translationY;
       }
     })
@@ -64,52 +42,34 @@ export function BottomSheet({
       if (event.translationY > 100 || event.velocityY > 1000) {
         runOnJS(onClose)();
       } else {
-        // @ts-ignore
+        // eslint-disable-next-line react-hooks/immutability -- reanimated shared value, mutated on the UI thread
         translateY.value = withSpring(0, { damping: 50, stiffness: 400 });
       }
     });
 
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ translateY: translateY.value }],
-    };
-  });
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: translateY.value }],
+  }));
 
-  const animatedBackdropStyle = useAnimatedStyle(() => {
-    return {
-      opacity: opacity.value,
-    };
-  });
-
-  if (!isRendered) return null;
+  const animatedBackdropStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+  }));
 
   return (
-    <Modal
-      visible={isRendered}
-      transparent
-      animationType="none"
-      onRequestClose={onClose}
-    >
+    <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
       <GestureHandlerRootView style={{ flex: 1 }}>
-        <Animated.View 
-          className="flex-1 bg-black/50 justify-end" 
-          style={animatedBackdropStyle}
-        >
-          <TouchableOpacity 
-            className="absolute inset-0" 
-            activeOpacity={1} 
-            onPress={onClose} 
-          />
-          
+        <Animated.View className="flex-1 bg-black/50 justify-end" style={animatedBackdropStyle}>
+          <TouchableOpacity className="absolute inset-0" activeOpacity={1} onPress={onClose} />
+
           <GestureDetector gesture={panGesture}>
-            <Animated.View 
+            <Animated.View
               className="bg-surface w-full rounded-t-3xl pt-2 px-6 pb-8 max-h-[90%]"
               style={[animatedStyle]}
             >
               <View className="items-center mb-4">
                 <View className="w-12 h-1.5 bg-slate-300 rounded-full" />
               </View>
-              
+
               {title && (
                 <View className="flex-row items-center justify-between mb-4">
                   <Text className="text-xl font-bold text-app-text">{title}</Text>
@@ -118,10 +78,8 @@ export function BottomSheet({
                   </TouchableOpacity>
                 </View>
               )}
-              
-              <View>
-                {children}
-              </View>
+
+              <View>{children}</View>
             </Animated.View>
           </GestureDetector>
         </Animated.View>

@@ -6,34 +6,23 @@
 
 ## 📊 Текущее Состояние Кодовой Базы
 
-### ✅ Уже готово (НЕ ТРОГАТЬ)
+**Обновлено 11.10.2026.** Все 19 задач ниже выполнены: экраны и компоненты существуют и работают с настоящим API (`src/api/*`), моков в экранах не осталось. `npx tsc --noEmit` и `npx expo lint` — чисто; `npx expo export --platform android` собирается.
 
-| Слой | Файлы | Статус |
-|------|-------|--------|
-| **API Client** | `src/api/client.ts` | ✅ Готов (JWT refresh, error handling) |
-| **API Schema** | `src/api/schema.d.ts` | ✅ Сгенерирован из OpenAPI (37 КБ). **НИКОГДА не редактировать руками** |
-| **Endpoints** | `src/api/endpoints/*.ts` (10 файлов) | ✅ Все endpoint функции написаны |
-| **React Query Hooks** | `src/api/hooks/*.ts` (10 файлов) | ✅ Все хуки написаны |
-| **Zustand Stores** | `src/store/authStore.ts`, `gameStore.ts`, `locationStore.ts`, `settingsStore.ts` | ✅ Все стори написаны |
-| **Device Hooks** | `src/hooks/useLocation.ts`, `useCamera.ts`, `usePhotoUpload.ts`, `useVerificationFlow.ts` | ✅ Написаны |
-| **Constants** | `src/constants/colors.ts`, `typography.ts`, `spacing.ts`, `config.ts`, `theme.ts` | ✅ Написаны |
-| **Utils** | `src/utils/formatters.ts`, `geo.ts`, `idempotency.ts`, `storage.ts`, `validators.ts` | ✅ Написаны |
-| **Types** | `src/types/index.ts`, `navigation.ts` | ✅ Написаны |
-| **Root Layout** | `src/app/_layout.tsx` | ✅ Готов (QueryClient, Auth Guard, SplashScreen) |
-| **Навигация** | Все файлы маршрутов созданы | ⚠️ Файлы существуют, но содержат только placeholder (`<Text>Name</Text>`) |
+| Слой | Статус |
+|------|--------|
+| API client, endpoints, hooks, stores | ✅ Готовы. `schema.d.ts` перегенерирован из актуального `openapi.yaml` (добавлен `GET /places/next`). `Config.API_BASE_URL` в dev берётся из адреса Metro (ноутбук), переопределяется `EXPO_PUBLIC_API_URL` |
+| Auth (welcome, login, nickname) | ✅ Реальные `useLogin/useRegister/useSetNickname`, обработка `email_taken`, `invalid_credentials`, `nickname_taken`; guard в `_layout.tsx` ведёт welcome → nickname → onboarding → tabs |
+| Карта | ✅ `useNearbyPlaces` + `useLocation`; ненайденные места рисуются по смещённой зоне из API; в demo-режиме долгий тап задаёт позицию |
+| Задание, камера, проверка, результат, next | ✅ Старт раунда при открытии, подсказки через `POST /rounds/{id}/hints`, фото → presigned PUT → submit → поллинг, ошибки `too_far` / `wrong_place` / лимит попыток, награда из ответа API, `GET /places/next` |
+| Рилсы, комментарии, лайки, просмотры, покупка | ✅ `expo-video` в `ReelCard`, играет только видимая карточка, просмотр считается после 3 с |
+| Ranking, Profile, Shop, Settings, Onboarding | ✅ На реальных данных; магазин продаёт только публичные рилсы (решение команды — запаса подсказок нет) |
+| Quiz dnia | ⚠️ Экран готов, но в бекенде мини-игры нет (первая в списке на вырезание) — показывает «Quiz wkrótce» |
 
-### ❌ Что нужно создать
+### Известные ограничения
 
-| Слой | Что | Файлы |
-|------|-----|-------|
-| **UI Kit** | 11 атомарных компонентов | `src/components/ui/*.tsx` (все пустые `.gitkeep`) |
-| **Map компоненты** | GameMap, PlaceMarker, SearchCircle | `src/components/map/*.tsx` |
-| **Reels компоненты** | ReelPlayer, ReelCard, ReelOverlay, CommentSheet, ShareSheet | `src/components/reels/*.tsx` |
-| **Game компоненты** | RiddleCard, HintDialog, VerifySteps, ResultBadge, RewardAnimation, NextPlacePicker | `src/components/game/*.tsx` |
-| **Daily компоненты** | QuizCard, QuizResult | `src/components/daily/*.tsx` |
-| **Shop компоненты** | ShopItemCard, PurchaseDialog | `src/components/shop/*.tsx` |
-| **Layout компоненты** | ScreenWrapper, Header, TabBarIcon | `src/components/layout/*.tsx` |
-| **Все экраны** | 18 экранов | Заменить placeholder в `src/app/**/*.tsx` |
+- Счётчик комментариев в ленте не показывается: его нет в `Reel` из контракта.
+- «Поделиться» из ленты даёт ссылку с реферальным кодом игрока (`SHARE_BASE_URL/?ref=…`); ссылка на задание — только с экрана задания (`GET /tasks/{id}/share-link`).
+- Высота карточки рилса считается как высота окна минус 80 px таб-бара.
 
 ---
 

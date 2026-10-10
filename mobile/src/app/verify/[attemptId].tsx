@@ -1,82 +1,135 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { View, Text } from 'react-native';
-import Animated from 'react-native-reanimated';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { VerifySteps, VerifyStatus } from '../../components/game/VerifySteps';
+import { useRouter } from 'expo-router';
+import { useQueryClient } from '@tanstack/react-query';
+import { Image } from 'expo-image';
+import VerifySteps, { type VerifyStepsProps } from '../../components/game/VerifySteps';
 import { Button } from '../../components/ui/Button';
+import { ErrorBanner, errorMessage } from '../../components/ui/ErrorBanner';
+import { useVerificationFlow, type VerificationStep } from '../../hooks/useVerificationFlow';
+import { useGameStore } from '../../store/gameStore';
+import { queryKeys } from '../../api/hooks/queryKeys';
+
+type UiStatus = VerifyStepsProps['status'];
+
+/** Flow step → what the player sees. The geofence runs when the attempt is created. */
+function toUi(step: VerificationStep, verdict?: 'accepted' | 'rejected' | string): { status: UiStatus; gps: number; clip: number } {
+  switch (step) {
+    case 'idle':
+    case 'creating':
+      return { status: 'gps_check', gps: 0.5, clip: 0 };
+    case 'uploading':
+      return { status: 'clip_check', gps: 1, clip: 0.25 };
+    case 'submitting':
+      return { status: 'clip_check', gps: 1, clip: 0.5 };
+    case 'polling':
+      return { status: 'clip_check', gps: 1, clip: 0.8 };
+    case 'done':
+      return { status: verdict === 'accepted' ? 'accepted' : 'rejected', gps: 1, clip: 1 };
+    case 'failed':
+    default:
+      return { status: 'gps_check', gps: 0, clip: 0 };
+  }
+}
 
 export default function VerifyScreen() {
-  const { attemptId } = useLocalSearchParams();
   const router = useRouter();
+  const queryClient = useQueryClient();
+  const activeRoundId = useGameStore((s) => s.activeRoundId);
+  const lastPhotoUri = useGameStore((s) => s.lastPhotoUri);
+  const clearRound = useGameStore((s) => s.clearRound);
+  const { start, step, attempt, error } = useVerificationFlow(activeRoundId);
+  const started = useRef(false);
 
-  const [status, setStatus] = useState<VerifyStatus>('uploading');
-  const [gpsProgress, setGpsProgress] = useState(0);
-  const [clipProgress, setClipProgress] = useState(0);
-
-  // Mock verification process
   useEffect(() => {
-    let timer1: ReturnType<typeof setTimeout>, timer2: ReturnType<typeof setTimeout>, timer3: ReturnType<typeof setTimeout>;
+    if (!started.current) {
+      started.current = true;
+      start();
+    }
+  }, [start]);
 
-    // Simulate GPS progress
-    timer1 = setTimeout(() => {
-      setStatus('gps_check');
-      setGpsProgress(0.5);
-    }, 1000);
+  const ui = toUi(step, attempt?.status);
 
-    timer2 = setTimeout(() => {
-      setGpsProgress(1);
-      setStatus('clip_check');
-      setClipProgress(0.2);
-    }, 2500);
+  // A verdict changes the map, the balance and the feed.
+  useEffect(() => {
+    if (step === 'done') {
+      queryClient.invalidateQueries({ queryKey: ['places'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.me });
+      queryClient.invalidateQueries({ queryKey: queryKeys.reelFeed });
+    }
+  }, [step, queryClient]);
 
-    // Simulate CLIP progress and result
-    timer3 = setTimeout(() => {
-      setClipProgress(1);
-      // Hardcoded success for demo
-      setStatus('accepted');
-    }, 4500);
+  const showReward = () => {
+    router.replace({
+      pathname: '/result',
+      params: {
+        pointsAwarded: String(attempt?.points_awarded ?? 0),
+        xpAwarded: String(attempt?.xp_awarded ?? 0),
+        ...(attempt?.reel_id ? { reelId: attempt.reel_id } : {}),
+      },
+    });
+  };
 
-    return () => {
-      clearTimeout(timer1);
-      clearTimeout(timer2);
-      clearTimeout(timer3);
-    };
-  }, []);
+  const retry = () => router.replace('/camera');
+  const giveUp = () => {
+    clearRound();
+    router.replace('/(tabs)');
+  };
+
+  const attemptsLeft = attempt?.attempts_left ?? null;
+  const noAttemptsLeft = ui.status === 'rejected' && attemptsLeft === 0;
 
   return (
     <View className="flex-1 bg-surface p-6 justify-center">
       <View className="bg-white p-6 rounded-3xl shadow-sm border border-app-border items-center">
-        <Animated.Image 
-          source={{ uri: 'https://picsum.photos/400/300' }} 
-          style={{ width: 120, height: 120, borderRadius: 16, marginBottom: 24 }}
-          sharedTransitionTag="photo"
-        />
-        <Text className="text-2xl font-bold text-app-text mb-8">Weryfikacja</Text>
-        
-        <VerifySteps 
-          status={status} 
-          gpsProgress={gpsProgress}
-          clipProgress={clipProgress}
-        />
+        {lastPhotoUri && (
+          <Image
+            source={{ uri: lastPhotoUri }}
+            style={{ width: 120, height: 120, borderRadius: 16, marginBottom: 24 }}
+            contentFit="cover"
+          />
+        )}
+        <Text className="text-2xl font-bold text-app-text mb-4">Weryfikacja</Text>
 
-        {status === 'accepted' && (
-          <View className="w-full mt-10">
-            <Button 
-              title="Zobacz nagrodę" 
-              variant="primary" 
-              onPress={() => router.push('/result')} 
-            />
+        {step === 'failed' ? (
+          <View className="w-full">
+            <ErrorBanner message={errorMessage(error)} />
+            <View className="mt-6 gap-y-3">
+              <Button title="Zrób zdjęcie ponownie" variant="primary" onPress={retry} />
+              <Button title="Wróć do zadania" variant="ghost" onPress={() => router.back()} />
+            </View>
+          </View>
+        ) : (
+          <VerifySteps
+            status={ui.status}
+            gpsProgress={ui.gps}
+            clipProgress={ui.clip}
+            reason={attempt?.reason ?? null}
+            wrongPlaceName={attempt?.wrong_place_name ?? null}
+          />
+        )}
+
+        {ui.status === 'accepted' && (
+          <View className="w-full mt-6">
+            <Button title="Zobacz nagrodę" variant="primary" onPress={showReward} />
           </View>
         )}
 
-        {status === 'rejected' && (
-          <View className="w-full mt-10">
-            <Button 
-              title="Spróbuj ponownie" 
-              variant="primary" 
-              onPress={() => router.back()} 
-            />
-            <Text className="text-center text-text-secondary mt-4">Pozostało prób: 2</Text>
+        {ui.status === 'rejected' && (
+          <View className="w-full mt-6">
+            {noAttemptsLeft ? (
+              <>
+                <Text className="text-center text-text-secondary mb-4">To były wszystkie próby w tej rundzie.</Text>
+                <Button title="Wróć do mapy" variant="primary" onPress={giveUp} />
+              </>
+            ) : (
+              <>
+                <Button title="Spróbuj ponownie" variant="primary" onPress={retry} />
+                {attemptsLeft !== null && (
+                  <Text className="text-center text-text-secondary mt-4">Pozostało prób: {attemptsLeft}</Text>
+                )}
+              </>
+            )}
           </View>
         )}
       </View>

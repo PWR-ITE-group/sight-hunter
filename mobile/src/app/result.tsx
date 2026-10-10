@@ -1,59 +1,52 @@
 import React from 'react';
 import { View, Text } from 'react-native';
-import { useRouter } from 'expo-router';
-import { RewardAnimation } from '../components/game/RewardAnimation';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { PlayCircle } from 'lucide-react-native';
+import RewardAnimation from '../components/game/RewardAnimation';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
-import { PlayCircle } from 'lucide-react-native';
 import { Colors } from '../constants/colors';
-import { Image } from 'expo-image';
-import Animated from 'react-native-reanimated';
+import { useGameStore } from '../store/gameStore';
+import type { ResultScreenParams } from '../types/navigation';
 
 export default function ResultScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams<ResultScreenParams>();
+  const clearRound = useGameStore((s) => s.clearRound);
+
+  const points = Number(params.pointsAwarded ?? 0);
+  const xp = Number(params.xpAwarded ?? 0);
+  const reelId = params.reelId;
+
+  const searchNext = () => {
+    clearRound();
+    router.replace('/next');
+  };
 
   return (
     <View className="flex-1 bg-primary-light p-6 justify-center">
       <Text className="text-4xl font-bold text-app-text text-center mb-2">Gratulacje!</Text>
       <Text className="text-lg text-text-secondary text-center mb-8">Znalazłeś kolejne miejsce</Text>
-      
-      <RewardAnimation points={150} xp={300} />
 
-      <View className="my-8">
-        <Card padding={16} elevation="md">
-          <View className="flex-row items-center gap-4">
-            <View className="w-16 h-16 rounded-xl overflow-hidden bg-slate-200">
-              <Animated.Image 
-                source={{ uri: 'https://picsum.photos/400/300' }} 
-                style={{ width: '100%', height: '100%' }} 
-                sharedTransitionTag="photo"
-                // @ts-ignore
-                contentFit="cover"
-              />
-            </View>
-            <View className="flex-1">
-              <Text className="text-xs font-bold text-primary uppercase mb-1">Odblokowano!</Text>
-              <Text className="text-base font-bold text-app-text">Tajemnica Ratusza</Text>
-            </View>
-          </View>
-          <View className="mt-4">
-            <Button 
-              title="Obejrzyj historię" 
-              variant="outline" 
+      <RewardAnimation points={points} xp={xp} />
+
+      {reelId && (
+        <View className="my-8">
+          <Card padding={16} elevation="md">
+            <Text className="text-xs font-bold text-primary uppercase mb-1">Odblokowano!</Text>
+            <Text className="text-base font-bold text-app-text mb-4">Historia tego miejsca czeka na Ciebie</Text>
+            <Button
+              title="Obejrzyj historię"
+              variant="outline"
               icon={<PlayCircle size={20} color={Colors.primary} />}
-              onPress={() => router.push('/reel/mock-reel-id' as any)}
+              onPress={() => router.push(`/reel/${reelId}`)}
             />
-          </View>
-        </Card>
-      </View>
+          </Card>
+        </View>
+      )}
 
       <View className="mt-auto">
-        <Button 
-          title="Szukaj dalej" 
-          variant="primary" 
-          size="lg"
-          onPress={() => router.push('/next' as any)} 
-        />
+        <Button title="Szukaj dalej" variant="primary" size="lg" onPress={searchNext} />
       </View>
     </View>
   );

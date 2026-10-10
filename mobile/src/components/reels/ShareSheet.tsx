@@ -30,7 +30,7 @@ export function ShareSheet({ url, visible, onClose }: ShareSheetProps) {
   };
 
   return (
-    <BottomSheet visible={visible} onClose={onClose} title="Udostępnij" snapPoints={[35]}>
+    <BottomSheet visible={visible} onClose={onClose} title="Udostępnij">
       <View className="px-6 py-4 flex-1 items-center">
         <Text className="text-textSecondary text-center mb-6">
           Zaproś znajomych do odkrywania historii Wrocławia razem z Tobą!

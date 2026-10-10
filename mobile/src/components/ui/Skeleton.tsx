@@ -26,7 +26,7 @@ export function Skeleton({ className = '', style }: SkeletonProps) {
       -1, // infinite
       true // reverse
     );
-  }, []);
+  }, [opacity]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     opacity: opacity.value,

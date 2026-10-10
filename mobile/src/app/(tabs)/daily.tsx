@@ -1,135 +1,151 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, Text, ScrollView, RefreshControl } from 'react-native';
 import { QuizCard } from '../../components/daily/QuizCard';
 import { QuizResult } from '../../components/daily/QuizResult';
 import { Button } from '../../components/ui/Button';
-import { formatDate } from '../../utils/formatters';
 import { Skeleton } from '../../components/ui/Skeleton';
 import { EmptyState } from '../../components/ui/EmptyState';
-
-const MOCK_QUESTIONS = [
-  {
-    id: 'q1',
-    text: 'W którym roku wybudowano Halę Stulecia?',
-    image_url: 'https://images.unsplash.com/photo-1627885408713-9a3b680cbf37?q=80&w=1280&auto=format&fit=crop',
-    options: [
-      { id: 'o1', text: '1911-1913' },
-      { id: 'o2', text: '1920-1922' },
-      { id: 'o3', text: '1899-1901' },
-      { id: 'o4', text: '1935-1937' },
-    ]
-  },
-  {
-    id: 'q2',
-    text: 'Ile krasnali znajduje się obecnie we Wrocławiu? (stan na 2024)',
-    options: [
-      { id: 'o1', text: 'Około 100' },
-      { id: 'o2', text: 'Ponad 800' },
-      { id: 'o3', text: 'Dokładnie 400' },
-      { id: 'o4', text: 'Około 250' },
-    ]
-  }
-];
+import { ErrorBanner, errorMessage } from '../../components/ui/ErrorBanner';
+import { formatDate } from '../../utils/formatters';
+import { useDailyGame, useStartDailyGame, useSubmitDailyAnswers } from '../../api/hooks/useDailyGame';
+import { ApiClientError } from '../../api/client';
 
 export default function DailyTab() {
+  const game = useDailyGame();
+  const startGame = useStartDailyGame();
+  const submit = useSubmitDailyAnswers();
+
   const [answers, setAnswers] = useState<Record<string, number>>({});
-  const [showResult, setShowResult] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
-  const [refreshing, setRefreshing] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 2000);
-    return () => clearTimeout(timer);
-  }, []);
+  const header = (
+    <View className="pt-16 pb-4 px-6 items-center bg-surface border-b border-app-border shadow-sm">
+      <Text className="text-2xl font-bold text-app-text">Quiz dnia</Text>
+      <Text className="text-text-secondary">{formatDate(game.data?.date ?? new Date().toISOString())}</Text>
+    </View>
+  );
 
-  const onRefresh = () => {
-    setRefreshing(true);
-    setTimeout(() => {
-      setRefreshing(false);
-      setAnswers({});
-      setShowResult(false);
-      setCurrentStep(0);
-    }, 1500);
-  };
+  // The mini-game is the first feature on the cut list; the API may simply not have it yet.
+  const notAvailable = game.error instanceof ApiClientError && game.error.status === 404;
 
-  const handleSelect = (index: number) => {
-    setAnswers(prev => ({ ...prev, [MOCK_QUESTIONS[currentStep].id]: index }));
-  };
-
-  const handleNext = () => {
-    if (currentStep < MOCK_QUESTIONS.length - 1) {
-      setCurrentStep(prev => prev + 1);
-    } else {
-      setShowResult(true);
-    }
-  };
-
-  if (showResult) {
-    const mockResults = MOCK_QUESTIONS.map(q => ({
-      questionId: q.id,
-      optionIndex: answers[q.id],
-      isCorrect: (answers[q.id] || 0) % 2 === 0 // Mock correctness using pure logic
-    }));
-    const score = mockResults.filter(r => r.isCorrect).length;
-
+  if (game.isLoading) {
     return (
-      <QuizResult 
-        score={score}
-        total={MOCK_QUESTIONS.length}
-        pointsAwarded={score * 10}
-        correct={mockResults}
+      <View className="flex-1 bg-white">
+        {header}
+        <View className="px-6 pt-6">
+          <Skeleton className="w-32 h-6 mb-4" />
+          <Skeleton className="w-full h-48 rounded-xl mb-4" />
+          <Skeleton className="w-full h-16 rounded-xl mb-2" />
+          <Skeleton className="w-full h-16 rounded-xl mb-2" />
+        </View>
+      </View>
+    );
+  }
+
+  if (notAvailable || (game.data && game.data.questions.length === 0)) {
+    return (
+      <View className="flex-1 bg-white">
+        {header}
+        <EmptyState title="Quiz wkrótce" message="Codzienny quiz o historii Wrocławia pojawi się już niedługo. Tymczasem ruszaj w miasto!" />
+      </View>
+    );
+  }
+
+  if (game.error || !game.data) {
+    return (
+      <View className="flex-1 bg-white">
+        {header}
+        <View className="p-6">
+          <ErrorBanner message={errorMessage(game.error)} onRetry={() => game.refetch()} />
+        </View>
+      </View>
+    );
+  }
+
+  const data = game.data;
+  const questions = data.questions;
+
+  if (data.played && data.result) {
+    const correctByQuestion = new Map(data.result.correct.map((c) => [c.question_id, c.option_index]));
+    return (
+      <QuizResult
+        score={data.result.score}
+        total={questions.length}
+        pointsAwarded={data.result.points_awarded}
+        correct={questions.map((q) => ({
+          questionId: q.id,
+          optionIndex: answers[q.id] ?? -1,
+          isCorrect: answers[q.id] !== undefined && correctByQuestion.get(q.id) === answers[q.id],
+        }))}
       />
     );
   }
 
-  const currentQuestion = MOCK_QUESTIONS[currentStep];
-  const isAnswered = answers[currentQuestion.id] !== undefined;
+  const current = questions[currentStep];
+  const isAnswered = answers[current.id] !== undefined;
+  const isLast = currentStep === questions.length - 1;
+
+  const handleSelect = (index: number) => {
+    if (Object.keys(answers).length === 0 && !startGame.isPending) {
+      startGame.mutate(undefined, { onError: (e) => setError(errorMessage(e)) });
+    }
+    setAnswers((prev) => ({ ...prev, [current.id]: index }));
+  };
+
+  const handleNext = async () => {
+    if (!isLast) {
+      setCurrentStep((s) => s + 1);
+      return;
+    }
+    setError(null);
+    try {
+      await submit.mutateAsync(
+        questions.map((q) => ({ question_id: q.id, option_index: answers[q.id] }))
+      );
+    } catch (e) {
+      setError(errorMessage(e));
+    }
+  };
 
   return (
-    <View className="flex-1 bg-background">
-      <View className="pt-16 pb-4 px-6 items-center bg-surface border-b border-border shadow-sm">
-        <Text className="text-2xl font-bold text-app-text">Quiz dnia</Text>
-        <Text className="text-textSecondary">{formatDate(new Date().toISOString())}</Text>
-      </View>
-
-      <ScrollView 
+    <View className="flex-1 bg-white">
+      {header}
+      <ScrollView
         className="flex-1 pt-4"
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        refreshControl={<RefreshControl refreshing={game.isRefetching} onRefresh={() => game.refetch()} />}
       >
-        {loading ? (
-          <View className="px-6">
-            <Skeleton className="w-32 h-6 mb-4" />
-            <Skeleton className="w-full h-48 rounded-xl mb-4" />
-            <Skeleton className="w-full h-16 rounded-xl mb-2" />
-            <Skeleton className="w-full h-16 rounded-xl mb-2" />
-            <Skeleton className="w-full h-16 rounded-xl mb-2" />
-            <Skeleton className="w-full h-16 rounded-xl mb-2" />
+        {error && (
+          <View className="px-6 mb-4">
+            <ErrorBanner message={error} onDismiss={() => setError(null)} />
           </View>
-        ) : MOCK_QUESTIONS.length === 0 ? (
-          <EmptyState title="Brak quizu" message="Dzisiaj nie ma żadnego quizu. Wróć jutro!" />
-        ) : (
-          <>
-            <View className="px-6 mb-2">
-              <Text className="text-textSecondary text-sm font-bold">Pytanie {currentStep + 1} z {MOCK_QUESTIONS.length}</Text>
-            </View>
+        )}
+        <View className="px-6 mb-2">
+          <Text className="text-text-secondary text-sm font-bold">
+            Pytanie {currentStep + 1} z {questions.length}
+          </Text>
+        </View>
 
-        <QuizCard 
-          question={currentQuestion}
-          selectedIndex={answers[currentQuestion.id]}
+        <QuizCard
+          question={{
+            id: current.id,
+            text: current.text,
+            image_url: current.image_url ?? undefined,
+            options: current.options.map((text, i) => ({ id: `${current.id}-${i}`, text })),
+          }}
+          selectedIndex={answers[current.id]}
           onSelect={handleSelect}
         />
 
-            <View className="px-6 py-6">
-              <Button 
-                title={currentStep === MOCK_QUESTIONS.length - 1 ? "Sprawdź odpowiedzi" : "Następne pytanie"}
-                onPress={handleNext}
-                disabled={!isAnswered}
-                variant="primary"
-              />
-            </View>
-          </>
-        )}
+        <View className="px-6 py-6">
+          <Button
+            title={isLast ? 'Sprawdź odpowiedzi' : 'Następne pytanie'}
+            onPress={handleNext}
+            disabled={!isAnswered}
+            loading={submit.isPending}
+            variant="primary"
+          />
+        </View>
       </ScrollView>
     </View>
   );

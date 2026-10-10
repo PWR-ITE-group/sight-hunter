@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, ViewStyle, StyleProp } from 'react-native';
-import { Ghost, Inbox, type LucideIcon } from 'lucide-react-native';
+import { Inbox, type LucideIcon } from 'lucide-react-native';
 
 export interface EmptyStateProps {
   icon?: LucideIcon;

@@ -94,29 +94,9 @@ export async function apiClient<T>(
 ): Promise<T> {
   const url = `${Config.API_BASE_URL}${path}${buildQueryString(options?.params)}`;
   
-  // Get current auth state
-  // We need to access the store dynamically to avoid circular dependencies
-  // but since we'll write authStore next, this is a placeholder for the logic
-  
-  // FIXME: Replace with actual store logic once authStore is created
-  // const authState = useAuthStore.getState();
-  // let accessToken = authState.accessToken;
-  let accessToken: string | null = null;
-  let refreshToken: string | null = null;
-  
-  const getAuthStore = () => {
-      try {
-         return require('../store/authStore').useAuthStore.getState();
-      } catch (e) {
-          return null;
-      }
-  };
-  
-  const authStore = getAuthStore();
-  if (authStore) {
-      accessToken = authStore.accessToken;
-      refreshToken = authStore.refreshToken;
-  }
+  const authStore = useAuthStore.getState();
+  const accessToken = authStore.accessToken;
+  const refreshToken = authStore.refreshToken;
 
   try {
     return await performRequest<T>(method, url, options, accessToken);
@@ -127,8 +107,7 @@ export async function apiClient<T>(
       error.status === 401 &&
       !options?.noAuth &&
       path !== '/auth/refresh' &&
-      refreshToken && 
-      authStore
+      refreshToken
     ) {
       try {
         // Attempt refresh

@@ -1,115 +1,100 @@
-import React, { useState } from 'react';
-import { View, FlatList, RefreshControl } from 'react-native';
-import { ReelCard } from '../../components/reels/ReelCard';
+import React, { useCallback, useState } from 'react';
+import { View, FlatList, RefreshControl, useWindowDimensions, type ViewToken } from 'react-native';
+import { ReelCard, type Reel } from '../../components/reels/ReelCard';
 import { CommentSheet } from '../../components/reels/CommentSheet';
 import { ShareSheet } from '../../components/reels/ShareSheet';
 import { Skeleton } from '../../components/ui/Skeleton';
 import { EmptyState } from '../../components/ui/EmptyState';
+import { ErrorBanner, errorMessage } from '../../components/ui/ErrorBanner';
+import { useReelFeed } from '../../api/hooks/useReels';
+import { useReelActions } from '../../hooks/useReelActions';
 
-// Mock data
-const MOCK_REELS = [
-  {
-    id: '1',
-    title: 'Tajemnica Ratusza',
-    thumbnail_url: 'https://images.unsplash.com/photo-1542384701-c0e46e0eda04?q=80&w=1280&auto=format&fit=crop',
-    locked: false,
-    finders_count: 142,
-    likes_count: 56,
-    comments_count: 12,
-    liked_by_me: false,
-  },
-  {
-    id: '2',
-    title: 'Ukryte Krasnale',
-    thumbnail_url: 'https://images.unsplash.com/photo-1627885408713-9a3b680cbf37?q=80&w=1280&auto=format&fit=crop',
-    locked: true,
-    price_points: 150,
-    finders_count: 89,
-  },
-  {
-    id: '3',
-    title: 'Most Grunwaldzki',
-    thumbnail_url: 'https://images.unsplash.com/photo-1596700085420-94e82df283be?q=80&w=1280&auto=format&fit=crop',
-    locked: false,
-    finders_count: 320,
-    likes_count: 210,
-    comments_count: 45,
-    liked_by_me: true,
-  }
-];
+const TAB_BAR_HEIGHT = 80;
+const VIEWABILITY_CONFIG = { itemVisiblePercentThreshold: 60 };
 
 export default function FeedTab() {
-  const [reels, setReels] = useState<any[]>(MOCK_REELS);
-  const [refreshing, setRefreshing] = useState(false);
-  const [loading, setLoading] = useState(true);
-  
-  const [activeCommentReel, setActiveCommentReel] = useState<string | null>(null);
-  const [activeShareReel, setActiveShareReel] = useState<string | null>(null);
+  const { height: windowHeight } = useWindowDimensions();
+  const itemHeight = windowHeight - TAB_BAR_HEIGHT;
 
-  React.useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 2000);
-    return () => clearTimeout(timer);
-  }, []);
+  const feed = useReelFeed();
+  const actions = useReelActions();
+  const [activeId, setActiveId] = useState<string | null>(null);
 
-  const onRefresh = () => {
-    setRefreshing(true);
-    setTimeout(() => setRefreshing(false), 1500);
-  };
+  const onViewableItemsChanged = useCallback(
+    ({ viewableItems }: { viewableItems: ViewToken<Reel>[] }) => {
+      const first = viewableItems[0]?.item ?? null;
+      const id = first && !first.locked ? first.id : null;
+      setActiveId(id);
+      actions.onActive(id);
+    },
+    [actions]
+  );
 
-  const handleLike = (id: string) => {
-    setReels(prev => prev.map(r => {
-      if (r.id === id) {
-        return {
-          ...r,
-          liked_by_me: !r.liked_by_me,
-          likes_count: r.liked_by_me ? (r.likes_count || 1) - 1 : (r.likes_count || 0) + 1
-        };
-      }
-      return r;
-    }));
-  };
+  const reels = feed.data ?? [];
+
+  if (feed.isLoading) {
+    return (
+      <View className="flex-1 p-4 bg-black">
+        <Skeleton className="w-full h-[80%] rounded-2xl mb-4" />
+      </View>
+    );
+  }
 
   return (
     <View className="flex-1 bg-black">
-      {loading ? (
-        <View className="flex-1 p-4 bg-black">
-          <Skeleton className="w-full h-[80%] rounded-2xl mb-4" />
+      {(feed.error || actions.error) && (
+        <View className="absolute top-12 left-4 right-4 z-10">
+          <ErrorBanner
+            message={actions.error ?? errorMessage(feed.error)}
+            onRetry={feed.error ? () => feed.refetch() : undefined}
+            onDismiss={actions.error ? actions.clearError : undefined}
+          />
         </View>
-      ) : (
-        <FlatList
-          data={reels}
-          keyExtractor={item => item.id}
-          pagingEnabled
-          showsVerticalScrollIndicator={false}
-          ListEmptyComponent={<EmptyState title="Brak rolek" message="Nie ma jeszcze żadnych rolek." />}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#fff" />
-          }
-          renderItem={({ item }) => (
-            <ReelCard 
-              reel={item}
-              onLike={() => handleLike(item.id)}
-              onComment={() => setActiveCommentReel(item.id)}
-              onShare={() => setActiveShareReel(item.id)}
-              onView={() => console.log('Viewed', item.id)}
-              onUnlock={() => console.log('Unlock', item.id)}
-            />
-          )}
-        />
       )}
 
-      <CommentSheet 
-        visible={!!activeCommentReel}
-        onClose={() => setActiveCommentReel(null)}
-        comments={[]} // Mock comments
-        onAdd={(text) => console.log('Added comment', text)}
+      <FlatList
+        data={reels}
+        keyExtractor={(item) => item.id}
+        pagingEnabled
+        snapToInterval={itemHeight}
+        decelerationRate="fast"
+        showsVerticalScrollIndicator={false}
+        viewabilityConfig={VIEWABILITY_CONFIG}
+        onViewableItemsChanged={onViewableItemsChanged}
+        onEndReached={() => feed.hasNextPage && feed.fetchNextPage()}
+        onEndReachedThreshold={1}
+        ListEmptyComponent={
+          <View style={{ height: itemHeight }}>
+            <EmptyState title="Brak rolek" message="Znajdź pierwsze miejsce, aby odblokować jego historię." />
+          </View>
+        }
+        refreshControl={
+          <RefreshControl refreshing={feed.isRefetching} onRefresh={() => feed.refetch()} tintColor="#fff" />
+        }
+        renderItem={({ item }) => (
+          <ReelCard
+            reel={item}
+            height={itemHeight}
+            isActive={item.id === activeId}
+            onLike={() => actions.toggleLike(item)}
+            onComment={() => actions.openComments(item.id)}
+            onShare={() => actions.setShareOpen(true)}
+            onUnlock={() => actions.buy(item)}
+            unlocking={actions.buying}
+          />
+        )}
       />
 
-      <ShareSheet 
-        visible={!!activeShareReel}
-        onClose={() => setActiveShareReel(null)}
-        url={`https://sight-hunter.com/reel/${activeShareReel}`}
+      <CommentSheet
+        visible={!!actions.commentReelId}
+        onClose={() => actions.openComments(null)}
+        comments={actions.comments}
+        loading={actions.commentsLoading}
+        sending={actions.sending}
+        onAdd={actions.sendComment}
       />
+
+      <ShareSheet visible={actions.shareOpen} onClose={() => actions.setShareOpen(false)} url={actions.shareUrl} />
     </View>
   );
 }

@@ -1,6 +1,7 @@
 export const queryKeys = {
   me: ['me'] as const,
   nearbyPlaces: (lat: number, lng: number) => ['places', 'nearby', lat, lng] as const,
+  nextPlace: (mode: string, lat: number, lng: number) => ['places', 'next', mode, lat, lng] as const,
   task: (id: string) => ['task', id] as const,
   attempt: (id: string) => ['attempt', id] as const,
   reelFeed: ['reels', 'feed'] as const,

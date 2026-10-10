@@ -1,21 +1,17 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useHintEndpoint, createAttempt } from '../endpoints/rounds';
+import { useMutation } from '@tanstack/react-query';
+import { requestHint, createAttempt } from '../endpoints/rounds';
 import { useGameStore } from '../../store/gameStore';
 import { generateIdempotencyKey } from '../../utils/idempotency';
 import { components } from '../schema';
-import { queryKeys } from './queryKeys';
 
 export function useHint() {
-  const queryClient = useQueryClient();
   const incrementHints = useGameStore((s) => s.incrementHints);
 
   return useMutation({
     mutationFn: ({ roundId }: { roundId: string }) =>
-      useHintEndpoint(roundId, generateIdempotencyKey()),
-    onSuccess: (_, { roundId }) => {
+      requestHint(roundId, generateIdempotencyKey()),
+    onSuccess: () => {
       incrementHints();
-      // To get updated reward points, we might want to invalidate active round or task
-      // Currently backend doesn't return full round/task on hint, so we might need a refetch
     },
   });
 }

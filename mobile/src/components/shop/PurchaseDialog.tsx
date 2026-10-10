@@ -21,7 +21,7 @@ export function PurchaseDialog({ item, visible, onConfirm, onCancel, result }: P
   if (!item) return null;
 
   return (
-    <BottomSheet visible={visible} onClose={onCancel} title={result ? "Wynik transakcji" : "Potwierdzenie"} snapPoints={[40]}>
+    <BottomSheet visible={visible} onClose={onCancel} title={result ? "Wynik transakcji" : "Potwierdzenie"}>
       <View className="px-6 py-4 flex-1">
         {result ? (
           <View className="flex-1 items-center justify-center">
