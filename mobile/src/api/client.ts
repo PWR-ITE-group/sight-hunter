@@ -1,6 +1,7 @@
 import { components } from './schema';
 import { useAuthStore } from '../store/authStore';
 import { Config } from '../constants/config';
+import { mockRequest, MockHttpError } from './mock/server';
 
 type ApiError = components['schemas']['Error'];
 
@@ -92,6 +93,16 @@ export async function apiClient<T>(
   path: string,
   options?: RequestOptions
 ): Promise<T> {
+  if (Config.MOCK_API) {
+    try {
+      return await mockRequest<T>(method, path, options?.params, options?.body as Record<string, unknown> | undefined);
+    } catch (e) {
+      if (e instanceof MockHttpError) {
+        throw new ApiClientError(e.status, { code: e.code as ApiError['code'], message: e.message, details: e.details });
+      }
+      throw e;
+    }
+  }
   const url = `${Config.API_BASE_URL}${path}${buildQueryString(options?.params)}`;
   
   const authStore = useAuthStore.getState();

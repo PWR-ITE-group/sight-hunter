@@ -20,6 +20,8 @@ function resolveApiBaseUrl(): string {
 
 export const Config = {
   API_BASE_URL: resolveApiBaseUrl(),
+  /** EXPO_PUBLIC_MOCK_API=1: in-memory fake of the contract, no backend needed (src/api/mock). */
+  MOCK_API: process.env.EXPO_PUBLIC_MOCK_API === '1',
   ATTEMPT_POLL_INTERVAL_MS: 1000,
   ATTEMPT_POLL_MAX_RETRIES: 20,
   MAX_HINTS_PER_ROUND: 3,

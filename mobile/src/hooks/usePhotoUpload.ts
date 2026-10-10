@@ -8,7 +8,12 @@ export function usePhotoUpload() {
     try {
       setIsUploading(true);
       setError(null);
-      
+
+      // Mock API hands out mock:// URLs; there is no storage to upload to.
+      if (uploadUrl.startsWith('mock://')) {
+        return true;
+      }
+
       const response = await fetch(localUri);
       const blob = await response.blob();
       
