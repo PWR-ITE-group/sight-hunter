@@ -6,11 +6,11 @@ from typing import Any
 from geoalchemy2 import Geography
 from geoalchemy2.elements import WKBElement
 from pgvector.sqlalchemy import Vector
-from sqlalchemy import DateTime, Enum, ForeignKey, Index, Integer, String, Text, func, text
+from sqlalchemy import DateTime, ForeignKey, Index, Integer, String, Text, func, text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.core.db import Base
+from app.core.db import Base, str_enum
 
 EMBEDDING_DIM = 768
 
@@ -92,7 +92,7 @@ class TaskRound(Base):
         ForeignKey("tasks.id", ondelete="CASCADE"), index=True
     )
     status: Mapped[RoundStatus] = mapped_column(
-        Enum(RoundStatus, name="round_status", native_enum=False, length=20),
+        str_enum(RoundStatus, "round_status"),
         default=RoundStatus.ACTIVE,
     )
     hints_used: Mapped[int] = mapped_column(Integer, default=0)

@@ -4,10 +4,10 @@ from datetime import datetime
 
 from geoalchemy2 import Geography
 from geoalchemy2.elements import WKBElement
-from sqlalchemy import DateTime, Enum, Float, ForeignKey, Integer, String, UniqueConstraint, func
+from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, UniqueConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.core.db import Base
+from app.core.db import Base, str_enum
 
 
 class AttemptStatus(enum.StrEnum):
@@ -35,7 +35,7 @@ class Attempt(Base):
     accuracy_m: Mapped[float | None] = mapped_column(Float)
     taken_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     status: Mapped[AttemptStatus] = mapped_column(
-        Enum(AttemptStatus, name="attempt_status", native_enum=False, length=20),
+        str_enum(AttemptStatus, "attempt_status"),
         default=AttemptStatus.AWAITING_UPLOAD,
     )
     reason: Mapped[str | None] = mapped_column(String(20))  # wrong_place | not_matched

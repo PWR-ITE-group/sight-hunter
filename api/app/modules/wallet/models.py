@@ -5,7 +5,7 @@ from datetime import datetime
 from sqlalchemy import DateTime, Enum, ForeignKey, Index, Integer, func, text
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.core.db import Base
+from app.core.db import Base, str_enum
 
 
 class LedgerReason(enum.StrEnum):
@@ -17,7 +17,7 @@ class LedgerReason(enum.StrEnum):
 
 
 def _reason_column(name: str) -> Enum:
-    return Enum(LedgerReason, name=name, native_enum=False, length=20)
+    return str_enum(LedgerReason, name)
 
 
 class WalletLedger(Base):
