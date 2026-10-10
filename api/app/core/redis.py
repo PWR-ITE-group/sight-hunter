@@ -6,8 +6,9 @@ from redis.asyncio import Redis
 
 from app.core.config import get_settings
 
-ML_QUEUE = "ml"  # consumed by worker/ (role C): verify_attempt
-API_QUEUE = "api"  # consumed by app.worker: apply_verdict
+# arq uses the queue name as the Redis key, hence the prefix.
+ML_QUEUE = "arq:queue:ml"  # consumed by worker/ (role C): verify_attempt
+API_QUEUE = "arq:queue:api"  # consumed by app.worker: apply_verdict
 
 
 @lru_cache

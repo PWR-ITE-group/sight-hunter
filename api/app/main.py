@@ -8,6 +8,7 @@ from app.core.db import get_engine
 from app.core.errors import install_error_handlers
 from app.core.redis import close_arq, get_redis
 from app.modules.auth.router import auth_router, me_router
+from app.modules.finds.router import attempts_router, rounds_attempts_router
 from app.modules.quests.router import places_router, rounds_router, tasks_router
 
 
@@ -36,6 +37,8 @@ def create_app() -> FastAPI:
     api.include_router(places_router)
     api.include_router(tasks_router)
     api.include_router(rounds_router)
+    api.include_router(rounds_attempts_router)
+    api.include_router(attempts_router)
     app.include_router(api)
     return app
 

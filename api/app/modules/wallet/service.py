@@ -1,29 +1,14 @@
 import uuid
 
-from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.modules.wallet import repository as repo
 from app.modules.wallet.models import LedgerReason, WalletLedger, XpLedger
 
 
-async def points_balance(session: AsyncSession, user_id: uuid.UUID) -> int:
-    total = await session.scalar(
-        select(func.coalesce(func.sum(WalletLedger.delta), 0)).where(
-            WalletLedger.user_id == user_id
-        )
-    )
-    return int(total or 0)
-
-
-async def xp_balance(session: AsyncSession, user_id: uuid.UUID) -> int:
-    total = await session.scalar(
-        select(func.coalesce(func.sum(XpLedger.delta), 0)).where(XpLedger.user_id == user_id)
-    )
-    return int(total or 0)
-
-
 async def balances(session: AsyncSession, user_id: uuid.UUID) -> tuple[int, int]:
-    return await points_balance(session, user_id), await xp_balance(session, user_id)
+    """(points, xp) — always computed from the ledgers, never stored."""
+    return await repo.sum_points(session, user_id), await repo.sum_xp(session, user_id)
 
 
 def add_points(
@@ -33,10 +18,10 @@ def add_points(
     reason: LedgerReason,
     ref_id: uuid.UUID | None,
 ) -> WalletLedger:
-    """Appends a ledger row inside the caller's transaction. Never updates a balance column."""
-    row = WalletLedger(user_id=user_id, delta=delta, reason=reason, ref_id=ref_id)
-    session.add(row)
-    return row
+    """Appends a ledger row inside the caller's transaction."""
+    return repo.add_points_row(
+        session, WalletLedger(user_id=user_id, delta=delta, reason=reason, ref_id=ref_id)
+    )
 
 
 def add_xp(
@@ -46,6 +31,6 @@ def add_xp(
     reason: LedgerReason,
     ref_id: uuid.UUID | None,
 ) -> XpLedger:
-    row = XpLedger(user_id=user_id, delta=delta, reason=reason, ref_id=ref_id)
-    session.add(row)
-    return row
+    return repo.add_xp_row(
+        session, XpLedger(user_id=user_id, delta=delta, reason=reason, ref_id=ref_id)
+    )

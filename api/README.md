@@ -2,7 +2,7 @@
 
 FastAPI modular monolith. Owner: backend (A).
 
-Code lives in `app/modules/<module>/` (`auth`, `quests`, `finds`, `wallet`, `media`, `social`, `shop`, `admin`); each module keeps its own `models.py`, `schemas.py`, `service.py`, `router.py`. Shared pieces are in `app/core/` (settings, DB, errors, JWT, Redis/arq, S3 storage, idempotency, rate limit).
+Code lives in `app/modules/<module>/` (`auth`, `quests`, `finds`, `wallet`, `media`, `social`, `shop`, `admin`); each module keeps its own `models.py`, `schemas.py`, `repository.py` (all queries, plain async functions over the session), `service.py` (rules, transactions, errors) and `router.py`. Routers call services only; a module reaches another module through its service. Shared pieces are in `app/core/` (settings, DB, errors, JWT, Redis/arq, S3 storage, idempotency, rate limit).
 
 ## Run locally
 
@@ -32,8 +32,8 @@ The API never awards points inside the worker; the worker only answers "is this 
 
 | Direction | Queue | Job | Arguments |
 | --- | --- | --- | --- |
-| API → worker | `ml` | `verify_attempt` | `attempt_id: str`, `photo_key: str` (key in bucket `S3_BUCKET`), `place_id: str` (place the player is looking for) |
-| worker → API | `api` | `apply_verdict` | `attempt_id: str`, `verdict: "accepted" \| "rejected"`, `score: float \| None`, `matched_place_id: str \| None` (best-matching place; a different one means "wrong place") |
+| API → worker | `arq:queue:ml` | `verify_attempt` | `attempt_id: str`, `photo_key: str` (key in bucket `S3_BUCKET`), `place_id: str` (place the player is looking for) |
+| worker → API | `arq:queue:api` | `apply_verdict` | `attempt_id: str`, `verdict: "accepted" \| "rejected"`, `score: float \| None`, `matched_place_id: str \| None` (best-matching place; a different one means "wrong place") |
 
 Enqueue the verdict with `_job_id=f"verdict:{attempt_id}"` so a retried job cannot produce two verdicts. The API worker (`app/worker.py`) then runs the reward transaction, updates the leaderboard and deletes the photo (NFT-06). Reference embeddings go to `place_refs` (`embedding vector(768)`, HNSW cosine index).
 

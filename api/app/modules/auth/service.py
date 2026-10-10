@@ -4,7 +4,6 @@ from datetime import UTC, datetime
 
 from fastapi import status
 from redis.asyncio import Redis
-from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -18,6 +17,7 @@ from app.core.security import (
     make_refresh_token,
     verify_password,
 )
+from app.modules.auth import repository as repo
 from app.modules.auth.models import RefreshToken, User
 from app.modules.auth.schemas import AuthOut, UserOut
 from app.modules.wallet import service as wallet
@@ -55,7 +55,7 @@ async def user_out(session: AsyncSession, user: User) -> UserOut:
 async def issue_tokens(session: AsyncSession, user: User) -> AuthOut:
     jti = uuid.uuid4()
     refresh, expires_at = make_refresh_token(user.id, jti)
-    session.add(RefreshToken(id=jti, user_id=user.id, expires_at=expires_at))
+    repo.add_refresh_token(session, RefreshToken(id=jti, user_id=user.id, expires_at=expires_at))
     await session.commit()
     return AuthOut(
         access=make_access_token(user.id), refresh=refresh, user=await user_out(session, user)
@@ -66,23 +66,22 @@ async def register(
     session: AsyncSession, email: str, password: str, ref_code: str | None
 ) -> AuthOut:
     settings = get_settings()
-    exists = await session.scalar(select(User.id).where(User.email == email))
-    if exists is not None:
+    if await repo.email_exists(session, email):
         raise AppError("email_taken", status.HTTP_409_CONFLICT)
 
     referrer_id: uuid.UUID | None = None
     if ref_code:
-        referrer_id = await session.scalar(
-            select(User.id).where(User.ref_code == ref_code.strip().upper())
-        )
+        referrer_id = await repo.user_id_by_ref_code(session, ref_code.strip().upper())
 
-    user = User(
-        email=email,
-        password_hash=hash_password(password),
-        ref_code=_new_ref_code(),
-        referred_by=referrer_id,
+    user = repo.add_user(
+        session,
+        User(
+            email=email,
+            password_hash=hash_password(password),
+            ref_code=_new_ref_code(),
+            referred_by=referrer_id,
+        ),
     )
-    session.add(user)
     try:
         await session.flush()
     except IntegrityError:
@@ -96,7 +95,7 @@ async def register(
 
 
 async def login(session: AsyncSession, email: str, password: str) -> AuthOut:
-    user = await session.scalar(select(User).where(User.email == email))
+    user = await repo.get_user_by_email(session, email)
     # Same answer for unknown e-mail and wrong password.
     if user is None or not verify_password(user.password_hash, password):
         raise AppError("invalid_credentials", status.HTTP_401_UNAUTHORIZED)
@@ -107,7 +106,7 @@ async def refresh(session: AsyncSession, token: str) -> AuthOut:
     payload = decode_token(token, "refresh")
     if payload is None:
         raise unauthorized()
-    row = await session.get(RefreshToken, uuid.UUID(payload["jti"]), with_for_update=True)
+    row = await repo.get_refresh_token_for_update(session, uuid.UUID(payload["jti"]))
     now = datetime.now(UTC)
     if (
         row is None
@@ -116,7 +115,7 @@ async def refresh(session: AsyncSession, token: str) -> AuthOut:
         or str(row.user_id) != payload["sub"]
     ):
         raise unauthorized()
-    user = await session.get(User, row.user_id)
+    user = await repo.get_user(session, row.user_id)
     if user is None:
         raise unauthorized()
     row.revoked_at = now  # rotation: each refresh token works once
@@ -124,10 +123,7 @@ async def refresh(session: AsyncSession, token: str) -> AuthOut:
 
 
 async def set_nickname(session: AsyncSession, user: User, nickname: str) -> UserOut:
-    taken = await session.scalar(
-        select(User.id).where(func.lower(User.nickname) == nickname.lower(), User.id != user.id)
-    )
-    if taken is not None:
+    if await repo.nickname_taken(session, nickname, except_user=user.id):
         raise AppError("nickname_taken", status.HTTP_409_CONFLICT)
     user.nickname = nickname
     try:

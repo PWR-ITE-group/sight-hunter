@@ -3,9 +3,6 @@ import uuid
 from typing import Any
 
 from fastapi import status
-from geoalchemy2 import Geometry
-from sqlalchemy import cast, exists, func, select
-from sqlalchemy.dialects.postgresql import distinct_on
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -13,19 +10,9 @@ from app.core.config import get_settings
 from app.core.errors import AppError, not_found
 from app.core.idempotency import run_idempotent
 from app.modules.auth.models import User
-from app.modules.finds.models import Attempt, AttemptStatus, Find
-from app.modules.quests.models import Place, RoundStatus, Task, TaskRound
+from app.modules.quests import repository as repo
+from app.modules.quests.models import RoundStatus, Task, TaskRound
 from app.modules.quests.schemas import HintOut, NearbyOut, PlaceMarker, RoundOut, TaskOut, Zone
-
-
-def geo_point(lng: float, lat: float) -> Any:
-    return func.ST_SetSRID(func.ST_MakePoint(lng, lat), 4326)
-
-
-def place_lng_lat() -> Any:
-    """Columns `lng, lat` of a place: geography → geometry → X/Y."""
-    g = cast(Place.geom, Geometry)
-    return func.ST_X(g), func.ST_Y(g)
 
 
 def search_zone(place_id: uuid.UUID, lat: float, lng: float, radius_m: int) -> Zone:
@@ -47,20 +34,10 @@ def search_zone(place_id: uuid.UUID, lat: float, lng: float, radius_m: int) -> Z
 async def nearby(
     session: AsyncSession, user: User, lat: float, lng: float, radius_m: int
 ) -> NearbyOut:
-    lng_col, lat_col = place_lng_lat()
-    found_q = exists().where(Find.user_id == user.id, Find.task_id == Task.id)
-    # One task per place is assumed; with several, the oldest one is the map marker.
-    rows = (
-        await session.execute(
-            select(Place, Task.id, lng_col, lat_col, found_q.label("found"))
-            .join(Task, Task.place_id == Place.id)
-            .where(func.ST_DWithin(Place.geom, geo_point(lng, lat), radius_m))
-            .order_by(Place.id, Task.created_at)
-            .ext(distinct_on(Place.id))
-        )
-    ).all()
     items = []
-    for place, task_id, p_lng, p_lat, found in rows:
+    for place, task_id, p_lng, p_lat, found in await repo.places_near(
+        session, user.id, lat, lng, radius_m
+    ):
         if found:
             zone = Zone(lat=p_lat, lng=p_lng, radius_m=place.radius_m)
         else:
@@ -77,23 +54,11 @@ async def nearby(
     return NearbyOut(items=items)
 
 
-async def _active_round(
-    session: AsyncSession, user_id: uuid.UUID, task_id: uuid.UUID
-) -> TaskRound | None:
-    return await session.scalar(
-        select(TaskRound).where(
-            TaskRound.user_id == user_id,
-            TaskRound.task_id == task_id,
-            TaskRound.status == RoundStatus.ACTIVE,
-        )
-    )
-
-
 async def get_task(session: AsyncSession, user: User, task_id: uuid.UUID) -> TaskOut:
-    task = await session.get(Task, task_id)
+    task = await repo.get_task(session, task_id)
     if task is None:
         raise not_found("task")
-    active = await _active_round(session, user.id, task_id)
+    active = await repo.get_active_round(session, user.id, task_id)
     return TaskOut(
         id=task.id,
         place_id=task.place_id,
@@ -105,18 +70,12 @@ async def get_task(session: AsyncSession, user: User, task_id: uuid.UUID) -> Tas
     )
 
 
-async def attempts_used(session: AsyncSession, round_id: uuid.UUID) -> int:
-    """Attempts that got past the geofence and were submitted; abandoned uploads don't count."""
-    n = await session.scalar(
-        select(func.count())
-        .select_from(Attempt)
-        .where(Attempt.round_id == round_id, Attempt.status != AttemptStatus.AWAITING_UPLOAD)
-    )
-    return int(n or 0)
+async def attempts_left(session: AsyncSession, round_id: uuid.UUID) -> int:
+    used = await repo.count_submitted_attempts(session, round_id)
+    return max(0, get_settings().max_attempts_per_round - used)
 
 
 async def round_out(session: AsyncSession, rnd: TaskRound, task: Task) -> RoundOut:
-    used = await attempts_used(session, rnd.id)
     return RoundOut(
         id=rnd.id,
         task_id=rnd.task_id,
@@ -124,7 +83,7 @@ async def round_out(session: AsyncSession, rnd: TaskRound, task: Task) -> RoundO
         hints_used=rnd.hints_used,
         hints=list(task.hints[: rnd.hints_used]),
         reward_points=rnd.reward_points,
-        attempts_left=max(0, get_settings().max_attempts_per_round - used),
+        attempts_left=await attempts_left(session, rnd.id),
         started_at=rnd.started_at,
     )
 
@@ -133,32 +92,31 @@ async def start_round(
     session: AsyncSession, user: User, task_id: uuid.UUID
 ) -> tuple[bool, RoundOut]:
     """Returns (created, round). A repeat tap returns the existing active round."""
-    task = await session.get(Task, task_id)
+    task = await repo.get_task(session, task_id)
     if task is None:
         raise not_found("task")
-    active = await _active_round(session, user.id, task_id)
+    active = await repo.get_active_round(session, user.id, task_id)
     if active is not None:
         return False, await round_out(session, active, task)
-    already = await session.scalar(
-        select(Find.id).where(Find.user_id == user.id, Find.task_id == task_id)
-    )
-    if already is not None:
+    if await repo.has_find(session, user.id, task_id):
         raise AppError(
             "round_not_active", status.HTTP_409_CONFLICT, message="To miejsce jest już odkryte."
         )
-    rnd = TaskRound(
-        user_id=user.id,
-        task_id=task_id,
-        reward_points=task.base_reward_points,
-        reward_xp=task.base_xp,
+    rnd = repo.add_round(
+        session,
+        TaskRound(
+            user_id=user.id,
+            task_id=task_id,
+            reward_points=task.base_reward_points,
+            reward_xp=task.base_xp,
+        ),
     )
-    session.add(rnd)
     try:
         await session.commit()
     except IntegrityError:
         # Two taps raced on the "one active round" index; the first one won.
         await session.rollback()
-        active = await _active_round(session, user.id, task_id)
+        active = await repo.get_active_round(session, user.id, task_id)
         if active is None:
             raise
         return False, await round_out(session, active, task)
@@ -176,12 +134,12 @@ async def use_hint(
     session: AsyncSession, user: User, round_id: uuid.UUID, key: uuid.UUID
 ) -> tuple[int, dict[str, Any]]:
     async def op() -> tuple[int, dict[str, Any]]:
-        rnd = await session.get(TaskRound, round_id, with_for_update=True)
+        rnd = await repo.get_round_for_update(session, round_id)
         if rnd is None or rnd.user_id != user.id:
             raise not_found("round")
         if rnd.status != RoundStatus.ACTIVE:
             raise AppError("round_not_active", status.HTTP_409_CONFLICT)
-        task = await session.get(Task, rnd.task_id)
+        task = await repo.get_task(session, rnd.task_id)
         assert task is not None
         limit = min(len(task.hints), get_settings().max_hints_per_round)
         if rnd.hints_used >= limit:
