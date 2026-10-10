@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, Dimensions, RefreshControl, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
-import { Copy, ShoppingCart, Settings, MapPin, Trophy, Star, Play } from 'lucide-react-native';
+import { Copy, Brain, Settings, MapPin, Trophy, Star, Play } from 'lucide-react-native';
 import { Avatar } from '../../components/ui/Avatar';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -136,9 +136,9 @@ export default function ProfileTab() {
 
         <View className="gap-y-3 mb-8">
           <Button
-            title="Sklep"
-            icon={<ShoppingCart color="#FFFFFF" size={20} />}
-            onPress={() => router.push('/shop')}
+            title="Quiz dnia"
+            icon={<Brain color="#FFFFFF" size={20} />}
+            onPress={() => router.push('/daily')}
             variant="primary"
           />
           <Button

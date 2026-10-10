@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, RefreshControl } from 'react-native';
-import { QuizCard } from '../../components/daily/QuizCard';
-import { QuizResult } from '../../components/daily/QuizResult';
-import { Button } from '../../components/ui/Button';
-import { Skeleton } from '../../components/ui/Skeleton';
-import { EmptyState } from '../../components/ui/EmptyState';
-import { ErrorBanner, errorMessage } from '../../components/ui/ErrorBanner';
-import { formatDate } from '../../utils/formatters';
-import { useDailyGame, useStartDailyGame, useSubmitDailyAnswers } from '../../api/hooks/useDailyGame';
-import { ApiClientError } from '../../api/client';
+import { QuizCard } from '../components/daily/QuizCard';
+import { QuizResult } from '../components/daily/QuizResult';
+import { Button } from '../components/ui/Button';
+import Header from '../components/layout/Header';
+import { Skeleton } from '../components/ui/Skeleton';
+import { EmptyState } from '../components/ui/EmptyState';
+import { ErrorBanner, errorMessage } from '../components/ui/ErrorBanner';
+import { formatDate } from '../utils/formatters';
+import { useDailyGame, useStartDailyGame, useSubmitDailyAnswers } from '../api/hooks/useDailyGame';
+import { ApiClientError } from '../api/client';
 
 export default function DailyTab() {
   const game = useDailyGame();
@@ -20,9 +21,11 @@ export default function DailyTab() {
   const [error, setError] = useState<string | null>(null);
 
   const header = (
-    <View className="pt-16 pb-4 px-6 items-center bg-surface border-b border-app-border shadow-sm">
-      <Text className="text-2xl font-bold text-app-text">Quiz dnia</Text>
-      <Text className="text-text-secondary">{formatDate(game.data?.date ?? new Date().toISOString())}</Text>
+    <View className="pt-12 bg-surface border-b border-app-border shadow-sm">
+      <Header title="Quiz dnia" showBack />
+      <Text className="text-text-secondary text-center pb-3">
+        {formatDate(game.data?.date ?? new Date().toISOString())}
+      </Text>
     </View>
   );
 

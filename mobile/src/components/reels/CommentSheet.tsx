@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, FlatList, KeyboardAvoidingView } from 'react-native';
+import { View, Text, FlatList } from 'react-native';
 import { BottomSheet } from '../ui/BottomSheet';
 import { Avatar } from '../ui/Avatar';
 import { TextInput } from '../ui/TextInput';
@@ -46,7 +46,7 @@ export function CommentSheet({ visible, onClose, comments, loading = false, send
 
   return (
     <BottomSheet visible={visible} onClose={onClose} title="Komentarze">
-      <KeyboardAvoidingView behavior="padding" style={{ height: 420 }}>
+      <View style={{ height: 380 }}>
         {loading ? (
           <LoadingSpinner className="flex-1" />
         ) : (
@@ -72,7 +72,7 @@ export function CommentSheet({ visible, onClose, comments, loading = false, send
             variant="primary"
           />
         </View>
-      </KeyboardAvoidingView>
+      </View>
     </BottomSheet>
   );
 }

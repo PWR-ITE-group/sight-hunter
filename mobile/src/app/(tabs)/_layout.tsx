@@ -1,7 +1,6 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
 import { Feather, FontAwesome5 } from '@expo/vector-icons';
-import TabBarIcon from '../../components/layout/TabBarIcon';
 
 export default function TabLayout() {
   return (
@@ -25,13 +24,6 @@ export default function TabLayout() {
         },
       }}>
       <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Mapa',
-          tabBarIcon: ({ color }) => <Feather name="map-pin" size={24} color={color} />,
-        }}
-      />
-      <Tabs.Screen
         name="feed"
         options={{
           title: 'Odkrycia',
@@ -39,17 +31,24 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="daily"
-        options={{
-          title: 'Quiz',
-          tabBarIcon: ({ color }) => <TabBarIcon name="brain" size={20} color={color as string} />,
-        }}
-      />
-      <Tabs.Screen
         name="ranking"
         options={{
           title: 'Ranking',
           tabBarIcon: ({ color }) => <FontAwesome5 name="trophy" size={20} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="index"
+        options={{
+          title: 'Mapa',
+          tabBarIcon: ({ color }) => <Feather name="map-pin" size={26} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="shop"
+        options={{
+          title: 'Sklep',
+          tabBarIcon: ({ color }) => <Feather name="shopping-bag" size={24} color={color} />,
         }}
       />
       <Tabs.Screen

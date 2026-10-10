@@ -130,7 +130,7 @@ export default function RootLayout() {
           <Stack.Screen name="verify/[attemptId]" options={{ presentation: 'card', gestureEnabled: false }} />
           <Stack.Screen name="result" options={{ presentation: 'card', gestureEnabled: false }} />
           <Stack.Screen name="next" options={{ presentation: 'card' }} />
-          <Stack.Screen name="shop" options={{ presentation: 'card' }} />
+          <Stack.Screen name="daily" options={{ presentation: 'card' }} />
           <Stack.Screen name="settings" options={{ presentation: 'card' }} />
           <Stack.Screen name="reel/[reelId]" options={{ presentation: 'fullScreenModal' }} />
           <Stack.Screen name="onboarding" options={{ presentation: 'fullScreenModal' }} />

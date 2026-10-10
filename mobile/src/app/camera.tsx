@@ -91,41 +91,40 @@ export default function CameraScreen() {
 
   return (
     <View className="flex-1 bg-black">
-      <CameraView ref={cameraRef} style={{ flex: 1 }} facing={facing} flash={flash}>
-        <View style={styles.overlay}>
-          <View style={styles.topOverlay}>
-            <View className="pt-12 px-4 items-start">
-              <IconButton icon={<X size={24} color="#fff" />} onPress={() => router.back()} size={44} color="rgba(255,255,255,0.2)" />
-            </View>
-          </View>
-          <View style={styles.middleOverlay}>
-            <View style={styles.sideOverlay} />
-            <View style={[styles.viewfinder, { width: viewfinderWidth, height: viewfinderHeight }]} />
-            <View style={styles.sideOverlay} />
-          </View>
-          <View style={styles.bottomOverlay}>
-            <View className="flex-row items-center justify-between px-10 pb-12 w-full">
-              <IconButton
-                icon={<SwitchCamera size={28} color="#fff" />}
-                onPress={toggleFacing}
-                size={56}
-                color="rgba(255,255,255,0.2)"
-              />
-              <TouchableOpacity onPress={handleCapture} activeOpacity={0.7} disabled={isProcessing}>
-                <View className="w-20 h-20 rounded-full bg-white/30 items-center justify-center">
-                  <View className={`w-[68px] h-[68px] rounded-full ${isProcessing ? 'bg-white/60' : 'bg-white'}`} />
-                </View>
-              </TouchableOpacity>
-              <IconButton
-                icon={flash === 'on' ? <Zap size={28} color="#fff" /> : <ZapOff size={28} color="#fff" />}
-                onPress={toggleFlash}
-                size={56}
-                color="rgba(255,255,255,0.2)"
-              />
-            </View>
+      <CameraView ref={cameraRef} style={StyleSheet.absoluteFill} facing={facing} flash={flash} />
+      <View style={[StyleSheet.absoluteFill, styles.overlay]} pointerEvents="box-none">
+        <View style={styles.topOverlay}>
+          <View className="pt-12 px-4 items-start">
+            <IconButton icon={<X size={24} color="#fff" />} onPress={() => router.back()} size={44} color="rgba(255,255,255,0.2)" />
           </View>
         </View>
-      </CameraView>
+        <View style={styles.middleOverlay} pointerEvents="none">
+          <View style={styles.sideOverlay} />
+          <View style={[styles.viewfinder, { width: viewfinderWidth, height: viewfinderHeight }]} />
+          <View style={styles.sideOverlay} />
+        </View>
+        <View style={styles.bottomOverlay}>
+          <View className="flex-row items-center justify-between px-10 pb-12 w-full">
+            <IconButton
+              icon={<SwitchCamera size={28} color="#fff" />}
+              onPress={toggleFacing}
+              size={56}
+              color="rgba(255,255,255,0.2)"
+            />
+            <TouchableOpacity onPress={handleCapture} activeOpacity={0.7} disabled={isProcessing}>
+              <View className="w-20 h-20 rounded-full bg-white/30 items-center justify-center">
+                <View className={`w-[68px] h-[68px] rounded-full ${isProcessing ? 'bg-white/60' : 'bg-white'}`} />
+              </View>
+            </TouchableOpacity>
+            <IconButton
+              icon={flash === 'on' ? <Zap size={28} color="#fff" /> : <ZapOff size={28} color="#fff" />}
+              onPress={toggleFlash}
+              size={56}
+              color="rgba(255,255,255,0.2)"
+            />
+          </View>
+        </View>
+      </View>
     </View>
   );
 }
