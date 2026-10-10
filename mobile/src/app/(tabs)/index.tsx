@@ -14,7 +14,7 @@ export default function MapTab() {
   const router = useRouter();
 
   const handleMarkerPress = (taskId: string) => {
-    router.push(`/task/${taskId}`);
+    router.push(`/task/${taskId}` as any);
   };
 
   return (

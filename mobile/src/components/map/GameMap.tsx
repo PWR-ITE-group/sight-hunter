@@ -51,7 +51,7 @@ export default function GameMap({ places, userPosition, onMarkerPress, onLongPre
       <MapView
         ref={mapRef}
         provider={PROVIDER_DEFAULT}
-        style={StyleSheet.absoluteFillObject}
+        style={StyleSheet.absoluteFill}
         initialRegion={{
           latitude: 51.1079,
           longitude: 17.0385,

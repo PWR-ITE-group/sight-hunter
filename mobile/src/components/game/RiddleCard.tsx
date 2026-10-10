@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import { Image } from 'expo-image';
+import Animated from 'react-native-reanimated';
 import Card from '../ui/Card';
 import Badge from '../ui/Badge';
 
@@ -20,9 +21,12 @@ export default function RiddleCard({ task }: Props) {
   return (
     <Card elevation="sm" className="mb-6 p-4">
       {task.archival_photo_url && (
-        <Image
+        <Animated.Image
           source={{ uri: task.archival_photo_url }}
-          className="w-full h-48 rounded-xl mb-4 bg-app-border"
+          style={{ width: '100%', height: 192 }}
+          sharedTransitionTag="photo"
+          className="rounded-xl mb-4 bg-app-border"
+          // @ts-ignore
           contentFit="cover"
         />
       )}

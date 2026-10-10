@@ -27,14 +27,8 @@ export function useVerificationFlow(roundId: string | null) {
   const pollAttemptQuery = usePollAttempt(activeAttemptId);
 
   // Monitor polling status
-  useEffect(() => {
-    if (step === 'polling' && pollAttemptQuery.data) {
-      const status = pollAttemptQuery.data.status;
-      if (status === 'accepted' || status === 'rejected') {
-        setStep('done');
-      }
-    }
-  }, [step, pollAttemptQuery.data]);
+  // Derive done step directly from data if possible
+  const currentStep = step === 'polling' && pollAttemptQuery.data && (pollAttemptQuery.data.status === 'accepted' || pollAttemptQuery.data.status === 'rejected') ? 'done' : step;
 
   const start = useCallback(async () => {
     if (!roundId) return;
@@ -90,7 +84,7 @@ export function useVerificationFlow(roundId: string | null) {
 
   return {
     start,
-    step,
+    step: currentStep,
     attempt: pollAttemptQuery.data,
     error: flowError,
     reset,

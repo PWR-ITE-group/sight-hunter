@@ -4,6 +4,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import RiddleCard from '../../components/game/RiddleCard';
 import HintDialog from '../../components/game/HintDialog';
 import Button from '../../components/ui/Button';
+import * as Haptics from 'expo-haptics';
 import { Feather } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Header from '../../components/layout/Header';
@@ -24,6 +25,7 @@ export default function TaskDetailsScreen() {
   const [hintsUsed, setHintsUsed] = useState(0);
 
   const handleShowHint = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     if (hintsUsed < 3) {
       setHintsUsed(prev => prev + 1);
     }
@@ -31,6 +33,7 @@ export default function TaskDetailsScreen() {
   };
 
   const handleStartCamera = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     router.push('/camera');
   };
 

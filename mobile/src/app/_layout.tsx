@@ -52,13 +52,12 @@ export default function RootLayout() {
     if (!isAuthenticated && !inAuthGroup) {
       // Not logged in and not in auth group -> redirect to welcome
       router.replace('/(auth)/welcome' as any);
-    } else if (isAuthenticated && inAuthGroup) {
-      // Logged in but in auth group -> redirect to main tabs
-      router.replace('/(tabs)' as any);
     } else if (isAuthenticated && !user?.nickname && String(segments[1]) !== 'nickname') {
       // Logged in but no nickname set -> force nickname screen
-      // Assuming nickname screen is at /(auth)/nickname
       router.replace('/(auth)/nickname' as any);
+    } else if (isAuthenticated && user?.nickname && inAuthGroup) {
+      // Logged in, has nickname, but in auth group -> redirect to main tabs
+      router.replace('/(tabs)' as any);
     }
   }, [isAuthenticated, isHydrated, segments, user, router]);
 

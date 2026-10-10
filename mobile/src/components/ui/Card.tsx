@@ -44,3 +44,5 @@ export function Card({
     </View>
   );
 }
+
+export default Card;
