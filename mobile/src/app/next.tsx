@@ -31,7 +31,7 @@ export default function NextScreen() {
   }
 
   return (
-    <ScrollView className="flex-1 bg-surface" contentContainerStyle={{ flexGrow: 1 }}>
+    <ScrollView className="flex-1 bg-paper" contentContainerStyle={{ flexGrow: 1 }}>
       <View className="p-6 pt-12 flex-1">
         <Text className="text-3xl font-bold text-app-text mb-2">Co dalej?</Text>
         <Text className="text-base text-text-secondary mb-6">Wybierz swój następny cel we Wrocławiu.</Text>

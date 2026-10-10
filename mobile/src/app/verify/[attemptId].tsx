@@ -80,7 +80,7 @@ export default function VerifyScreen() {
   const noAttemptsLeft = ui.status === 'rejected' && attemptsLeft === 0;
 
   return (
-    <View className="flex-1 bg-surface p-6 justify-center">
+    <View className="flex-1 bg-paper p-6 justify-center">
       <View className="bg-white p-6 rounded-3xl shadow-sm border border-app-border items-center">
         {lastPhotoUri && (
           <Image

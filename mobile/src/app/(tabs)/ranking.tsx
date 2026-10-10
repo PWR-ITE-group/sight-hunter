@@ -24,7 +24,7 @@ export default function RankingTab() {
   const renderPodiumItem = (entry: Entry | undefined, position: number) => {
     if (!entry) return <View className="mx-2 w-24" />;
     const isFirst = position === 1;
-    const color = isFirst ? '#FBBF24' : position === 2 ? '#9CA3AF' : '#B45309';
+    const color = isFirst ? '#b9800f' : position === 2 ? '#8a948e' : '#b5422e';
     return (
       <View className="items-center mx-2 w-24" style={{ marginTop: isFirst ? 0 : 20 }}>
         <View className="mb-2 relative">
@@ -62,7 +62,7 @@ export default function RankingTab() {
   const meOutsideTop = me && (me.rank === null || me.rank > items.length);
 
   return (
-    <View className="flex-1 bg-white">
+    <View className="flex-1 bg-paper">
       <View className="pt-16 pb-4 px-6 items-center bg-surface shadow-sm z-10">
         <Text className="text-2xl font-bold text-app-text mb-4">Ranking</Text>
         <View className="flex-row gap-x-2">

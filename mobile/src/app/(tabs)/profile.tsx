@@ -44,7 +44,7 @@ export default function ProfileTab() {
 
   if (me.isLoading) {
     return (
-      <View className="flex-1 bg-white">
+      <View className="flex-1 bg-paper">
         <View className="pt-16 pb-8 px-6 items-center bg-surface border-b border-app-border">
           <Skeleton className="w-20 h-20 rounded-full mb-4" />
           <Skeleton className="w-48 h-8 mb-2" />
@@ -61,7 +61,7 @@ export default function ProfileTab() {
 
   if (me.error || !me.data) {
     return (
-      <View className="flex-1 bg-white p-6 pt-16">
+      <View className="flex-1 bg-paper p-6 pt-16">
         <ErrorBanner message={errorMessage(me.error)} onRetry={() => me.refetch()} />
       </View>
     );
@@ -71,7 +71,7 @@ export default function ProfileTab() {
 
   return (
     <ScrollView
-      className="flex-1 bg-white"
+      className="flex-1 bg-paper"
       refreshControl={<RefreshControl refreshing={me.isRefetching} onRefresh={refresh} />}
     >
       <View className="pt-16 pb-8 px-6 items-center bg-surface border-b border-app-border shadow-sm">
@@ -88,7 +88,7 @@ export default function ProfileTab() {
             <Text className="text-text-secondary text-xs">Punkty</Text>
           </Card>
           <Card className="flex-1 items-center p-4">
-            <Star color="#FBBF24" size={24} />
+            <Star color="#b9800f" size={24} />
             <Text className="text-lg font-bold text-app-text mt-2">{user.xp}</Text>
             <Text className="text-text-secondary text-xs">XP</Text>
           </Card>

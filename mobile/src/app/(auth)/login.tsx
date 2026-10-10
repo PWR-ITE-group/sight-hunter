@@ -78,7 +78,7 @@ export default function LoginScreen() {
   };
 
   return (
-    <KeyboardAvoidingView behavior="padding" className="flex-1 bg-white">
+    <KeyboardAvoidingView behavior="padding" className="flex-1 bg-paper">
       <ScrollView
         contentContainerStyle={{ padding: 24, flexGrow: 1, justifyContent: 'center' }}
         keyboardShouldPersistTaps="handled"

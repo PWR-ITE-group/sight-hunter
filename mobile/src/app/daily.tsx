@@ -34,7 +34,7 @@ export default function DailyTab() {
 
   if (game.isLoading) {
     return (
-      <View className="flex-1 bg-white">
+      <View className="flex-1 bg-paper">
         {header}
         <View className="px-6 pt-6">
           <Skeleton className="w-32 h-6 mb-4" />
@@ -48,7 +48,7 @@ export default function DailyTab() {
 
   if (notAvailable || (game.data && game.data.questions.length === 0)) {
     return (
-      <View className="flex-1 bg-white">
+      <View className="flex-1 bg-paper">
         {header}
         <EmptyState title="Quiz wkrótce" message="Codzienny quiz o historii Wrocławia pojawi się już niedługo. Tymczasem ruszaj w miasto!" />
       </View>
@@ -57,7 +57,7 @@ export default function DailyTab() {
 
   if (game.error || !game.data) {
     return (
-      <View className="flex-1 bg-white">
+      <View className="flex-1 bg-paper">
         {header}
         <View className="p-6">
           <ErrorBanner message={errorMessage(game.error)} onRetry={() => game.refetch()} />
@@ -112,7 +112,7 @@ export default function DailyTab() {
   };
 
   return (
-    <View className="flex-1 bg-white">
+    <View className="flex-1 bg-paper">
       {header}
       <ScrollView
         className="flex-1 pt-4"

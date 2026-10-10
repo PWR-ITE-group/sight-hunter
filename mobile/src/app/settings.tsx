@@ -105,7 +105,7 @@ export default function SettingsScreen() {
   };
 
   return (
-    <View className="flex-1 bg-white pt-12">
+    <View className="flex-1 bg-paper pt-12">
       <Header title="Ustawienia" showBack />
       <SectionList
         sections={sections}

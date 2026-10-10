@@ -11,7 +11,7 @@ export interface ProgressBarProps {
 
 export function ProgressBar({
   progress,
-  color = '#208AEF', // primary
+  color = '#2c52c4', // primary
   animated = true,
   height = 8,
 }: ProgressBarProps) {
@@ -39,7 +39,7 @@ export function ProgressBar({
   });
 
   return (
-    <View style={{ height, borderRadius: height / 2 }} className="w-full bg-slate-200 overflow-hidden">
+    <View style={{ height, borderRadius: height / 2 }} className="w-full bg-app-border overflow-hidden">
       <Animated.View style={animatedStyle} />
     </View>
   );

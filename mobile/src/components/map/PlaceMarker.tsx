@@ -76,7 +76,7 @@ export default function PlaceMarker({ place, onPress }: Props) {
               width: 24,
               height: 24,
               borderRadius: 12,
-              backgroundColor: place.found ? '#22C55E' : '#208AEF',
+              backgroundColor: place.found ? '#2c8350' : '#2c52c4',
               borderWidth: 3,
               borderColor: 'white',
             },

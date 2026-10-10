@@ -74,7 +74,7 @@ export function BottomSheet({ visible, onClose, children, title }: BottomSheetPr
             >
               <GestureDetector gesture={panGesture}>
                 <View className="items-center py-2 -mt-2">
-                  <View className="w-12 h-1.5 bg-slate-300 rounded-full" />
+                  <View className="w-12 h-1.5 bg-app-border rounded-full" />
                 </View>
               </GestureDetector>
 

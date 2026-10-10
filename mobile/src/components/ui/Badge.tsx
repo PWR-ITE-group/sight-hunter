@@ -21,28 +21,28 @@ export function Badge({
   let icon = '';
 
   if (type === 'xp') {
-    bgColorClass = 'bg-warning/20'; // Using opacity from tailwind if supported, else custom. We can use bg-[#F59E0B20] or bg-yellow-100
+    bgColorClass = 'bg-warning/20'; // Using opacity from tailwind if supported, else custom. We can use bg-[#b9800f20] or bg-yellow-100
     // Actually, NativeWind v4 supports opacity modifiers like `bg-warning/20` or we can just use `bg-warning` with 20% opacity. 
     // To be safe with NativeWind custom colors:
-    bgColorClass = 'bg-[#F59E0B20]'; 
-    textColorClass = 'text-warning';
+    bgColorClass = 'bg-[#6a3fc420]';
+    textColorClass = 'text-xp';
     icon = '⭐';
   } else if (type === 'points') {
-    bgColorClass = 'bg-[#208AEF20]'; // primary with opacity
-    textColorClass = 'text-primary';
+    bgColorClass = 'bg-[#b9800f20]'; // ochre, like the prototype's points
+    textColorClass = 'text-warning';
     icon = '💎';
   } else if (type === 'status') {
     switch (statusType) {
       case 'success':
-        bgColorClass = 'bg-[#22C55E20]';
+        bgColorClass = 'bg-[#2c835020]';
         textColorClass = 'text-success';
         break;
       case 'error':
-        bgColorClass = 'bg-[#EF444420]';
+        bgColorClass = 'bg-[#c0383820]';
         textColorClass = 'text-error';
         break;
       case 'warning':
-        bgColorClass = 'bg-[#F59E0B20]';
+        bgColorClass = 'bg-[#b9800f20]';
         textColorClass = 'text-warning';
         break;
       default:

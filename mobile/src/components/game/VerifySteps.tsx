@@ -75,7 +75,7 @@ export default function VerifySteps({
       {/* Final Result */}
       {status === 'accepted' && (
         <View style={styles.resultContainer}>
-          <View style={[styles.bigIconContainer, { backgroundColor: '#22C55E20' }]}>
+          <View style={[styles.bigIconContainer, { backgroundColor: '#2c835020' }]}>
             <Text style={styles.bigIcon}>✅</Text>
           </View>
           <Text style={[styles.resultTitle, { color: Colors.success }]}>Znaleziono!</Text>
@@ -84,7 +84,7 @@ export default function VerifySteps({
 
       {status === 'rejected' && (
         <View style={styles.resultContainer}>
-          <View style={[styles.bigIconContainer, { backgroundColor: '#EF444420' }]}>
+          <View style={[styles.bigIconContainer, { backgroundColor: '#c0383820' }]}>
             <Text style={styles.bigIcon}>❌</Text>
           </View>
           

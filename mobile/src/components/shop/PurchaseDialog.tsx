@@ -29,8 +29,8 @@ export function PurchaseDialog({ item, visible, onConfirm, onCancel, result }: P
               {result.success ? "Zakup udany!" : "Wystąpił błąd"}
             </Text>
             {result.success && result.coupon_code && (
-              <View className="bg-surface p-4 rounded-lg border border-border w-full items-center mb-6">
-                <Text className="text-textSecondary mb-2">Twój kod kuponu:</Text>
+              <View className="bg-surface p-4 rounded-lg border border-app-border w-full items-center mb-6">
+                <Text className="text-text-secondary mb-2">Twój kod kuponu:</Text>
                 <Text className="text-2xl font-bold text-primary">{result.coupon_code}</Text>
               </View>
             )}

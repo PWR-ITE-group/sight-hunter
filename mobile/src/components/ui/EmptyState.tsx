@@ -19,13 +19,13 @@ export function EmptyState({
 }: EmptyStateProps) {
   return (
     <View style={style} className={`flex-1 items-center justify-center p-8 ${className}`}>
-      <View className="w-20 h-20 rounded-full bg-slate-100 items-center justify-center mb-6">
-        <Icon size={40} color="#94A3B8" strokeWidth={1.5} />
+      <View className="w-20 h-20 rounded-full bg-paper items-center justify-center mb-6">
+        <Icon size={40} color="#8a948e" strokeWidth={1.5} />
       </View>
-      <Text className="text-xl font-bold text-slate-800 text-center mb-2">
+      <Text className="text-xl font-bold text-app-text text-center mb-2">
         {title}
       </Text>
-      <Text className="text-base text-slate-500 text-center">
+      <Text className="text-base text-text-secondary text-center">
         {message}
       </Text>
     </View>

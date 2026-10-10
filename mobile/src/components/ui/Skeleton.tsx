@@ -35,7 +35,7 @@ export function Skeleton({ className = '', style }: SkeletonProps) {
   return (
     <Animated.View
       style={[animatedStyle, style]}
-      className={`bg-slate-200 dark:bg-slate-700 rounded-md overflow-hidden ${className}`}
+      className={`bg-app-border rounded-md overflow-hidden ${className}`}
     />
   );
 }

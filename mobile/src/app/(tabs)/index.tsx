@@ -39,7 +39,7 @@ export default function MapTab() {
   };
 
   return (
-    <View className="flex-1 bg-surface">
+    <View className="flex-1 bg-paper">
       <GameMap
         places={places}
         userPosition={position ? { lat: position.lat, lng: position.lng } : null}

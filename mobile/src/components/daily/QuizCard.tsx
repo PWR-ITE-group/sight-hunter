@@ -26,7 +26,7 @@ export function QuizCard({ question, selectedIndex, onSelect }: QuizCardProps) {
       {question.image_url && (
         <Image 
           source={{ uri: question.image_url }} 
-          className="w-full h-[200px] rounded-xl mb-6 bg-border"
+          className="w-full h-[200px] rounded-xl mb-6 bg-app-border"
           contentFit="cover"
         />
       )}

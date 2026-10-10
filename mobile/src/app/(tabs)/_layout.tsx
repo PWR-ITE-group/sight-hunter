@@ -1,20 +1,21 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
 import { Feather, FontAwesome5 } from '@expo/vector-icons';
+import { Colors } from '../../constants/colors';
 
 export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#208AEF',
-        tabBarInactiveTintColor: '#94A3B8',
+        tabBarActiveTintColor: Colors.primary,
+        tabBarInactiveTintColor: Colors.textTertiary,
         tabBarStyle: {
-          backgroundColor: '#FFFFFF',
-          borderTopColor: '#E2E8F0',
+          backgroundColor: Colors.surface,
+          borderTopColor: Colors.border,
           elevation: 0,
           shadowOffset: { width: 0, height: -1 },
-          shadowColor: '#E2E8F0',
+          shadowColor: Colors.border,
           shadowOpacity: 0.5,
           shadowRadius: 2,
         },

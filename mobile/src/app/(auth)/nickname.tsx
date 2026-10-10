@@ -34,7 +34,7 @@ export default function NicknameScreen() {
   };
 
   return (
-    <KeyboardAvoidingView behavior="padding" className="flex-1 bg-white px-6 py-12 justify-center">
+    <KeyboardAvoidingView behavior="padding" className="flex-1 bg-paper px-6 py-12 justify-center">
       <Text className="text-3xl font-bold text-app-text mb-2">Jak masz na imię, łowco?</Text>
       <Text className="text-text-secondary mb-8">Wybierz pseudonim, który zobaczą inni gracze</Text>
 

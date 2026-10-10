@@ -39,7 +39,7 @@ export function Button({
     scale.value = withSpring(1, { damping: 15, stiffness: 200 });
   };
 
-  const baseContainerClasses = 'flex-row items-center justify-center rounded-xl overflow-hidden';
+  const baseContainerClasses = 'flex-row items-center justify-center rounded-2xl overflow-hidden';
   
   let variantContainerClasses = '';
   let variantTextClasses = '';
@@ -57,14 +57,14 @@ export function Button({
       spinnerColor = '#FFFFFF';
       break;
     case 'outline':
-      variantContainerClasses = 'bg-transparent border-2 border-primary';
+      variantContainerClasses = 'bg-surface border border-app-border';
       variantTextClasses = 'text-primary font-semibold';
-      spinnerColor = '#208AEF'; // primary color
+      spinnerColor = '#2c52c4'; // primary color
       break;
     case 'ghost':
-      variantContainerClasses = 'bg-transparent border-transparent';
+      variantContainerClasses = 'bg-transparent border border-transparent';
       variantTextClasses = 'text-primary font-semibold';
-      spinnerColor = '#208AEF';
+      spinnerColor = '#2c52c4';
       break;
   }
 

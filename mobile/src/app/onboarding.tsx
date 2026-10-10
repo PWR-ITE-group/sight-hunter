@@ -60,7 +60,7 @@ export default function OnboardingScreen() {
   };
 
   return (
-    <View className="flex-1 bg-white">
+    <View className="flex-1 bg-paper">
       <FlatList
         ref={flatListRef}
         data={SLIDES}

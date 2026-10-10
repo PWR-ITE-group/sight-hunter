@@ -40,7 +40,7 @@ export default function ShopScreen() {
   };
 
   return (
-    <View className="flex-1 bg-white">
+    <View className="flex-1 bg-paper">
       <View className="pt-16 bg-surface border-b border-app-border shadow-sm">
         <Text className="text-2xl font-bold text-app-text mb-4 text-center">Sklep</Text>
         <View className="px-6 pb-6">

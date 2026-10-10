@@ -7,10 +7,10 @@ export default function WelcomeScreen() {
   const router = useRouter();
   
   return (
-    <View className="flex-1 bg-primaryLight items-center justify-center px-6">
+    <View className="flex-1 bg-primary-light items-center justify-center px-6">
       <View className="items-center mb-12">
         <Text className="text-4xl font-bold text-primary mb-2 text-center">Łowcy Historii</Text>
-        <Text className="text-lg text-textSecondary text-center">Odkryj historię Wrocławia</Text>
+        <Text className="text-lg text-text-secondary text-center">Odkryj historię Wrocławia</Text>
       </View>
       
       <View className="w-full gap-y-4">

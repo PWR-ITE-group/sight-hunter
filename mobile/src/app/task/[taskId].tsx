@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
   },
   foundBox: {
     marginTop: Spacing.lg,
-    backgroundColor: '#22C55E20',
+    backgroundColor: '#2c835020',
     padding: Spacing.md,
     borderRadius: BorderRadius.md,
   },

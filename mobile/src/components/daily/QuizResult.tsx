@@ -14,10 +14,10 @@ interface QuizResultProps {
 
 export function QuizResult({ score, total, pointsAwarded, correct }: QuizResultProps) {
   return (
-    <View className="flex-1 px-4 py-8 items-center bg-surface">
+    <View className="flex-1 px-4 py-8 items-center bg-paper">
       <Text className="text-3xl font-bold text-app-text mb-2">Twój wynik</Text>
       
-      <View className="items-center justify-center bg-primaryLight w-32 h-32 rounded-full mb-6">
+      <View className="items-center justify-center bg-primary-light w-32 h-32 rounded-full mb-6">
         <Text className="text-4xl font-bold text-primary">{score}/{total}</Text>
       </View>
       

@@ -108,7 +108,7 @@ export default function RootLayout() {
 
   if (profileFailed) {
     return (
-      <View className="flex-1 bg-white items-center justify-center px-8">
+      <View className="flex-1 bg-paper items-center justify-center px-8">
         <Text className="text-2xl font-bold text-app-text mb-2 text-center">Brak połączenia z serwerem</Text>
         <Text className="text-text-secondary text-center mb-8">{errorMessage(profileError)}</Text>
         <View className="w-full gap-y-3">

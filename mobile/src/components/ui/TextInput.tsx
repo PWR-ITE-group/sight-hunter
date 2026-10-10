@@ -100,7 +100,7 @@ export function TextInput({
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
             placeholder={isFocused ? placeholder : ''}
-            placeholderTextColor="#94A3B8"
+            placeholderTextColor="#8a948e"
             secureTextEntry={secureTextEntry && !isPasswordVisible}
             keyboardType={keyboardType}
             autoCapitalize="none"
@@ -115,7 +115,7 @@ export function TextInput({
             <Ionicons
               name={isPasswordVisible ? 'eye-off-outline' : 'eye-outline'}
               size={24}
-              color="#64748B"
+              color="#5d6862"
             />
           </Pressable>
         )}

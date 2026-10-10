@@ -25,9 +25,9 @@ export function ShopItemCard({ item, onBuy, canAfford }: ShopItemCardProps) {
       <View className="flex-1 mr-4">
         <View className="flex-row items-center mb-1">
           <Text className="text-app-text font-bold text-lg">{item.name}</Text>
-          {item.quantity && <Text className="text-textSecondary ml-2">x{item.quantity}</Text>}
+          {item.quantity && <Text className="text-text-secondary ml-2">x{item.quantity}</Text>}
         </View>
-        <Text className="text-textSecondary text-sm mb-3">{item.description}</Text>
+        <Text className="text-text-secondary text-sm mb-3">{item.description}</Text>
         <View className="self-start">
           <Badge value={`${item.price_points} pkt`} type="points" size="sm" />
         </View>

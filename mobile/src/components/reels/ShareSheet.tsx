@@ -32,11 +32,11 @@ export function ShareSheet({ url, visible, onClose }: ShareSheetProps) {
   return (
     <BottomSheet visible={visible} onClose={onClose} title="Udostępnij">
       <View className="px-6 py-4 flex-1 items-center">
-        <Text className="text-textSecondary text-center mb-6">
+        <Text className="text-text-secondary text-center mb-6">
           Zaproś znajomych do odkrywania historii Wrocławia razem z Tobą!
         </Text>
         
-        <View className="flex-row items-center bg-surface p-3 rounded-lg border border-border mb-6 w-full">
+        <View className="flex-row items-center bg-surface p-3 rounded-lg border border-app-border mb-6 w-full">
           <Text className="flex-1 text-app-text text-sm mr-3" numberOfLines={1} ellipsizeMode="tail">
             {url}
           </Text>

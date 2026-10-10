@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.xl,
   },
   warningContainer: {
-    backgroundColor: '#F59E0B20', // warning with opacity
+    backgroundColor: '#b9800f20', // warning with opacity
     padding: Spacing.md,
     borderRadius: 8,
     marginBottom: Spacing.xl,
