@@ -72,16 +72,19 @@ export default function DailyTab() {
   if (data.played && data.result) {
     const correctByQuestion = new Map(data.result.correct.map((c) => [c.question_id, c.option_index]));
     return (
-      <QuizResult
-        score={data.result.score}
-        total={questions.length}
-        pointsAwarded={data.result.points_awarded}
-        correct={questions.map((q) => ({
-          questionId: q.id,
-          optionIndex: answers[q.id] ?? -1,
-          isCorrect: answers[q.id] !== undefined && correctByQuestion.get(q.id) === answers[q.id],
-        }))}
-      />
+      <View className="flex-1 bg-paper">
+        {header}
+        <QuizResult
+          score={data.result.score}
+          total={questions.length}
+          pointsAwarded={data.result.points_awarded}
+          correct={questions.map((q) => ({
+            questionId: q.id,
+            optionIndex: answers[q.id] ?? -1,
+            isCorrect: answers[q.id] !== undefined && correctByQuestion.get(q.id) === answers[q.id],
+          }))}
+        />
+      </View>
     );
   }
 
