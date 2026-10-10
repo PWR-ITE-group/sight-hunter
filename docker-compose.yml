@@ -1,0 +1,39 @@
+# Local development infrastructure. api and worker services are added once they have code.
+name: lowcy
+
+services:
+  postgres:
+    build: docker/postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?set in .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set in .env}
+      POSTGRES_DB: ${POSTGRES_DB:?set in .env}
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7.4-alpine
+    ports:
+      - "127.0.0.1:${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # TODO(storage): local S3-compatible storage is postponed. MinIO images are no longer
+  # published (removed from Docker Hub, quay.io requires auth as of 2026-10-10).
+  # Candidate replacement: SeaweedFS (chrislusf/seaweedfs) + a bucket-init step.
+
+volumes:
+  postgres-data:
+  redis-data:

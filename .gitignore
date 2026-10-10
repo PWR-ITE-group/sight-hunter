@@ -218,3 +218,9 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Project-specific
+NotForGithub/
+.env.local
+.env.*.local
+.DS_Store

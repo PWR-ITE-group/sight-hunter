@@ -1,0 +1,720 @@
+openapi: 3.1.0
+info:
+  title: Łowcy Historii API
+  version: 0.1.0-draft
+  description: |
+    DRAFT contract, to be agreed by the whole team at step 0. After that it changes only
+    by team agreement. Endpoints and fields follow "архитектура и стек" (endpoint summary
+    and per-screen flows). All user-facing strings returned by the API are in Polish.
+servers:
+  - url: /api/v1
+security:
+  - bearer: []
+
+tags:
+  - name: auth
+  - name: me
+  - name: places
+  - name: rounds
+  - name: attempts
+  - name: reels
+  - name: social
+  - name: daily-game
+  - name: leaderboard
+  - name: shop
+
+paths:
+  /auth/register:
+    post:
+      operationId: register
+      tags: [auth]
+      summary: Create an account (nickname is set in a second step)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RegisterRequest" }
+      responses:
+        "201": { $ref: "#/components/responses/Auth" }
+        "409": { $ref: "#/components/responses/Error" }  # email_taken
+        "429": { $ref: "#/components/responses/Error" }  # rate_limited
+  /auth/login:
+    post:
+      operationId: login
+      summary: Log in with e-mail and password
+      tags: [auth]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/LoginRequest" }
+      responses:
+        "200": { $ref: "#/components/responses/Auth" }
+        "401": { $ref: "#/components/responses/Error" }  # invalid_credentials
+        "429": { $ref: "#/components/responses/Error" }  # rate_limited
+  /auth/refresh:
+    post:
+      operationId: refreshTokens
+      summary: Exchange a refresh token for new tokens
+      tags: [auth]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refresh]
+              properties:
+                refresh: { type: string }
+      responses:
+        "200": { $ref: "#/components/responses/Auth" }
+        "401": { $ref: "#/components/responses/Error" }
+  /auth/password-reset:
+    post:
+      operationId: requestPasswordReset
+      tags: [auth]
+      summary: Send a reset link (demo build does not send e-mail)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email: { type: string, format: email }
+      responses:
+        "202": { description: Accepted; same answer whether the e-mail exists or not }
+
+  /me:
+    get:
+      operationId: getMe
+      summary: Current player's profile and balances
+      tags: [me]
+      responses:
+        "200":
+          description: Profile with balances computed from the ledgers
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/User" }
+        "401": { $ref: "#/components/responses/Error" }
+  /me/nickname:
+    put:
+      operationId: setNickname
+      summary: Set the nickname (second sign-up step)
+      tags: [me]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [nickname]
+              properties:
+                nickname: { type: string, minLength: 3, maxLength: 24 }
+      responses:
+        "200":
+          description: Updated profile
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/User" }
+        "409": { $ref: "#/components/responses/Error" }  # nickname_taken
+
+  /places/nearby:
+    get:
+      operationId: getNearbyPlaces
+      summary: Places around the player
+      tags: [places]
+      parameters:
+        - { name: lat, in: query, required: true, schema: { type: number } }
+        - { name: lng, in: query, required: true, schema: { type: number } }
+        - { name: radius, in: query, schema: { type: integer, default: 2000, maximum: 5000 }, description: metres }
+      responses:
+        "200":
+          description: Markers; unfound places expose only an offset search zone
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/PlaceMarker" }
+
+  /tasks/{taskId}:
+    get:
+      operationId: getTask
+      summary: Task details
+      tags: [rounds]
+      parameters: [{ $ref: "#/components/parameters/TaskId" }]
+      responses:
+        "200":
+          description: Task without hint texts
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Task" }
+        "404": { $ref: "#/components/responses/Error" }
+  /tasks/{taskId}/rounds:
+    post:
+      operationId: startRound
+      tags: [rounds]
+      summary: Start a round, or return the active one (repeat tap is safe)
+      parameters: [{ $ref: "#/components/parameters/TaskId" }]
+      responses:
+        "200":
+          description: Existing active round
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Round" }
+        "201":
+          description: New round
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Round" }
+  /tasks/{taskId}/share-link:
+    get:
+      operationId: getShareLink
+      summary: Referral link to a task
+      tags: [social]
+      parameters: [{ $ref: "#/components/parameters/TaskId" }]
+      responses:
+        "200":
+          description: Referral link to the task
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [url]
+                properties:
+                  url: { type: string, format: uri }
+
+  /rounds/{roundId}/hints:
+    post:
+      operationId: useHint
+      tags: [rounds]
+      summary: Reveal the next hint; lowers the round reward, never the balance
+      description: |
+        OPEN QUESTION: whether hints from the player's stock are spent first without a
+        penalty, and whether XP is reduced too (prototype vs architecture doc differ).
+      parameters:
+        - { $ref: "#/components/parameters/RoundId" }
+        - { $ref: "#/components/parameters/IdempotencyKey" }
+      responses:
+        "200":
+          description: Hint text and the new round reward
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [hint_text, hints_used, reward_points]
+                properties:
+                  hint_text: { type: string }
+                  hints_used: { type: integer, minimum: 1, maximum: 3 }
+                  reward_points: { type: integer }
+        "409": { $ref: "#/components/responses/Error" }  # no_hints_left, round_not_active
+
+  /rounds/{roundId}/attempts:
+    post:
+      operationId: createAttempt
+      tags: [attempts]
+      summary: Geofence check before upload; returns a presigned upload URL
+      parameters: [{ $ref: "#/components/parameters/RoundId" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AttemptRequest" }
+      responses:
+        "201":
+          description: Attempt created, status awaiting_upload
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [attempt_id, upload_url, upload_expires_at]
+                properties:
+                  attempt_id: { type: string, format: uuid }
+                  upload_url: { type: string, format: uri, description: "presigned PUT, ~5 min" }
+                  upload_expires_at: { type: string, format: date-time }
+        "409": { $ref: "#/components/responses/Error" }  # round_not_active
+        "422": { $ref: "#/components/responses/Error" }  # too_far (details.distance_m), mock_location
+        "429": { $ref: "#/components/responses/Error" }  # attempts_limit
+
+  /attempts/{attemptId}/submit:
+    post:
+      operationId: submitAttempt
+      tags: [attempts]
+      summary: Queue verification (idempotent); the file must already be uploaded
+      parameters:
+        - { $ref: "#/components/parameters/AttemptId" }
+        - { $ref: "#/components/parameters/IdempotencyKey" }
+      responses:
+        "202":
+          description: Queued
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Attempt" }
+        "409": { $ref: "#/components/responses/Error" }  # upload_missing
+  /attempts/{attemptId}:
+    get:
+      operationId: getAttempt
+      tags: [attempts]
+      summary: Poll verification status (~1/s, up to ~15 s)
+      parameters: [{ $ref: "#/components/parameters/AttemptId" }]
+      responses:
+        "200":
+          description: Current status
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Attempt" }
+
+  /reels/feed:
+    get:
+      operationId: getReelFeed
+      summary: Reel feed
+      tags: [reels]
+      parameters: [{ $ref: "#/components/parameters/Cursor" }]
+      responses:
+        "200":
+          description: Unlocked reward reels, public and purchased reels; locked ones have no playback_url
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/Reel" }
+                  next_cursor: { type: [string, "null"] }
+  /reels/{reelId}/views:
+    post:
+      operationId: countReelView
+      tags: [reels]
+      summary: Count a view (after ~3 s of playback)
+      parameters: [{ $ref: "#/components/parameters/ReelId" }]
+      responses:
+        "204": { description: Counted }
+  /reels/{reelId}/like:
+    put:
+      operationId: likeReel
+      summary: Like a reel
+      tags: [social]
+      parameters: [{ $ref: "#/components/parameters/ReelId" }]
+      responses:
+        "204": { description: Liked }
+    delete:
+      operationId: unlikeReel
+      summary: Remove a like
+      tags: [social]
+      parameters: [{ $ref: "#/components/parameters/ReelId" }]
+      responses:
+        "204": { description: Unliked }
+  /reels/{reelId}/comments:
+    get:
+      operationId: listComments
+      summary: List comments of a reel
+      tags: [social]
+      parameters:
+        - { $ref: "#/components/parameters/ReelId" }
+        - { $ref: "#/components/parameters/Cursor" }
+      responses:
+        "200":
+          description: Comments, newest first
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/Comment" }
+                  next_cursor: { type: [string, "null"] }
+    post:
+      operationId: addComment
+      summary: Add a comment
+      tags: [social]
+      parameters: [{ $ref: "#/components/parameters/ReelId" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [text]
+              properties:
+                text: { type: string, minLength: 1, maxLength: 500 }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Comment" }
+        "429": { $ref: "#/components/responses/Error" }  # rate_limited
+
+  /daily-game:
+    get:
+      operationId: getDailyGame
+      tags: [daily-game]
+      summary: Today's questions without answers, or the result if already played
+      responses:
+        "200":
+          description: Today's game
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DailyGame" }
+  /daily-game/start:
+    post:
+      operationId: startDailyGame
+      summary: Start today's mini-game timer
+      tags: [daily-game]
+      responses:
+        "200":
+          description: Timer started
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [started_at]
+                properties:
+                  started_at: { type: string, format: date-time }
+        "409": { $ref: "#/components/responses/Error" }  # already_played
+  /daily-game/answers:
+    post:
+      operationId: submitDailyAnswers
+      summary: Submit today's answers
+      tags: [daily-game]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [answers]
+              properties:
+                answers:
+                  type: array
+                  items:
+                    type: object
+                    required: [question_id, option_index]
+                    properties:
+                      question_id: { type: string }
+                      option_index: { type: integer, minimum: 0 }
+      responses:
+        "200":
+          description: Score, points awarded and the correct answers
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DailyGameResult" }
+        "409": { $ref: "#/components/responses/Error" }  # already_played
+
+  /leaderboard:
+    get:
+      operationId: getLeaderboard
+      summary: XP leaderboard
+      tags: [leaderboard]
+      parameters:
+        - { name: scope, in: query, schema: { type: string, enum: [week, all], default: week } }
+      responses:
+        "200":
+          description: Top 50 by XP plus the current player's rank
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, me]
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/LeaderboardEntry" }
+                  me: { $ref: "#/components/schemas/LeaderboardEntry" }
+
+  /shop/items:
+    get:
+      operationId: listShopItems
+      summary: Shop items and balance
+      tags: [shop]
+      responses:
+        "200":
+          description: Items and the current balance
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [balance, items]
+                properties:
+                  balance: { type: integer }
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/ShopItem" }
+  /shop/purchases:
+    post:
+      operationId: purchase
+      summary: Buy an item for points
+      tags: [shop]
+      parameters: [{ $ref: "#/components/parameters/IdempotencyKey" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [item_id]
+              properties:
+                item_id: { type: string }
+      responses:
+        "201":
+          description: Purchase done
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [balance, item]
+                properties:
+                  balance: { type: integer }
+                  item: { $ref: "#/components/schemas/ShopItem" }
+                  coupon_code: { type: [string, "null"], description: partner items only }
+        "409": { $ref: "#/components/responses/Error" }  # insufficient_points
+
+components:
+  securitySchemes:
+    bearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    TaskId: { name: taskId, in: path, required: true, schema: { type: string, format: uuid } }
+    RoundId: { name: roundId, in: path, required: true, schema: { type: string, format: uuid } }
+    AttemptId: { name: attemptId, in: path, required: true, schema: { type: string, format: uuid } }
+    ReelId: { name: reelId, in: path, required: true, schema: { type: string, format: uuid } }
+    Cursor: { name: cursor, in: query, schema: { type: string } }
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      description: Client-generated UUID; a repeated key returns the first result
+      schema: { type: string, format: uuid }
+
+  responses:
+    Auth:
+      description: Tokens and the user
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [access, refresh, user]
+            properties:
+              access: { type: string, description: "JWT, ~15 min" }
+              refresh: { type: string }
+              user: { $ref: "#/components/schemas/User" }
+    Error:
+      description: Error with a machine-readable code
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+
+  schemas:
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          description: |
+            Agreed in the work plan: too_far, wrong_place, insufficient_points, email_taken,
+            invalid_credentials, nickname_taken. The rest are proposed in this draft.
+          enum:
+            - too_far
+            - wrong_place
+            - insufficient_points
+            - email_taken
+            - invalid_credentials
+            - nickname_taken
+            - rate_limited
+            - attempts_limit
+            - mock_location
+            - no_hints_left
+            - round_not_active
+            - upload_missing
+            - already_played
+            - unauthorized
+            - not_found
+        message: { type: string, description: "Polish, shown to the player" }
+        details:
+          type: object
+          additionalProperties: true
+          description: e.g. too_far → { distance_m }
+
+    RegisterRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, minLength: 8, description: at least one letter and one digit }
+        ref_code: { type: string }
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string }
+
+    User:
+      type: object
+      required: [id, email, nickname, points, xp, ref_code]
+      properties:
+        id: { type: string, format: uuid }
+        email: { type: string, format: email }
+        nickname: { type: [string, "null"], description: null until the second sign-up step }
+        avatar_url: { type: [string, "null"], format: uri }
+        points: { type: integer, description: sum of wallet_ledger }
+        xp: { type: integer, description: sum of xp_ledger }
+        ref_code: { type: string }
+
+    Zone:
+      type: object
+      required: [lat, lng, radius_m]
+      properties:
+        lat: { type: number }
+        lng: { type: number }
+        radius_m: { type: integer }
+    PlaceMarker:
+      type: object
+      required: [id, task_id, found, zone]
+      properties:
+        id: { type: string, format: uuid }
+        task_id: { type: string, format: uuid }
+        found: { type: boolean }
+        name: { type: [string, "null"], description: only when found }
+        zone: { $ref: "#/components/schemas/Zone" }
+
+    Task:
+      type: object
+      required: [id, place_id, riddle, hints_total, reward_points, reward_xp]
+      properties:
+        id: { type: string, format: uuid }
+        place_id: { type: string, format: uuid }
+        riddle: { type: string }
+        archival_photo_url: { type: [string, "null"], format: uri }
+        hints_total: { type: integer, maximum: 3 }
+        reward_points: { type: integer, description: currently possible reward }
+        reward_xp: { type: integer }
+
+    Round:
+      type: object
+      required: [id, task_id, status, hints_used, reward_points, started_at]
+      properties:
+        id: { type: string, format: uuid }
+        task_id: { type: string, format: uuid }
+        status: { type: string, enum: [active, completed, abandoned] }
+        hints_used: { type: integer }
+        hints: { type: array, items: { type: string }, description: texts already revealed }
+        reward_points: { type: integer }
+        attempts_left: { type: integer }
+        started_at: { type: string, format: date-time }
+
+    AttemptRequest:
+      type: object
+      required: [lat, lng, accuracy_m, taken_at, mocked]
+      properties:
+        lat: { type: number }
+        lng: { type: number }
+        accuracy_m: { type: number }
+        taken_at: { type: string, format: date-time }
+        mocked: { type: boolean, description: from expo-location (Android) }
+
+    Attempt:
+      type: object
+      required: [id, status]
+      properties:
+        id: { type: string, format: uuid }
+        status: { type: string, enum: [awaiting_upload, queued, accepted, rejected] }
+        reason: { type: [string, "null"], enum: [wrong_place, not_matched, null] }
+        wrong_place_name: { type: [string, "null"], description: when another place matched }
+        points_awarded: { type: [integer, "null"] }
+        xp_awarded: { type: [integer, "null"] }
+        reel_id: { type: [string, "null"], format: uuid, description: unlocked reel }
+        attempts_left: { type: [integer, "null"] }
+
+    Reel:
+      type: object
+      required: [id, kind, title, locked, duration_s, finders_count, likes_count, liked_by_me]
+      properties:
+        id: { type: string, format: uuid }
+        place_id: { type: [string, "null"], format: uuid }
+        kind: { type: string, enum: [reward, public] }
+        title: { type: string }
+        locked: { type: boolean }
+        playback_url: { type: [string, "null"], format: uri, description: null when locked }
+        duration_s: { type: number }
+        finders_count: { type: integer }
+        likes_count: { type: integer }
+        liked_by_me: { type: boolean }
+        price_points: { type: [integer, "null"], description: public reels sold in the shop }
+
+    Comment:
+      type: object
+      required: [id, author_nickname, text, created_at]
+      properties:
+        id: { type: string, format: uuid }
+        author_nickname: { type: string }
+        text: { type: string }
+        created_at: { type: string, format: date-time }
+
+    DailyGame:
+      type: object
+      required: [date, played, questions]
+      properties:
+        date: { type: string, format: date }
+        played: { type: boolean }
+        questions:
+          type: array
+          items:
+            type: object
+            required: [id, text, options]
+            properties:
+              id: { type: string }
+              text: { type: string }
+              image_url: { type: [string, "null"], format: uri }
+              options: { type: array, items: { type: string } }
+        result: { oneOf: [{ $ref: "#/components/schemas/DailyGameResult" }, { type: "null" }] }
+    DailyGameResult:
+      type: object
+      required: [score, points_awarded, correct]
+      properties:
+        score: { type: integer }
+        points_awarded: { type: integer }
+        correct:
+          type: array
+          items:
+            type: object
+            required: [question_id, option_index]
+            properties:
+              question_id: { type: string }
+              option_index: { type: integer }
+
+    LeaderboardEntry:
+      type: object
+      required: [rank, nickname, xp]
+      properties:
+        rank: { type: [integer, "null"], description: null when the player has no XP yet }
+        nickname: { type: string }
+        xp: { type: integer }
+
+    ShopItem:
+      type: object
+      required: [id, type, name, price_points]
+      properties:
+        id: { type: string }
+        type: { type: string, enum: [hint, reel, partner] }
+        name: { type: string }
+        description: { type: string }
+        price_points: { type: integer }
+        quantity: { type: integer, description: hints in a pack }
