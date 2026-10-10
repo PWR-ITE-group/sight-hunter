@@ -23,6 +23,14 @@ export default function ReelScreen() {
 
   const reel = feed.data?.find((r) => r.id === reelId) ?? null;
 
+  // The feed is ordered by creation date, so a freshly unlocked reel can sit on a later page.
+  useEffect(() => {
+    if (!reel && feed.hasNextPage && !feed.isFetchingNextPage) {
+      feed.fetchNextPage();
+    }
+  }, [reel, feed]);
+  const searching = !reel && (feed.isLoading || feed.hasNextPage || feed.isFetchingNextPage);
+
   useEffect(() => {
     actions.onActive(reel && !reel.locked ? reel.id : null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -30,7 +38,7 @@ export default function ReelScreen() {
 
   return (
     <View className="flex-1 bg-black">
-      {feed.isLoading ? (
+      {searching ? (
         <LoadingSpinner className="flex-1" color="#fff" size={40} />
       ) : reel ? (
         <ReelCard

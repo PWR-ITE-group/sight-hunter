@@ -1,4 +1,5 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Config } from '../constants/config';
 import { useLocationStore } from '../store/locationStore';
 import { useGameStore } from '../store/gameStore';
 import { useCreateAttempt } from '../api/hooks/useRound';
@@ -36,6 +37,29 @@ export function useVerificationFlow(roundId: string | null) {
   const verdict = pollAttemptQuery.data?.status;
   const currentStep: VerificationStep =
     step === 'polling' && (verdict === 'accepted' || verdict === 'rejected') ? 'done' : step;
+
+  // The worker normally answers within seconds. If it is down or the network keeps failing,
+  // stop waiting instead of leaving the player on a frozen progress bar.
+  const pollingSince = useRef<number | null>(null);
+  const pollDeadlineMs = Config.ATTEMPT_POLL_MAX_RETRIES * Config.ATTEMPT_POLL_INTERVAL_MS;
+  useEffect(() => {
+    if (step !== 'polling') {
+      pollingSince.current = null;
+      return;
+    }
+    pollingSince.current ??= Date.now();
+    const tooLong = Date.now() - pollingSince.current > pollDeadlineMs;
+    const keepsFailing = pollAttemptQuery.isError && pollAttemptQuery.failureCount >= 3;
+    if (verdict === 'accepted' || verdict === 'rejected') return;
+    if (tooLong || keepsFailing) {
+      setFlowError(
+        keepsFailing
+          ? new Error('Nie udało się sprawdzić wyniku. Sprawdź połączenie i spróbuj ponownie.')
+          : new Error('Weryfikacja trwa zbyt długo. Spróbuj ponownie za chwilę.')
+      );
+      setStep('failed');
+    }
+  }, [step, verdict, pollDeadlineMs, pollAttemptQuery.isError, pollAttemptQuery.failureCount, pollAttemptQuery.dataUpdatedAt, pollAttemptQuery.errorUpdatedAt]);
 
   const start = useCallback(async () => {
     if (!roundId) {

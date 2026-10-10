@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, Dimensions, RefreshControl, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
@@ -21,8 +21,14 @@ export default function ProfileTab() {
   const feed = useReelFeed();
   const [copied, setCopied] = useState(false);
 
-  // Found places are the reward reels this player has unlocked.
+  // Found places are the reward reels this player has unlocked; that needs the whole feed.
+  useEffect(() => {
+    if (feed.hasNextPage && !feed.isFetchingNextPage) {
+      feed.fetchNextPage();
+    }
+  }, [feed]);
   const discoveries = (feed.data ?? []).filter((r) => r.kind === 'reward' && !r.locked);
+  const discoveriesComplete = !feed.hasNextPage && !feed.isFetchingNextPage;
 
   const handleCopyCode = async () => {
     if (!me.data) return;
@@ -88,7 +94,7 @@ export default function ProfileTab() {
           </Card>
           <Card className="flex-1 items-center p-4">
             <MapPin color={Colors.success} size={24} />
-            <Text className="text-lg font-bold text-app-text mt-2">{discoveries.length}</Text>
+            <Text className="text-lg font-bold text-app-text mt-2">{discoveriesComplete ? discoveries.length : '…'}</Text>
             <Text className="text-text-secondary text-xs">Znalezione</Text>
           </Card>
         </View>

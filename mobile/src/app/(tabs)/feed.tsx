@@ -1,4 +1,5 @@
 import React, { useCallback, useState } from 'react';
+import { useFocusEffect } from 'expo-router';
 import { View, FlatList, RefreshControl, useWindowDimensions, type ViewToken } from 'react-native';
 import { ReelCard, type Reel } from '../../components/reels/ReelCard';
 import { CommentSheet } from '../../components/reels/CommentSheet';
@@ -19,6 +20,18 @@ export default function FeedTab() {
   const feed = useReelFeed();
   const actions = useReelActions();
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [focused, setFocused] = useState(false);
+
+  // Tab screens stay mounted; without this the reel would keep playing under the map or a modal.
+  useFocusEffect(
+    useCallback(() => {
+      setFocused(true);
+      return () => {
+        setFocused(false);
+        actions.onActive(null);
+      };
+    }, [actions])
+  );
 
   const onViewableItemsChanged = useCallback(
     ({ viewableItems }: { viewableItems: ViewToken<Reel>[] }) => {
@@ -75,7 +88,7 @@ export default function FeedTab() {
           <ReelCard
             reel={item}
             height={itemHeight}
-            isActive={item.id === activeId}
+            isActive={focused && item.id === activeId}
             onLike={() => actions.toggleLike(item)}
             onComment={() => actions.openComments(item.id)}
             onShare={() => actions.setShareOpen(true)}
