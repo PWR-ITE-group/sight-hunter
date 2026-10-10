@@ -30,7 +30,8 @@ dev = [
     "pytest-asyncio (>=1.4.0,<2.0.0)",
     "httpx (>=0.28.1,<0.29.0)",
     "ruff (>=0.17.0,<0.18.0)",
-    "mypy (>=2.4.0,<3.0.0)"
+    "mypy (>=2.4.0,<3.0.0)",
+    "types-boto3[s3] (>=1.43.111,<2.0.0)"
 ]
 
 [tool.poetry]
@@ -47,6 +48,10 @@ target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP", "ASYNC"]
+
+[tool.ruff.lint.isort]
+# The alembic/ folder shadows the package name; keep it as third-party.
+known-third-party = ["alembic"]
 
 [tool.ruff.lint.flake8-bugbear]
 extend-immutable-calls = ["fastapi.Depends"]

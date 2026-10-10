@@ -1,4 +1,5 @@
-# Local development infrastructure. api and worker services are added once they have code.
+# Local development infrastructure plus the API and its worker.
+# The ML worker (worker/, role C) is added by its owner once it has code.
 name: lowcy
 
 services:
@@ -30,10 +31,76 @@ services:
       timeout: 3s
       retries: 10
 
-  # TODO(storage): local S3-compatible storage is postponed. MinIO images are no longer
-  # published (removed from Docker Hub, quay.io requires auth as of 2026-10-10).
-  # Candidate replacement: SeaweedFS (chrislusf/seaweedfs) + a bucket-init step.
+  # S3-compatible storage for player photos and reference images. Replaces MinIO, whose images
+  # are no longer published. Bound to all interfaces: the phone PUTs photos here directly.
+  seaweedfs:
+    image: chrislusf/seaweedfs:4.47
+    command: >
+      server -ip=seaweedfs -ip.bind=0.0.0.0 -dir=/data -master.volumeSizeLimitMB=256 -volume.max=0
+      -s3 -s3.port=8333 -s3.allowEmptyFolder=false
+    ports:
+      - "${S3_PORT:-8333}:8333"
+    volumes:
+      - seaweedfs-data:/data
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost:8333/status"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  # One-shot: creates the S3 credentials from .env and the bucket.
+  seaweedfs-init:
+    image: chrislusf/seaweedfs:4.47
+    depends_on:
+      seaweedfs:
+        condition: service_healthy
+    entrypoint: ["sh", "-c"]
+    command:
+      - |
+        echo "s3.configure -access_key=$${S3_ACCESS_KEY} -secret_key=$${S3_SECRET_KEY} -user=lowcy -actions=Admin,Read,Write,List,Tagging -apply
+        s3.bucket.create -name $${S3_BUCKET}" | weed shell -master=seaweedfs:9333 -filer=seaweedfs:8888
+    environment:
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY:?set in .env}
+      S3_SECRET_KEY: ${S3_SECRET_KEY:?set in .env}
+      S3_BUCKET: ${S3_BUCKET:-lowcy}
+    restart: "no"
+
+  api:
+    build: api
+    env_file: .env
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      S3_ENDPOINT: http://seaweedfs:8333
+    ports:
+      - "${API_PORT:-8000}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      seaweedfs-init:
+        condition: service_completed_successfully
+
+  # Applies verdicts from the ML worker: reward transaction, leaderboard, photo deletion.
+  api-worker:
+    build: api
+    env_file: .env
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      S3_ENDPOINT: http://seaweedfs:8333
+    command: ["arq", "app.worker.WorkerSettings"]
+    depends_on:
+      api:
+        condition: service_started
+
 
 volumes:
   postgres-data:
   redis-data:
+  seaweedfs-data:
