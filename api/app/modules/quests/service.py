@@ -1,4 +1,5 @@
 import math
+import random
 import uuid
 from typing import Any
 
@@ -12,7 +13,16 @@ from app.core.idempotency import run_idempotent
 from app.modules.auth.models import User
 from app.modules.quests import repository as repo
 from app.modules.quests.models import RoundStatus, Task, TaskRound
-from app.modules.quests.schemas import HintOut, NearbyOut, PlaceMarker, RoundOut, TaskOut, Zone
+from app.modules.quests.schemas import (
+    HintOut,
+    NearbyOut,
+    NextMode,
+    NextPlaceOut,
+    PlaceMarker,
+    RoundOut,
+    TaskOut,
+    Zone,
+)
 
 
 def search_zone(place_id: uuid.UUID, lat: float, lng: float, radius_m: int) -> Zone:
@@ -52,6 +62,36 @@ async def nearby(
             )
         )
     return NearbyOut(items=items)
+
+
+RANDOM_POOL = 5
+
+
+async def next_place(
+    session: AsyncSession, user: User, lat: float, lng: float, mode: NextMode
+) -> NextPlaceOut:
+    """The next place to play: nearest, most found by everyone, or a random one nearby.
+
+    Only unfound places qualify; their exact point stays hidden behind the search zone.
+    """
+    rows = await repo.unfound_places_by_distance(session, user.id, lat, lng, limit=50)
+    if not rows:
+        raise not_found("place")
+    if mode == "popular":
+        row = max(rows, key=lambda r: (r[5], -r[4]))  # most finders, then nearest
+    elif mode == "random":
+        row = random.choice(rows[:RANDOM_POOL])
+    else:
+        row = rows[0]
+    place, task_id, p_lng, p_lat, distance, _ = row
+    return NextPlaceOut(
+        id=place.id,
+        task_id=task_id,
+        found=False,
+        name=None,
+        zone=search_zone(place.id, p_lat, p_lng, place.radius_m),
+        distance_m=round(distance),
+    )
 
 
 async def get_task(session: AsyncSession, user: User, task_id: uuid.UUID) -> TaskOut:

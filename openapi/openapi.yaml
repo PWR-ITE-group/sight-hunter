@@ -146,6 +146,26 @@ paths:
                     type: array
                     items: { $ref: "#/components/schemas/PlaceMarker" }
 
+  /places/next:
+    get:
+      operationId: getNextPlace
+      summary: Next place to play (agreed 2026-10-10 as a contract addition)
+      tags: [places]
+      parameters:
+        - { name: lat, in: query, required: true, schema: { type: number } }
+        - { name: lng, in: query, required: true, schema: { type: number } }
+        - name: mode
+          in: query
+          schema: { type: string, enum: [nearest, popular, random], default: nearest }
+          description: nearest unfound place; most found by all players; random one of the 5 nearest
+      responses:
+        "200":
+          description: An unfound place as a marker (offset zone, no name) with the distance
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/NextPlace" }
+        "404": { $ref: "#/components/responses/Error" }  # not_found — everything is found
+
   /tasks/{taskId}:
     get:
       operationId: getTask
@@ -594,6 +614,14 @@ components:
         found: { type: boolean }
         name: { type: [string, "null"], description: only when found }
         zone: { $ref: "#/components/schemas/Zone" }
+
+    NextPlace:
+      allOf:
+        - { $ref: "#/components/schemas/PlaceMarker" }
+        - type: object
+          required: [distance_m]
+          properties:
+            distance_m: { type: integer }
 
     Task:
       type: object

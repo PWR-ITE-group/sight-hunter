@@ -86,3 +86,39 @@ async def count_submitted_attempts(session: AsyncSession, round_id: uuid.UUID) -
         .where(Attempt.round_id == round_id, Attempt.status != AttemptStatus.AWAITING_UPLOAD)
     )
     return int(n or 0)
+
+
+async def unfound_places_by_distance(
+    session: AsyncSession, user_id: uuid.UUID, lat: float, lng: float, limit: int
+) -> Sequence[Row[Place, uuid.UUID, float, float, float, int]]:
+    """(place, task_id, lng, lat, distance_m, finders) the player hasn't found, nearest first."""
+    g = cast(Place.geom, Geometry)
+    # One task per place is assumed; with several, the oldest one is used.
+    task_id = (
+        select(Task.id)
+        .where(Task.place_id == Place.id)
+        .order_by(Task.created_at)
+        .limit(1)
+        .scalar_subquery()
+    )
+    # Both correlate on Place directly: a nested scalar subquery would not correlate right.
+    found = exists().where(
+        Find.user_id == user_id, Find.task_id == Task.id, Task.place_id == Place.id
+    )
+    finders = (
+        select(func.count())
+        .select_from(Find)
+        .join(Task, Task.id == Find.task_id)
+        .where(Task.place_id == Place.id)
+        .scalar_subquery()
+    )
+    distance = Place.geom.ST_Distance(geo_point(lng, lat))
+    rows: Sequence[Row[Place, uuid.UUID, float, float, float, int]] = (
+        await session.execute(
+            select(Place, task_id, func.ST_X(g), func.ST_Y(g), distance, finders)
+            .where(task_id.is_not(None), ~found)
+            .order_by(distance)
+            .limit(limit)
+        )
+    ).all()
+    return rows

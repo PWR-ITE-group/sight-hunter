@@ -5,6 +5,7 @@ import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.modules.finds.models import Find
 from app.seed import PLACES, seed, sid
 from tests.test_auth import bearer, register
 
@@ -142,3 +143,71 @@ async def test_hint_on_someone_elses_round(
         headers={**other, "Idempotency-Key": str(uuid.uuid4())},
     )
     assert r.status_code == 404
+
+
+async def test_next_place_nearest_popular_random(
+    client: AsyncClient, seeded: None, auth: dict[str, str], session: AsyncSession
+) -> None:
+    katedra = PLACES[1]
+    at_katedra = {"lat": katedra["lat"], "lng": katedra["lng"]}
+
+    r = await client.get("/api/v1/places/next", params=at_katedra, headers=auth)
+    assert r.status_code == 200
+    body = r.json()
+    assert body["id"] == str(sid("place:katedra"))
+    assert body["task_id"] == str(sid("task:katedra"))
+    assert body["found"] is False and body["name"] is None
+    assert body["distance_m"] < 10
+    assert body["zone"]["radius_m"] >= 150
+
+    # Someone else found Ratusz → it is the popular one, even though Katedra is nearer.
+    other = await register(client)
+    session.add(
+        Find(
+            user_id=uuid.UUID(other["user"]["id"]),
+            task_id=sid("task:ratusz"),
+            attempt_id=None,
+            points_awarded=40,
+            xp_awarded=100,
+        )
+    )
+    await session.commit()
+    r = await client.get(
+        "/api/v1/places/next", params={**at_katedra, "mode": "popular"}, headers=auth
+    )
+    assert r.json()["id"] == str(sid("place:ratusz"))
+
+    seen = {
+        (
+            await client.get(
+                "/api/v1/places/next", params={**at_katedra, "mode": "random"}, headers=auth
+            )
+        ).json()["id"]
+        for _ in range(20)
+    }
+    assert seen <= {str(sid("place:ratusz")), str(sid("place:katedra"))}
+
+    r = await client.get("/api/v1/places/next", params={**at_katedra, "mode": "nope"}, headers=auth)
+    assert r.status_code == 422
+
+
+async def test_next_place_404_when_everything_found(
+    client: AsyncClient, seeded: None, auth: dict[str, str], session: AsyncSession
+) -> None:
+    me = (await client.get("/api/v1/me", headers=auth)).json()
+    for key in ("ratusz", "katedra"):
+        session.add(
+            Find(
+                user_id=uuid.UUID(me["id"]),
+                task_id=sid(f"task:{key}"),
+                attempt_id=None,
+                points_awarded=40,
+                xp_awarded=100,
+            )
+        )
+    await session.commit()
+    r = await client.get(
+        "/api/v1/places/next", params={"lat": RATUSZ["lat"], "lng": RATUSZ["lng"]}, headers=auth
+    )
+    assert r.status_code == 404
+    assert r.json()["code"] == "not_found"

@@ -41,11 +41,11 @@ Enqueue the verdict with `_job_id=f"verdict:{attempt_id}"` so a retried job cann
 
 Done (all under `/api/v1`, see Swagger at `/docs`):
 - auth: register/login/refresh (rotating), password-reset stub, `/me`, nickname; rate limits
-- quests: `/places/nearby` with offset zones, `/tasks/{id}`, rounds, hints (points only)
+- quests: `/places/nearby` with offset zones, `/places/next` (nearest / popular / random), `/tasks/{id}`, rounds, hints (points only)
 - finds: attempts with geofence + GPS slack, presigned upload, submit (idempotent), polling; `app.worker` applies verdicts and pays rewards in one transaction, then leaderboard + photo deletion
 - wallet: ledgers, `/leaderboard` (Redis, rebuilt from `xp_ledger` when missing)
 - media/social: `/reels/feed`, views, likes, comments (10/min), share link
 - shop: public reels for points, `SELECT … FOR UPDATE` on the player, Idempotency-Key
 - admin: SQLAdmin at `/admin` (places with WKT input, tasks, reels, read-only players/finds)
 
-Not in the contract yet, so not built: "next place" (nearest / popular / random) from the work plan, daily mini-game (first to cut).
+Not built: daily mini-game (first to cut in the work plan).
