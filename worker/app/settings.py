@@ -8,16 +8,16 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Thresholds(BaseSettings):
     """Cosine-similarity thresholds. Tuned with `python -m app.cli.calibrate`.
 
-    Defaults: DINOv2-base, 63 Commons refs, 47 Openverse test photos + 27 negatives
-    (2026-10-10): 40/47 accepted, 0/545 false accepts.
+    Defaults: DINOv2-base, 130 refs (Commons + Openverse), 47 Openverse test photos
+    + 27 negatives (2026-10-10): 42/47 accepted, 0/545 false accepts.
     """
 
     model_config = SettingsConfigDict(env_prefix="VERIFY_", env_file=".env", extra="ignore")
 
     t_low: float = Field(0.35, description="below: rejected, not_matched")
-    t_high: float = Field(0.57, description="at or above (with margin): accepted")
-    margin: float = Field(0.03, description="target must beat the best other place by this much")
-    t_single: float = Field(0.57, description="gray-zone fallback when no judge is configured")
+    t_high: float = Field(0.61, description="at or above (with margin): accepted")
+    margin: float = Field(0.09, description="target must beat the best other place by this much")
+    t_single: float = Field(0.61, description="gray-zone fallback when no judge is configured")
 
     @model_validator(mode="after")
     def _ordered(self) -> "Thresholds":

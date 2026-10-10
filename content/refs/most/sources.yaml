@@ -1,11 +1,55 @@
+commons_04.jpg:
+  author: TeraGood
+  license: CC BY 3.0
+  source_url: https://commons.wikimedia.org/wiki/File:CAM01930.jpg
+commons_05.jpg:
+  author: TeraGood
+  license: CC BY 3.0
+  source_url: https://commons.wikimedia.org/wiki/File:CAM01932.jpg
+commons_06.jpg:
+  author: Manuel Velazquez
+  license: CC BY 3.0
+  source_url: https://commons.wikimedia.org/wiki/File:CATEDRAL_DESDE_EL_PUENTE_-_panoramio.jpg
+commons_07.jpg:
+  author: Unknown authorUnknown author
+  license: Public domain
+  source_url: https://commons.wikimedia.org/wiki/File:Church_Bridge,_Breslau,_Silesia,_Germany.jpg
+commons_09.jpg:
+  author: Wiktor Baron
+  license: CC BY-SA 3.0 pl
+  source_url: https://commons.wikimedia.org/wiki/File:Ko%C5%9Bci%C3%B3%C5%82_Naj%C5%9Bwi%C4%99tszej_Marii_Panny_na_Piasku_we_Wroc%C5%82awiu_II.jpg
 commons_12.jpg:
   author: Manuel Velazquez
   license: CC BY 3.0
   source_url: https://commons.wikimedia.org/wiki/File:MONS_TUNSKI_DESDE_EL_BULEVARD_-_panoramio.jpg
+commons_15.jpg:
+  author: TeraGood
+  license: CC BY 3.0
+  source_url: https://commons.wikimedia.org/wiki/File:Most_Tumski_i_NMP_na_Piasku.jpg
+commons_16.jpg:
+  author: Klearchos Kapoutsis from Santorini, Greece
+  license: CC BY 2.0
+  source_url: https://commons.wikimedia.org/wiki/File:Most_Tumski_in_the_Night_(4106321151).jpg
+commons_17.jpg:
+  author: Barbara Maliszewska
+  license: CC BY-SA 3.0 pl
+  source_url: https://commons.wikimedia.org/wiki/File:Most_Tumski_noc%C4%85_fot_BMaliszewska.jpg
 commons_18.jpg:
   author: Enzo83
   license: CC BY-SA 3.0 pl
   source_url: https://commons.wikimedia.org/wiki/File:Most_Tumski_nr1_e83.jpg
+commons_19.jpg:
+  author: Enzo83
+  license: CC BY-SA 3.0 pl
+  source_url: https://commons.wikimedia.org/wiki/File:Most_Tumski_nr2_e83.jpg
+commons_21.jpg:
+  author: ViktoriaLi
+  license: CC BY-SA 4.0
+  source_url: https://commons.wikimedia.org/wiki/File:Most_Tumski_t%C4%99cza.jpg
+commons_22.jpg:
+  author: Aw58
+  license: CC BY-SA 4.0
+  source_url: https://commons.wikimedia.org/wiki/File:Most_Tumski_we_Wroc%C5%82awiu(1).jpg
 commons_23.jpg:
   author: Panek
   license: CC BY-SA 3.0 pl
@@ -14,19 +58,72 @@ commons_24.jpg:
   author: Aw58
   license: CC BY-SA 3.0 pl
   source_url: https://commons.wikimedia.org/wiki/File:Most_Tumski_we_Wroc%C5%82awiu.JPG
+commons_25.jpg:
+  author: Skiba
+  license: CC BY 3.0
+  source_url: https://commons.wikimedia.org/wiki/File:Most_Tumski_widok_od_strony_Katedry.jpg
+commons_26.jpg:
+  author: Christinagrabelusshaikh
+  license: CC BY-SA 4.0
+  source_url: https://commons.wikimedia.org/wiki/File:Most_Tumski_wieczorem.jpg
+commons_27.jpg:
+  author: Stanislaw.bochnak
+  license: CC BY-SA 4.0
+  source_url: https://commons.wikimedia.org/wiki/File:Most_Tumski_z_widokiem_na_wysp%C4%99.jpg
 commons_28.jpg:
   author: Barbara Maliszewska
   license: CC BY-SA 3.0 pl
   source_url: https://commons.wikimedia.org/wiki/File:Most_Tumski_zim%C4%85_fot_BMaliszewska.jpg
+commons_29.jpg:
+  author: Christinagrabelusshaikh
+  license: CC BY-SA 4.0
+  source_url: https://commons.wikimedia.org/wiki/File:Most_Tumski_zim%C4%85.jpg
 commons_30.jpg:
   author: Felix O
   license: CC BY-SA 2.0
   source_url: https://commons.wikimedia.org/wiki/File:Most_Tumski,_Wroc%C5%82aw_November_1989.jpg
+commons_32.jpg:
+  author: Aneta Pawska
+  license: CC BY-SA 4.0
+  source_url: https://commons.wikimedia.org/wiki/File:Most_Tumski,_Wroc%C5%82aw.jpg
+commons_33.jpg:
+  author: Shev.vl.vas
+  license: CC BY-SA 4.0
+  source_url: https://commons.wikimedia.org/wiki/File:Most_Tumski._Wroc%C5%82aw.jpg
+commons_34.jpg:
+  author: Wiatrak
+  license: CC BY-SA 3.0 pl
+  source_url: https://commons.wikimedia.org/wiki/File:Most_Tumski..jpg
+commons_35.jpg:
+  author: ZzaniazZ
+  license: CC BY-SA 4.0
+  source_url: https://commons.wikimedia.org/wiki/File:Most_tumski.jpg
+commons_36.jpg:
+  author: Wacki4
+  license: CC BY-SA 3.0 pl
+  source_url: https://commons.wikimedia.org/wiki/File:Most_Tumski.jpg
+commons_37.jpg:
+  author: Strumyczek
+  license: CC BY-SA 4.0
+  source_url: https://commons.wikimedia.org/wiki/File:Most_Tumski01.jpg
 commons_38.jpg:
   author: Strumyczek
   license: CC BY-SA 4.0
   source_url: https://commons.wikimedia.org/wiki/File:Most_Tumski02.jpg
+commons_39.jpg:
+  author: Strumyczek
+  license: CC BY-SA 4.0
+  source_url: https://commons.wikimedia.org/wiki/File:Most_Tumski03.jpg
+commons_40.jpg:
+  author: Strumyczek
+  license: CC BY-SA 4.0
+  source_url: https://commons.wikimedia.org/wiki/File:Most_Tumski04.jpg
 commons_p18.jpg:
   author: Daviidos
   license: CC BY-SA 4.0
   source_url: https://commons.wikimedia.org/wiki/File:Wroc%C5%82aw_Breslau_Tumski_Bridge.JPG
+ov_6a4e3ea8.jpg:
+  author: corno.fulgur75
+  license: by 2.0
+  source_url: https://www.flickr.com/photos/129231073@N06/26116695470
+  title: Wrocław - Most Tumski
