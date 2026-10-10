@@ -25,6 +25,9 @@ _base = Settings()
 TEST_DB = f"{_base.postgres_db}_test"
 os.environ["POSTGRES_DB"] = TEST_DB
 os.environ["REDIS_URL"] = _base.redis_dsn.replace("/0", "/9")
+# Tests pin the demo switches themselves (fixtures flip them), whatever the local .env says.
+os.environ["DEMO_MODE"] = "false"
+os.environ["VERIFY_STUB"] = "false"
 get_settings.cache_clear()
 
 from app.core.db import get_engine, get_sessionmaker  # noqa: E402

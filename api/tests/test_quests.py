@@ -157,8 +157,12 @@ async def test_next_place_nearest_popular_random(
     assert body["id"] == str(sid("place:katedra"))
     assert body["task_id"] == str(sid("task:katedra"))
     assert body["found"] is False and body["name"] is None
-    assert body["distance_m"] < 10
     assert body["zone"]["radius_m"] >= 150
+    # Standing on the place itself: the reported distance is to the offset zone centre, so it
+    # must not reveal that we are at the real point (no trilateration from a few requests).
+    to_zone = distance_m(katedra["lat"], katedra["lng"], body["zone"]["lat"], body["zone"]["lng"])
+    assert body["distance_m"] > 20
+    assert abs(body["distance_m"] - to_zone) <= 2
 
     # Someone else found Ratusz → it is the popular one, even though Katedra is nearer.
     other = await register(client)

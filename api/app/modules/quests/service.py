@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import get_settings
 from app.core.errors import AppError, not_found
+from app.core.geo import haversine_m
 from app.core.idempotency import run_idempotent
 from app.modules.auth.models import User
 from app.modules.quests import repository as repo
@@ -72,7 +73,8 @@ async def next_place(
 ) -> NextPlaceOut:
     """The next place to play: nearest, most found by everyone, or a random one nearby.
 
-    Only unfound places qualify; their exact point stays hidden behind the search zone.
+    Only unfound places qualify. The real point stays hidden: the zone is offset and the
+    distance is measured to the zone's centre.
     """
     rows = await repo.unfound_places_by_distance(session, user.id, lat, lng, limit=50)
     if not rows:
@@ -83,14 +85,17 @@ async def next_place(
         row = random.choice(rows[:RANDOM_POOL])
     else:
         row = rows[0]
-    place, task_id, p_lng, p_lat, distance, _ = row
+    place, task_id, p_lng, p_lat, _, _ = row
+    zone = search_zone(place.id, p_lat, p_lng, place.radius_m)
+    # Distance to the zone's centre, never to the real point: exact distances from a few
+    # positions would let a player trilaterate the place without solving the riddle.
     return NextPlaceOut(
         id=place.id,
         task_id=task_id,
         found=False,
         name=None,
-        zone=search_zone(place.id, p_lat, p_lng, place.radius_m),
-        distance_m=round(distance),
+        zone=zone,
+        distance_m=round(haversine_m(lat, lng, zone.lat, zone.lng)),
     )
 
 
