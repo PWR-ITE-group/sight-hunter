@@ -3,14 +3,17 @@ import Constants from 'expo-constants';
 /**
  * API base URL. In Expo Go the phone can't reach "localhost", so in development we point
  * at the machine that serves the JS bundle (same laptop that runs `docker compose up`).
- * Override with EXPO_PUBLIC_API_URL (e.g. a tunnel) when the venue Wi-Fi isolates devices.
+ * Override the port with EXPO_PUBLIC_API_PORT, or the whole URL with EXPO_PUBLIC_API_URL (e.g. a tunnel)
+ * when the venue Wi-Fi isolates devices.
  */
 function resolveApiBaseUrl(): string {
   const fromEnv = process.env.EXPO_PUBLIC_API_URL;
   if (fromEnv) return fromEnv.replace(/\/$/, '');
   if (typeof __DEV__ !== 'undefined' && __DEV__) {
     const host = Constants.expoConfig?.hostUri?.split(':')[0] ?? 'localhost';
-    return `http://${host}:8000/api/v1`;
+    // API_PORT from the repo .env; 8000 may be taken by another project on the laptop.
+    const port = process.env.EXPO_PUBLIC_API_PORT ?? '8000';
+    return `http://${host}:${port}/api/v1`;
   }
   return 'https://api.sight-hunter.com/api/v1';
 }
