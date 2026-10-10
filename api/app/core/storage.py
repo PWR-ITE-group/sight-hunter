@@ -1,14 +1,16 @@
 from datetime import UTC, datetime, timedelta
 from functools import lru_cache
-from typing import Protocol
+from typing import TYPE_CHECKING, Protocol
 
 import anyio
 import boto3
 from botocore.client import Config
 from botocore.exceptions import ClientError
-from types_boto3_s3 import S3Client
 
 from app.core.config import get_settings
+
+if TYPE_CHECKING:  # type stubs only; not installed in the runtime image
+    from types_boto3_s3 import S3Client
 
 
 class Storage(Protocol):
@@ -19,7 +21,7 @@ class Storage(Protocol):
     async def delete(self, key: str) -> None: ...
 
 
-def _client(endpoint: str) -> S3Client:
+def _client(endpoint: str) -> "S3Client":
     s = get_settings()
     return boto3.client(
         "s3",
