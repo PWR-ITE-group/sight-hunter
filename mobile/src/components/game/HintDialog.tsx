@@ -1,42 +1,92 @@
 import React from 'react';
-import { View, Text } from 'react-native';
-import BottomSheet from '../ui/BottomSheet';
-import Button from '../ui/Button';
-import { Feather } from '@expo/vector-icons';
+import { View, Text, StyleSheet } from 'react-native';
+import { BottomSheet } from '../ui/BottomSheet';
+import { Button } from '../ui/Button';
+import { Typography } from '../../constants/typography';
+import { Spacing } from '../../constants/spacing';
+import { Colors } from '../../constants/colors';
 
-type Props = {
+export interface HintDialogProps {
   visible: boolean;
   hintText: string;
   hintsUsed: number;
+  maxHints: number;
   newRewardPoints: number;
   onClose: () => void;
-};
+}
 
 export default function HintDialog({
   visible,
   hintText,
   hintsUsed,
+  maxHints,
   newRewardPoints,
   onClose,
-}: Props) {
+}: HintDialogProps) {
   return (
-    <BottomSheet visible={visible} onClose={onClose} title={`Wskazówka ${hintsUsed}/3`}>
-      <View className="items-center mb-6 mt-4">
-        <View className="w-16 h-16 bg-warning/20 rounded-full items-center justify-center mb-4">
-          <Feather name="loader" size={32} color="#F59E0B" /> 
-        </View>
-        <Text className="text-base text-app-text text-center mb-6 px-4">
+    <BottomSheet visible={visible} onClose={onClose}>
+      <View style={styles.container}>
+        <Text style={styles.icon}>💡</Text>
+        
+        <Text style={styles.title}>
+          Wskazówka {hintsUsed}/{maxHints}
+        </Text>
+        
+        <Text style={styles.hintText}>
           {hintText}
         </Text>
-        <View className="bg-error/20 px-4 py-2 rounded-lg">
-          <Text className="text-error font-medium text-sm text-center">
-            Nagroda zmniejszona do {newRewardPoints} pkt
+        
+        <View style={styles.warningContainer}>
+          <Text style={styles.warningText}>
+            ⚠️ Nagroda zmniejszona do {newRewardPoints} pkt
           </Text>
         </View>
-      </View>
-      <View className="px-4 pb-8">
-        <Button title="Rozumiem" onPress={onClose} variant="primary" />
+        
+        <Button 
+          title="Rozumiem" 
+          onPress={onClose} 
+          variant="primary" 
+          style={styles.button}
+        />
       </View>
     </BottomSheet>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    alignItems: 'center',
+    paddingBottom: Spacing.xl,
+  },
+  icon: {
+    fontSize: 60,
+    marginBottom: Spacing.md,
+  },
+  title: {
+    ...Typography.h3,
+    color: Colors.text,
+    marginBottom: Spacing.md,
+    textAlign: 'center',
+  },
+  hintText: {
+    ...Typography.body,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    marginBottom: Spacing.xl,
+  },
+  warningContainer: {
+    backgroundColor: '#F59E0B20', // warning with opacity
+    padding: Spacing.md,
+    borderRadius: 8,
+    marginBottom: Spacing.xl,
+    width: '100%',
+  },
+  warningText: {
+    ...Typography.captionBold,
+    color: Colors.warning,
+    textAlign: 'center',
+  },
+  button: {
+    width: '100%',
+  },
+});

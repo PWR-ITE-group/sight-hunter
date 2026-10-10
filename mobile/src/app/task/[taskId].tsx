@@ -1,88 +1,163 @@
 import React, { useState } from 'react';
-import { View, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Share, ScrollView } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+// import { useTask, useStartRound } from '../../api/hooks/useTask';
+// import { useHint } from '../../api/hooks/useRound';
+import ScreenWrapper from '../../components/layout/ScreenWrapper';
+import Header from '../../components/layout/Header';
 import RiddleCard from '../../components/game/RiddleCard';
 import HintDialog from '../../components/game/HintDialog';
 import Button from '../../components/ui/Button';
-import * as Haptics from 'expo-haptics';
-import { Feather } from '@expo/vector-icons';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import Header from '../../components/layout/Header';
+import { Spacing, BorderRadius } from '../../constants/spacing';
+import { Colors } from '../../constants/colors';
+import { Typography } from '../../constants/typography';
 
 const MOCK_TASK = {
   id: '1',
-  riddle: 'Gdzie stoją cztery wieże, ale ani jednego zamku?',
-  archival_photo_url: 'https://picsum.photos/400/300',
-  reward_points: 150,
+  riddle: 'Znajdź kościół z dwoma wysokimi wieżami na Ostrowie Tumskim',
+  archival_photo_url: null,
+  reward_points: 100,
   reward_xp: 50,
+  hints: ['Szukaj na wyspie', 'To katedra', 'Katedra św. Jana Chrzciciela'],
 };
 
-export default function TaskDetailsScreen() {
-  const { taskId } = useLocalSearchParams();
+export default function TaskScreen() {
   const router = useRouter();
+  const { taskId } = useLocalSearchParams<{ taskId: string }>();
   
-  const [hintVisible, setHintVisible] = useState(false);
+  // Real hooks commented out / partially used for mock logic
+  // const { data: taskData } = useTask(taskId);
+  // const { mutate: startRound } = useStartRound();
+  // const { mutate: getHint } = useHint();
+
   const [hintsUsed, setHintsUsed] = useState(0);
+  const [showHintDialog, setShowHintDialog] = useState(false);
+  const [currentHintText, setCurrentHintText] = useState('');
 
-  const handleShowHint = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    if (hintsUsed < 3) {
-      setHintsUsed(prev => prev + 1);
+  const task = MOCK_TASK; // fallback to MOCK_TASK
+
+  const handleUnlockHint = (index: number) => {
+    // Here we would call the getHint mutation
+    const text = task.hints[index];
+    setCurrentHintText(text);
+    setHintsUsed(index + 1);
+    setShowHintDialog(true);
+  };
+
+  const handleShare = async () => {
+    try {
+      await Share.share({
+        message: `Pomożesz mi rozwiązać zagadkę w Sight Hunter?\n\n"${task.riddle}"`,
+      });
+    } catch (error) {
+      console.error(error);
     }
-    setHintVisible(true);
   };
 
-  const handleStartCamera = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    router.push('/camera');
-  };
-
-  const handleShare = () => {
-    // share logic
-  };
+  const newRewardPoints = Math.max(0, task.reward_points - (hintsUsed * 10));
 
   return (
-    <SafeAreaView className="flex-1 bg-surface" edges={['top', 'bottom']}>
+    <ScreenWrapper padding={0}>
       <Header title="Zadanie" showBack />
-      <ScrollView className="flex-1 px-4 pt-4">
-        <RiddleCard task={MOCK_TASK} />
-        
-        <View className="mb-6 flex-col gap-3">
-          {[1, 2, 3].map(n => (
-            <Button
-              key={n}
-              title={hintsUsed >= n ? `Wskazówka ${n} - użyta` : `Wskazówka ${n}`}
-              variant={hintsUsed >= n ? 'secondary' : 'outline'}
-              onPress={handleShowHint}
-              disabled={hintsUsed >= n}
-            />
-          ))}
+      
+      <ScrollView 
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        <RiddleCard task={task as any} />
+
+        <View style={styles.hintsSection}>
+          <Text style={styles.sectionTitle}>Wskazówki</Text>
+          {task.hints.map((hint, index) => {
+            const isUnlocked = index < hintsUsed;
+            const isNextToUnlock = index === hintsUsed;
+
+            return (
+              <View key={index} style={styles.hintWrapper}>
+                {isUnlocked ? (
+                  <View style={styles.unlockedHintBox}>
+                    <Text style={styles.unlockedHintTitle}>💡 Wskazówka {index + 1}</Text>
+                    <Text style={styles.unlockedHintText}>{hint}</Text>
+                  </View>
+                ) : (
+                  <Button
+                    title={`💡 Wskazówka ${index + 1}`}
+                    variant="outline"
+                    onPress={() => handleUnlockHint(index)}
+                    disabled={!isNextToUnlock}
+                  />
+                )}
+              </View>
+            );
+          })}
         </View>
 
-        <Button
-          title="📷 Zrób zdjęcie"
-          variant="primary"
-          size="lg"
-          onPress={handleStartCamera}
-        />
-        
-        <View className="items-center mt-6 mb-8">
+        <View style={styles.actionsSection}>
           <Button
-            title="Udostępnij"
-            variant="ghost"
+            title="📷 Zrób zdjęcie"
+            variant="primary"
+            onPress={() => router.push('/camera')}
+            style={styles.actionButton}
+          />
+          <Button
+            title="🔗 Udostępnij"
+            variant="outline"
             onPress={handleShare}
-            icon={<Feather name="share-2" size={18} color="#208AEF" style={{ marginRight: 8 }} />}
+            style={styles.actionButton}
           />
         </View>
       </ScrollView>
 
       <HintDialog
-        visible={hintVisible}
-        hintText="To miejsce znajduje się blisko Odry, gdzie często spotykają się studenci."
+        visible={showHintDialog}
+        hintText={currentHintText}
         hintsUsed={hintsUsed}
-        newRewardPoints={MOCK_TASK.reward_points - hintsUsed * 20}
-        onClose={() => setHintVisible(false)}
+        maxHints={task.hints.length}
+        newRewardPoints={newRewardPoints}
+        onClose={() => setShowHintDialog(false)}
       />
-    </SafeAreaView>
+    </ScreenWrapper>
   );
 }
+
+const styles = StyleSheet.create({
+  content: {
+    padding: Spacing.lg,
+    flexGrow: 1,
+  },
+  hintsSection: {
+    marginTop: Spacing.xl,
+  },
+  sectionTitle: {
+    ...Typography.h3,
+    color: Colors.text,
+    marginBottom: Spacing.md,
+  },
+  hintWrapper: {
+    marginBottom: Spacing.md,
+  },
+  unlockedHintBox: {
+    backgroundColor: Colors.surfaceElevated,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  unlockedHintTitle: {
+    ...Typography.captionBold,
+    color: Colors.primary,
+    marginBottom: Spacing.xs,
+  },
+  unlockedHintText: {
+    ...Typography.body,
+    color: Colors.text,
+  },
+  actionsSection: {
+    marginTop: Spacing.xl,
+    gap: Spacing.md,
+    paddingBottom: Spacing.xl,
+  },
+  actionButton: {
+    width: '100%',
+  },
+});

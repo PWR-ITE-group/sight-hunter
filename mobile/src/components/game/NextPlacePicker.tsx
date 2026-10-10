@@ -1,12 +1,13 @@
 import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
-import { Compass, Flame, Dice5, ChevronRight } from 'lucide-react-native';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { Card } from '../ui/Card';
+import { Typography } from '../../constants/typography';
+import { Spacing } from '../../constants/spacing';
 import { Colors } from '../../constants/colors';
 
 export interface NextOption {
-  taskId: string;
   type: 'nearest' | 'popular' | 'random';
+  taskId: string;
   name?: string;
   distance?: string;
   findersCount?: number;
@@ -17,50 +18,108 @@ export interface NextPlacePickerProps {
   onSelect: (taskId: string) => void;
 }
 
-export function NextPlacePicker({ options, onSelect }: NextPlacePickerProps) {
-  const getIcon = (type: string) => {
+export default function NextPlacePicker({ options, onSelect }: NextPlacePickerProps) {
+  const getIcon = (type: NextOption['type']) => {
     switch (type) {
-      case 'nearest': return <Compass size={32} color={Colors.primary} />;
-      case 'popular': return <Flame size={32} color={Colors.secondary} />;
-      case 'random': return <Dice5 size={32} color={Colors.warning} />;
-      default: return <Compass size={32} color={Colors.primary} />;
+      case 'nearest': return '🧭';
+      case 'popular': return '🔥';
+      case 'random': return '🎲';
     }
   };
 
-  const getTitle = (opt: NextOption) => {
-    if (opt.type === 'nearest') return 'Najbliższe';
-    if (opt.type === 'popular') return 'Najpopularniejsze';
-    if (opt.type === 'random') return 'Losowe w pobliżu';
-    return '';
+  const getTitle = (type: NextOption['type']) => {
+    switch (type) {
+      case 'nearest': return 'Najbliższe';
+      case 'popular': return 'Najpopularniejsze';
+      case 'random': return 'Losowe w pobliżu';
+    }
   };
 
-  const getSubtitle = (opt: NextOption) => {
-    if (opt.type === 'nearest') return opt.name ? `${opt.name} — ${opt.distance}` : `??? — ${opt.distance}`;
-    if (opt.type === 'popular') return opt.name ? `${opt.name} (${opt.findersCount} łowców)` : `${opt.findersCount} łowców`;
-    if (opt.type === 'random') return 'Zaskocz mnie!';
+  const getSubtitle = (option: NextOption) => {
+    if (option.type === 'nearest') {
+      return option.name ? `${option.name} • ${option.distance}` : option.distance;
+    }
+    if (option.type === 'popular') {
+      return option.name ? `${option.name} • ${option.findersCount} łowców` : `${option.findersCount} łowców`;
+    }
+    if (option.type === 'random') {
+      return 'Zaskocz mnie!';
+    }
     return '';
   };
 
   return (
-    <View className="w-full gap-4 mt-6">
-      {options.map((opt) => (
-        <TouchableOpacity key={opt.taskId} onPress={() => onSelect(opt.taskId)} activeOpacity={0.8}>
-          <Card padding={16} elevation="sm">
-            <View className="flex-row items-center justify-between">
-              <View className="flex-row items-center flex-1 gap-4">
-                <View className="w-12 h-12 bg-primary-light rounded-full items-center justify-center">
-                  {getIcon(opt.type)}
-                </View>
-                <View className="flex-1">
-                  <Text className="text-lg font-bold text-app-text">{getTitle(opt)}</Text>
-                  <Text className="text-sm text-text-secondary mt-1">{getSubtitle(opt)}</Text>
-                </View>
-              </View>
-              <ChevronRight size={24} color={Colors.textTertiary} />
+    <View style={styles.container}>
+      {options.map((option) => (
+        <Pressable
+          key={option.taskId}
+          onPress={() => onSelect(option.taskId)}
+          style={({ pressed }) => [
+            styles.pressableWrapper,
+            pressed && { opacity: 0.8, transform: [{ scale: 0.98 }] }
+          ]}
+        >
+          <Card style={styles.card}>
+            <View style={styles.iconContainer}>
+              <Text style={styles.icon}>{getIcon(option.type)}</Text>
+            </View>
+            <View style={styles.textContainer}>
+              <Text style={styles.title}>{getTitle(option.type)}</Text>
+              <Text style={styles.subtitle}>{getSubtitle(option)}</Text>
+            </View>
+            <View style={styles.chevronContainer}>
+              <Text style={styles.chevron}>›</Text>
             </View>
           </Card>
-        </TouchableOpacity>
+        </Pressable>
       ))}
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    width: '100%',
+    gap: Spacing.md,
+  },
+  pressableWrapper: {
+    width: '100%',
+  },
+  card: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: Spacing.lg,
+  },
+  iconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: Colors.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: Spacing.md,
+  },
+  icon: {
+    fontSize: 20,
+  },
+  textContainer: {
+    flex: 1,
+  },
+  title: {
+    ...Typography.bodyBold,
+    color: Colors.text,
+    marginBottom: 2,
+  },
+  subtitle: {
+    ...Typography.caption,
+    color: Colors.textSecondary,
+  },
+  chevronContainer: {
+    paddingLeft: Spacing.sm,
+  },
+  chevron: {
+    fontSize: 24,
+    color: Colors.textTertiary,
+    lineHeight: 24,
+  },
+});
