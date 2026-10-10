@@ -7,9 +7,14 @@ from sqlalchemy import text
 from app.core.db import get_engine
 from app.core.errors import install_error_handlers
 from app.core.redis import close_arq, get_redis
+from app.modules.admin.setup import setup_admin
 from app.modules.auth.router import auth_router, me_router
 from app.modules.finds.router import attempts_router, rounds_attempts_router
+from app.modules.media.router import reels_router
 from app.modules.quests.router import places_router, rounds_router, tasks_router
+from app.modules.shop.router import shop_router
+from app.modules.social.router import social_router
+from app.modules.wallet.router import leaderboard_router
 
 
 @asynccontextmanager
@@ -39,7 +44,12 @@ def create_app() -> FastAPI:
     api.include_router(rounds_router)
     api.include_router(rounds_attempts_router)
     api.include_router(attempts_router)
+    api.include_router(reels_router)
+    api.include_router(social_router)
+    api.include_router(leaderboard_router)
+    api.include_router(shop_router)
     app.include_router(api)
+    setup_admin(app)
     return app
 
 

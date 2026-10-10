@@ -1,4 +1,5 @@
 import uuid
+from collections.abc import Iterable, Sequence
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -43,3 +44,12 @@ async def get_refresh_token_for_update(
     session: AsyncSession, jti: uuid.UUID
 ) -> RefreshToken | None:
     return await session.get(RefreshToken, jti, with_for_update=True)
+
+
+async def get_users(session: AsyncSession, ids: Iterable[uuid.UUID]) -> Sequence[User]:
+    return (await session.scalars(select(User).where(User.id.in_(list(ids))))).all()
+
+
+async def get_user_for_update(session: AsyncSession, user_id: uuid.UUID) -> User | None:
+    """Locks the player's row: purchases check the balance under this lock."""
+    return await session.get(User, user_id, with_for_update=True)

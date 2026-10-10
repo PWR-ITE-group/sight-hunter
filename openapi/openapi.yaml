@@ -199,8 +199,8 @@ paths:
       tags: [rounds]
       summary: Reveal the next hint; lowers the round reward, never the balance
       description: |
-        OPEN QUESTION: whether hints from the player's stock are spent first without a
-        penalty, and whether XP is reduced too (prototype vs architecture doc differ).
+        Decided 2026-10-10: no hint stock. Each hint cuts only the round's points by 25% of
+        the base (floor 25%); XP is unchanged. Max 3 hints per round.
       parameters:
         - { $ref: "#/components/parameters/RoundId" }
         - { $ref: "#/components/parameters/IdempotencyKey" }
