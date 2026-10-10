@@ -54,6 +54,7 @@ Run from `worker/`; data lives in `content/`.
 | `python -m app.cli.seed_dev` | DEV ONLY: `dev/schema.sql` + places and tasks from `places.yaml` |
 | `python -m app.cli.add_refs [slug ...]` | Embeds `refs/<slug>/*.jpg` into `place_refs` and copies them to storage |
 | `python -m app.cli.identify photo.jpg [--target slug]` | Top places for a photo and the verdict, same code as the worker |
+| `python -m app.cli.fetch_tests [slug ...] [--n 15]` | Downloads CC test photos from Openverse (Flickr etc., no Wikimedia) into `content/test-photos/<slug>/` and `_none/` for manual review |
 | `python -m app.cli.calibrate [--model clip:ViT-B-32]` | Picks thresholds on `content/test-photos/`, writes `content/calibration/report-*.md` |
 
 ## Docker
