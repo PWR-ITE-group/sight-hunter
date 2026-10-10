@@ -1,0 +1,931 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Łowcy Historii</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Onest:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: a phone on a stage (desktop) with a Russian control panel beside it; on phones the app goes full-screen and the panel stacks below. */
+:root{
+  --stage:#d6dbd2; --paper:#eef1ea; --card:#ffffff; --ink:#1b211e; --muted:#5d6862; --line:#d3d9d0;
+  --odra:#2c52c4; --odra-ink:#ffffff; --brick:#b5422e; --ochre:#b9800f; --xp:#6a3fc4; --ok:#2c8350; --bad:#c03838;
+  --land:#e4e8de; --street:#fafbf7; --park:#cddbc1; --water:#b4c9e4; --maplabel:#6f7a74; --bezel:#151917;
+  --reel-bg:#0b0d0c; --reel-fg:#ffffff;
+  --sky1:#9cc3e8; --sky2:#e9f0f5; --sil:#8e4b36; --win:#f2e7c9; --ground:#7d837a; --wtr:#5a83b0;
+  --display:"Young Serif", Georgia, "Times New Roman", serif;
+  --ui:"Onest", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --stage:#0c100e; --paper:#131916; --card:#1b2320; --ink:#e7ece5; --muted:#9aa69f; --line:#2b3530;
+  --odra:#7f9cff; --odra-ink:#0d1324; --brick:#e2694f; --ochre:#e2aa45; --xp:#b597ff; --ok:#5cc184; --bad:#f07070;
+  --land:#18201c; --street:#28322d; --park:#1f2f22; --water:#1d3352; --maplabel:#8a978f; --bezel:#000000;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --stage:#0c100e; --paper:#131916; --card:#1b2320; --ink:#e7ece5; --muted:#9aa69f; --line:#2b3530;
+  --odra:#7f9cff; --odra-ink:#0d1324; --brick:#e2694f; --ochre:#e2aa45; --xp:#b597ff; --ok:#5cc184; --bad:#f07070;
+  --land:#18201c; --street:#28322d; --park:#1f2f22; --water:#1d3352; --maplabel:#8a978f; --bezel:#000000;
+  color-scheme:dark}
+html,body{height:100%}
+body{background:var(--stage);color:var(--ink);font-family:var(--ui);font-size:15px;line-height:1.45}
+*{box-sizing:border-box}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--odra);outline-offset:2px}
+.stage{min-height:100%;display:flex;gap:40px;justify-content:center;align-items:center;padding-block:24px;padding-inline:16px}
+.phone{position:relative;width:390px;max-width:100%;height:min(820px,calc(100vh - 48px));min-height:620px;border:10px solid var(--bezel);border-radius:48px;background:var(--paper);overflow:hidden;box-shadow:0 30px 60px -20px rgba(0,0,0,.35);flex:none}
+#app{position:absolute;inset:0;display:flex;flex-direction:column}
+#ov,#rv,#toast{position:absolute;inset:0;pointer-events:none;z-index:20}
+#rv{z-index:25}#ov{z-index:30}#toast{z-index:40}
+#ov>*,#rv>*{pointer-events:auto}
+
+/* control panel */
+.panel{width:330px;max-width:100%;align-self:center;display:flex;flex-direction:column;gap:18px;font-size:14px}
+.panel h1{font-family:var(--display);font-weight:400;font-size:30px;line-height:1.05;margin:0;text-wrap:balance}
+.panel p{margin:0;color:var(--muted)}
+.panel h3{margin:0 0 8px;font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.jump{display:flex;flex-wrap:wrap;gap:6px}
+.jump button{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:5px 11px;font-size:13px}
+.jump button:hover{border-color:var(--odra);color:var(--odra)}
+.panel ol,.panel ul{margin:0;padding-left:18px;color:var(--muted);display:grid;gap:4px}
+.panel b{color:var(--ink);font-weight:600}
+.note{border-left:3px solid var(--ochre);padding:4px 0 4px 12px;color:var(--muted)}
+.chk{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.cov{font-family:var(--mono);font-size:12px;color:var(--muted)}
+
+@media (max-width:760px){
+  .stage{flex-direction:column;padding-block:0;padding-inline:0;gap:0;align-items:stretch}
+  .phone{width:100%;height:100vh;height:100svh;min-height:560px;border:0;border-radius:0;box-shadow:none}
+  .panel{width:auto;padding-block:24px;padding-inline:16px;background:var(--stage)}
+  .sbar{display:none!important}
+}
+
+/* app chrome */
+.sbar{height:40px;flex:none;display:flex;justify-content:space-between;align-items:center;padding-inline:26px;font-weight:600;font-size:14px;font-variant-numeric:tabular-nums}
+.sbar i{display:inline-block;width:22px;height:10px;border:1.5px solid currentColor;border-radius:3px;position:relative}
+.sbar i::after{content:"";position:absolute;inset:1.5px 5px 1.5px 1.5px;background:currentColor;border-radius:1px}
+.sbar.dark{background:var(--reel-bg);color:#fff}
+.main{flex:1;overflow-y:auto;overflow-x:hidden;position:relative;min-height:0}
+.main.fixed{overflow:hidden}
+.pad{padding-block:8px 24px;padding-inline:16px;display:flex;flex-direction:column;gap:16px}
+.tabs{flex:none;display:grid;grid-template-columns:repeat(5,1fr);border-top:1px solid var(--line);background:var(--card);padding-bottom:6px;position:relative;z-index:5}
+.tabs button{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:2px;padding:9px 0 4px;font-size:10.5px;font-weight:500;color:var(--muted);min-width:0}
+.tabs button[aria-current="page"]{color:var(--odra)}
+.tabs svg{width:22px;height:22px}
+h2.scr{font-family:var(--display);font-weight:400;font-size:28px;line-height:1.1;margin:6px 0 0;text-wrap:balance}
+.eyebrow{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.btn{border:1px solid var(--line);background:var(--card);border-radius:14px;padding:12px 16px;font-weight:600;font-size:15px;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn.primary{background:var(--odra);border-color:var(--odra);color:var(--odra-ink)}
+.btn.brick{background:var(--brick);border-color:var(--brick);color:#fff}
+.btn.ghost{background:none;border-color:transparent;color:var(--muted)}
+.btn.sm{padding:8px 12px;font-size:13.5px;border-radius:11px;flex:none}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btn.block{width:100%}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.row>.btn{flex:1 1 auto}
+.link{border:0;background:none;color:var(--muted);text-decoration:underline;text-underline-offset:3px;font-size:13px;padding:4px 0;align-self:flex-start}
+.pts{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:600}
+.c-pts{color:var(--ochre)}.c-xp{color:var(--xp)}
+.chip{display:inline-flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:5px 11px;font-size:13px;font-weight:500;white-space:nowrap}
+.chip.demo{border-color:var(--ochre);color:var(--ochre)}
+
+/* photos (placeholder frames for archive / modern / AI images) */
+.photo{position:relative;overflow:hidden;background:linear-gradient(var(--sky1),var(--sky2));width:100%;height:100%}
+.photo svg{display:block;width:100%;height:100%}
+.photo.archive{--sky1:#c9c4b8;--sky2:#ece8de;--win:#efe9da;--ground:#77736b;--wtr:#8f8b82;filter:sepia(.75) contrast(1.08) brightness(.96)}
+.photo.archive::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 55%,rgba(40,25,10,.45));pointer-events:none}
+.photo.archive .grain{position:absolute;inset:0;background-image:repeating-radial-gradient(circle at 17% 32%,rgba(0,0,0,.05) 0 1px,transparent 1px 3px),repeating-linear-gradient(90deg,rgba(255,255,255,.04) 0 1px,transparent 1px 4px);mix-blend-mode:multiply}
+.photo.ai{--sky1:#f29a6b;--sky2:#5b3f8f;--win:#ffd98a;--ground:#3b2f4d;--wtr:#6a5aa8}
+.kb{animation:kb 6s ease-out both}
+@keyframes kb{from{transform:scale(1.08) translateY(1.5%)}to{transform:scale(1)}}
+
+/* welcome */
+.welcome{display:flex;flex-direction:column;height:100%}
+.w-art{flex:1;min-height:180px;position:relative}
+.w-art .photo{position:absolute;inset:0}
+.w-body{padding-block:20px 22px;padding-inline:20px;display:flex;flex-direction:column;gap:12px;background:var(--paper)}
+.brand{font-family:var(--display);font-weight:400;font-size:46px;line-height:.95;margin:0;letter-spacing:-.01em}
+.brand em{font-style:normal;color:var(--brick)}
+
+/* map */
+.mapwrap{position:absolute;inset:0;background:var(--land)}
+#map{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:grab;user-select:none}
+.map-top{position:absolute;top:10px;left:12px;right:12px;display:flex;gap:6px;flex-wrap:wrap;pointer-events:none}
+.map-top>*{pointer-events:auto}
+.map-ctrl{position:absolute;right:12px;top:58px;display:flex;flex-direction:column;gap:6px}
+.map-ctrl button{width:40px;height:40px;border-radius:12px;border:1px solid var(--line);background:var(--card);font-size:18px;font-weight:600;display:grid;place-items:center}
+.mcard{position:absolute;left:10px;right:10px;bottom:10px;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;box-shadow:0 10px 30px -12px rgba(0,0,0,.35);max-height:66%;overflow:auto}
+.task-text{font-family:var(--display);font-size:21px;line-height:1.2;margin:0;text-wrap:balance}
+.th{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.hints{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.hints li{font-size:13.5px;background:var(--paper);border-radius:10px;padding:7px 10px;display:flex;gap:8px}
+.hints li b{color:var(--ochre);font-family:var(--mono);font-size:12px;flex:none;padding-top:1px}
+.mk-label{font:600 15px var(--ui);fill:var(--ink);paint-order:stroke;stroke:var(--land);stroke-width:4px}
+.m-lab{font:italic 400 17px var(--display);fill:var(--maplabel);letter-spacing:.06em}
+.pulse{transform-box:fill-box;transform-origin:center;animation:pulse 2s ease-out infinite}
+@keyframes pulse{from{transform:scale(.6);opacity:.55}to{transform:scale(2.4);opacity:0}}
+
+/* sheet */
+.backdrop{position:absolute;inset:0;background:rgba(0,0,0,.4);animation:fade .2s}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:var(--card);color:var(--ink);border-radius:22px 22px 0 0;padding:10px 18px 22px;display:flex;flex-direction:column;gap:12px;animation:up .25s ease-out;max-height:85%;overflow:auto}
+.sheet::before{content:"";width:40px;height:4px;border-radius:2px;background:var(--line);align-self:center;flex:none}
+.sheet h3{font-family:var(--display);font-weight:400;font-size:24px;margin:0;line-height:1.15}
+.sheet .thumb{height:150px;border-radius:14px;overflow:hidden;flex:none}
+.sharebox{background:var(--paper);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.sharebox p{margin:0}
+.sharebox code{font-family:var(--mono);font-size:12.5px;color:var(--odra);word-break:break-all;user-select:all}
+.cmts{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.cmts li{display:flex;flex-direction:column;gap:1px;font-size:14px}
+.cmts b{font-size:12.5px;color:var(--muted);font-weight:600}
+.cmts li.mine b{color:var(--odra)}
+.cform{display:flex;gap:8px}
+.cform input{flex:1;min-width:0}
+@keyframes up{from{transform:translateY(100%)}}
+@keyframes fade{from{opacity:0}}
+
+/* camera */
+.cam{position:absolute;inset:0;background:#0b0d0c;color:#fff;display:flex;flex-direction:column}
+.cam-top{display:flex;justify-content:space-between;align-items:center;padding:10px 14px}
+.cam-top .x{width:36px;height:36px;border-radius:50%;border:0;background:rgba(255,255,255,.14);color:#fff;font-size:18px}
+.gps{font-size:12.5px;font-weight:600;padding:5px 10px;border-radius:999px;background:rgba(255,255,255,.12)}
+.gps.ok{color:#7be0a2}.gps.bad{color:#ff9a8a}
+.vf{flex:1;min-height:0;margin-inline:14px;border-radius:18px;overflow:hidden;position:relative}
+.vf .photo{position:absolute;inset:0}
+.vf .crn{position:absolute;inset:14px;border:2px solid rgba(255,255,255,.75);border-radius:10px;-webkit-mask:linear-gradient(#000 0 0) top left/26px 26px no-repeat,linear-gradient(#000 0 0) top right/26px 26px no-repeat,linear-gradient(#000 0 0) bottom left/26px 26px no-repeat,linear-gradient(#000 0 0) bottom right/26px 26px no-repeat;mask:linear-gradient(#000 0 0) top left/26px 26px no-repeat,linear-gradient(#000 0 0) top right/26px 26px no-repeat,linear-gradient(#000 0 0) bottom left/26px 26px no-repeat,linear-gradient(#000 0 0) bottom right/26px 26px no-repeat}
+.vf .tk{position:absolute;left:12px;right:12px;bottom:12px;background:rgba(0,0,0,.55);border-radius:12px;padding:8px 12px;font-size:13px}
+.subj-h{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:rgba(255,255,255,.6);padding:12px 16px 6px;font-weight:600}
+.subjects{display:flex;gap:8px;overflow-x:auto;padding:0 14px 4px;scrollbar-width:none}
+.subjects button{flex:none;width:68px;border:2px solid transparent;border-radius:12px;background:rgba(255,255,255,.08);padding:3px;color:#fff;font-size:10.5px;line-height:1.2;text-align:center}
+.subjects button[aria-pressed="true"]{border-color:#fff}
+.subjects .t{height:62px;border-radius:9px;overflow:hidden;margin-bottom:3px}
+.shoot{display:flex;justify-content:center;padding:12px 0 14px}
+.shutter{width:68px;height:68px;border-radius:50%;border:4px solid #fff;background:#fff;box-shadow:inset 0 0 0 4px #0b0d0c}
+.shutter:active{transform:scale(.94)}
+
+/* verify */
+.steps{display:grid;gap:10px}
+.step{display:flex;gap:12px;align-items:flex-start;opacity:.35;transition:opacity .25s}
+.step.on{opacity:1}
+.dot{flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:14px;background:var(--line);color:var(--muted)}
+.step.ok .dot{background:var(--ok);color:#fff}.step.bad .dot{background:var(--bad);color:#fff}
+.step b{display:block}
+.bars{display:grid;gap:6px;margin-top:8px}
+.bar{display:grid;grid-template-columns:96px 1fr 40px;gap:8px;align-items:center;font-size:12.5px}
+.bar .n{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar .tr{height:10px;background:var(--paper);border-radius:5px;position:relative}
+.bar .fl{position:absolute;inset:0 auto 0 0;border-radius:5px;background:var(--muted);transition:width .6s ease-out}
+.bar.top .fl{background:var(--odra)}
+.bar .tr::after{content:"";position:absolute;top:-4px;bottom:-4px;left:var(--th);width:2px;background:var(--brick)}
+.bar .v{font-family:var(--mono);font-size:12px;text-align:right}
+.thnote{font-size:12px;color:var(--muted)}
+.thnote i{display:inline-block;width:10px;height:2px;background:var(--brick);vertical-align:middle;margin-right:4px}
+.outcome{border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:10px;position:relative;overflow:hidden;animation:up2 .35s ease-out;background:var(--card)}
+.outcome.good{border:2px solid var(--brick)}
+.outcome.warn{border:2px solid var(--ochre)}
+.outcome.fail{border:2px solid var(--bad)}
+@keyframes up2{from{transform:translateY(12px);opacity:0}}
+.outcome h3{margin:0;font-family:var(--display);font-weight:400;font-size:24px;line-height:1.15;text-wrap:balance}
+.stamp{position:absolute;right:14px;top:14px;transform:rotate(-9deg);border:3px solid var(--brick);color:var(--brick);font:700 15px var(--mono);letter-spacing:.14em;padding:4px 10px;border-radius:6px;animation:stamp .45s cubic-bezier(.2,1.6,.4,1) both .1s}
+@keyframes stamp{from{transform:rotate(-9deg) scale(2.2);opacity:0}}
+.gain{font:600 26px var(--mono);display:flex;gap:14px;flex-wrap:wrap}
+
+/* next */
+.opt{display:flex;gap:14px;align-items:center;text-align:left;width:100%;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px}
+.opt:hover{border-color:var(--odra)}
+.opt .ic{flex:none;width:44px;height:44px;border-radius:12px;background:var(--paper);display:grid;place-items:center;color:var(--odra)}
+.opt .ic svg{width:24px;height:24px}
+.opt b{display:block;font-size:16px}
+.opt span{font-size:13px;color:var(--muted)}
+.route{display:flex;gap:6px;margin-top:6px}
+.route i{flex:1;height:6px;border-radius:3px;background:var(--line)}
+.route i.on{background:var(--brick)}
+
+/* vertical reel feed */
+.vfeed{position:absolute;inset:0;overflow-y:auto;scroll-snap-type:y mandatory;background:var(--reel-bg);scrollbar-width:none;overscroll-behavior:contain}
+.vfeed::-webkit-scrollbar,.hscroll::-webkit-scrollbar{display:none}
+.ritem{position:relative;height:100%;scroll-snap-align:start;scroll-snap-stop:always;overflow:hidden;color:var(--reel-fg);background:var(--reel-bg)}
+.hscroll{position:absolute;inset:0;display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain}
+.slide{flex:0 0 100%;height:100%;position:relative;scroll-snap-align:start;overflow:hidden}
+.slide .photo{position:absolute;inset:0}
+.slide.on .photo{animation:kb 6s ease-out both}
+.slide::after{content:"";position:absolute;inset:auto 0 0 0;height:45%;background:linear-gradient(transparent,rgba(0,0,0,.65));pointer-events:none}
+.rbars{position:absolute;top:56px;left:12px;right:12px;display:flex;gap:4px;z-index:3;pointer-events:none}
+.ov .rbars{top:14px}
+.rbars i{flex:1;height:3px;background:rgba(255,255,255,.3);border-radius:2px;overflow:hidden}
+.rbars i b{display:block;height:100%;width:0;background:#fff}
+.rlabel{position:absolute;top:70px;left:12px;font-size:11px;font-weight:600;letter-spacing:.05em;padding:3px 8px;border-radius:6px;background:rgba(0,0,0,.55);color:#fff;text-transform:uppercase;z-index:2}
+.ov .rlabel{top:28px}
+.rlabel.ai{background:#6b3fd1}
+.rcap{position:absolute;left:14px;right:78px;bottom:96px;font-size:18px;font-weight:600;line-height:1.3;text-shadow:0 2px 12px rgba(0,0,0,.9);text-wrap:balance;z-index:2}
+.ov .rcap{right:14px;bottom:40px}
+.rcap span{background:rgba(0,0,0,.42);box-decoration-break:clone;-webkit-box-decoration-break:clone;padding:2px 6px;border-radius:4px}
+.snav{position:absolute;inset:0;display:grid;grid-template-columns:1fr 2fr;z-index:1}
+.snav button{border:0;background:none}
+.rside{position:absolute;right:8px;bottom:96px;display:flex;flex-direction:column;gap:14px;z-index:4}
+.rside button{border:0;background:none;color:#fff;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11.5px;font-weight:600;text-shadow:0 1px 6px rgba(0,0,0,.8);width:60px}
+.rside button span{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.rside button .ic{width:44px;height:44px;border-radius:50%;background:rgba(0,0,0,.38);display:grid;place-items:center;backdrop-filter:blur(4px)}
+.rside svg{width:24px;height:24px}
+.rside button[disabled]{opacity:.4}
+.rmeta{position:absolute;left:14px;right:84px;bottom:16px;z-index:3;display:flex;flex-direction:column;gap:2px;text-shadow:0 1px 8px rgba(0,0,0,.9);pointer-events:none}
+.rmeta b{font-family:var(--display);font-weight:400;font-size:21px;line-height:1.15}
+.rmeta span{font-size:12.5px;color:rgba(255,255,255,.82)}
+.ftop{position:absolute;top:0;left:0;right:0;z-index:6;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 12px 18px;background:linear-gradient(rgba(0,0,0,.55),transparent);pointer-events:none}
+.ftop>*{pointer-events:auto}
+.seg{display:flex;gap:2px;background:rgba(0,0,0,.35);border-radius:999px;padding:3px}
+.seg button{border:0;background:none;color:rgba(255,255,255,.75);font-size:13.5px;font-weight:600;padding:5px 12px;border-radius:999px}
+.seg button[aria-pressed="true"]{background:#fff;color:#0b0d0c}
+.fbtn{border:0;background:rgba(0,0,0,.35);color:#fff;border-radius:999px;height:32px;padding:0 11px;font-size:12.5px;font-weight:600;display:inline-flex;align-items:center;gap:6px}
+.fbtn svg{width:18px;height:18px}
+.rsrc{position:absolute;inset:0;padding:70px 20px 110px;display:flex;flex-direction:column;gap:12px;background:linear-gradient(#141a17,#0b0d0c);overflow:auto;color:#fff}
+.rsrc.ov{padding:40px 20px 24px}
+.rsrc h4{font-family:var(--display);font-weight:400;font-size:26px;margin:0}
+.rsrc ul{margin:0;padding-left:18px;display:grid;gap:6px;font-size:14px}
+.rsrc a{color:#a9bcff}
+.rsrc .small{font-size:12.5px;color:rgba(255,255,255,.62)}
+.rsrc .eyebrow{color:rgba(255,255,255,.6)}
+.rsrc .btn{border-color:rgba(255,255,255,.22);background:rgba(255,255,255,.08);color:#fff}
+.rsrc .btn.primary{background:#fff;color:#0b0d0c;border-color:#fff}
+.lockc{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding-inline:40px 84px;padding-block:80px;background:rgba(0,0,0,.35)}
+.ritem.locked .slide .photo{filter:grayscale(1) blur(7px) brightness(.7)}
+.lockc b{font-family:var(--display);font-weight:400;font-size:24px;line-height:1.15}
+.lockc span{font-size:13.5px;color:rgba(255,255,255,.82)}
+.lockc .btn{margin-top:4px}
+.empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding-inline:32px;color:#fff}
+.empty b{font-family:var(--display);font-weight:400;font-size:24px}
+.empty span{color:rgba(255,255,255,.75);font-size:14px}
+.reel-ov{position:absolute;inset:0;background:var(--reel-bg)}
+.ovtop{position:absolute;top:24px;right:12px;z-index:6}
+
+/* shop, ranking, profile */
+.srows{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.srow{display:flex;gap:12px;align-items:center;padding:12px 14px;border-top:1px solid var(--line)}
+.srow:first-child{border-top:0}
+.srow .si{width:48px;height:48px;border-radius:12px;overflow:hidden;flex:none;background:var(--paper);display:grid;place-items:center;color:var(--ochre)}
+.srow .si svg{width:24px;height:24px}
+.srow .st{flex:1;min-width:0}
+.srow .st b{display:block;font-size:15px}
+.srow .st span{font-size:12.5px;color:var(--muted)}
+.lb{list-style:none;margin:0;padding:0;background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.lb li{display:grid;grid-template-columns:32px 1fr auto;gap:10px;align-items:center;padding:11px 14px;border-top:1px solid var(--line);font-variant-numeric:tabular-nums}
+.lb li:first-child{border-top:0}
+.lb li.me{background:color-mix(in srgb,var(--odra) 12%,var(--card))}
+.lb .rk{font-family:var(--mono);color:var(--muted);font-size:13px}
+.lb li:nth-child(-n+3) .rk{color:var(--ochre);font-weight:600}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+.stat b{display:block;font:600 22px var(--mono);font-variant-numeric:tabular-nums}
+.stat span{font-size:12px;color:var(--muted)}
+.ava{width:64px;height:64px;border-radius:20px;background:var(--brick);color:#fff;display:grid;place-items:center;font:400 30px var(--display);flex:none}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.gthumb{border:0;padding:0;aspect-ratio:9/14;border-radius:10px;overflow:hidden;position:relative;background:none;max-width:100%}
+.gthumb .photo{position:absolute;inset:0}
+.gthumb span{position:absolute;left:6px;right:6px;bottom:6px;color:#fff;font-size:11px;font-weight:600;text-align:left;line-height:1.2;text-shadow:0 1px 6px rgba(0,0,0,.9)}
+.list{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.list>*{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px 16px;border-top:1px solid var(--line);width:100%;background:none;border-left:0;border-right:0;border-bottom:0;text-align:left;font-size:15px}
+.list>*:first-child{border-top:0}
+.sw{width:42px;height:24px;border-radius:12px;background:var(--line);position:relative;flex:none;border:0;padding:0}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform .2s}
+.sw[aria-checked="true"]{background:var(--ok)}
+.sw[aria-checked="true"]::after{transform:translateX(18px)}
+.seg2{display:grid;grid-template-columns:1fr 1fr;gap:4px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:4px}
+.seg2 button{border:0;background:none;border-radius:9px;padding:8px;font-size:14px;font-weight:600;color:var(--muted)}
+.seg2 button[aria-pressed="true"]{background:var(--odra);color:var(--odra-ink)}
+.fld{display:flex;flex-direction:column;gap:6px}
+.pwrow{display:flex;gap:6px}.pwrow input{flex:1;min-width:0}
+select,input[type=text],input[type=email],input[type=password]{font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;width:100%}
+input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border-color:var(--odra);outline:none}
+.err{color:var(--bad);font-size:13px;min-height:18px}
+.coupon{font-family:var(--mono);font-size:22px;letter-spacing:.12em;text-align:center;padding:14px;border:2px dashed var(--ochre);border-radius:14px;color:var(--ochre);user-select:all}
+
+/* mini game */
+.mg-photo{height:220px;border-radius:16px;overflow:hidden;position:relative;flex:none}
+.mg-photo .photo{position:absolute;inset:0}
+.answers{display:grid;gap:8px}
+.answers button{text-align:left}
+.answers button.right{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 14%,var(--card))}
+.answers button.wrong{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,var(--card))}
+
+/* toast */
+.toast{position:absolute;left:50%;bottom:96px;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:9px 14px;border-radius:12px;font-size:13.5px;font-weight:500;max-width:85%;text-align:center;animation:up2 .25s}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}.vfeed,.hscroll{scroll-behavior:auto}}
+</style>
+
+<div class="stage">
+  <div class="phone" id="phone">
+    <div id="app"></div>
+    <div id="rv"></div>
+    <div id="ov"></div>
+    <div id="toast"></div>
+  </div>
+
+  <aside class="panel" aria-label="Панель прототипа">
+    <div>
+      <p class="eyebrow" style="margin-bottom:6px">BEST Hacks 2026 · Historia</p>
+      <h1>Łowcy Historii</h1>
+      <p style="margin-top:8px">Кликабельный прототип по документу проекта. Интерфейс приложения на польском (НФТ-08), эта панель — для команды.</p>
+    </div>
+    <div>
+      <h3>Перейти к экрану</h3>
+      <div class="jump">
+        <button data-act="jump" data-arg="welcome">Онбординг</button>
+        <button data-act="jump" data-arg="login">Регистрация / вход</button>
+        <button data-act="jump" data-arg="feed">Лента наград</button>
+        <button data-act="jump" data-arg="map">Карта</button>
+        <button data-act="jump" data-arg="camera">Камера</button>
+        <button data-act="jump" data-arg="success">Успешная находка</button>
+        <button data-act="jump" data-arg="reward">Своя награда</button>
+        <button data-act="jump" data-arg="share">Поделиться</button>
+        <button data-act="jump" data-arg="shop">Магазин</button>
+        <button data-act="jump" data-arg="next">Выбор места</button>
+        <button data-act="jump" data-arg="ranking">Лидерборд</button>
+        <button data-act="jump" data-arg="profile">Профиль</button>
+        <button data-act="jump" data-arg="mini">Мини-игра</button>
+      </div>
+    </div>
+    <div>
+      <h3>Демо-режим (ФТ-24)</h3>
+      <label class="chk"><input type="checkbox" id="demoToggle"> Ставить позицию игрока тапом по карте</label>
+      <div class="jump">
+        <button data-act="placeIn">Игрок в круг</button>
+        <button data-act="placeOut">Игрок вне круга</button>
+        <button data-act="addPts">+100 pkt</button>
+        <button data-act="miniReset">Снять лимит мини-игры</button>
+        <button data-act="reset">Сбросить прогресс</button>
+      </div>
+    </div>
+    <div>
+      <h3>Экономика</h3>
+      <ul>
+        <li><b>XP</b> — только для лидерборда. Даётся за находки.</li>
+        <li><b>Punkty</b> — валюта: подсказки, публичные рилсы, купоны партнёров. Даются за находки и мини-игру.</li>
+        <li>Подсказка в раунде снижает награду (XP и очки) на 25%. Купленная подсказка награду не снижает.</li>
+        <li>Место за очки не открыть, только найти.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Лента</h3>
+      <p>Свайп вверх/вниз (или колесо) — следующая награда, влево/вправо или тап по краю — кадры внутри. Справа: сколько нашли, комментарии, поделиться реферальной ссылкой на задание.</p>
+    </div>
+    <p class="note">GPS и CLIP имитируются, картинки — заглушки вместо архивных фото. Факты в рилсах — демо-контент: перед питчем сверить с источниками.</p>
+  </aside>
+</div>
+
+<script>
+(function(){
+const $=s=>document.querySelector(s);
+const app=$('#app'), ov=$('#ov'), rv=$('#rv'), toastEl=$('#toast');
+const R=95, THRESH=0.78, UNIT_M=1.7, DUR=4800;
+const XP_BASE=100, PTS_BASE=40, MINI_PTS=3, REF_BONUS=20;
+const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- data ---------- */
+const PLACES=[
+ {id:'ratusz',name:'Ratusz',x:276,y:538,kind:'townhall',color:'#9a5a3c',finds:412,year:'XIII–XVI w.',church:false,
+  task:'Znajdź gotycki budynek z wieżą i zegarem pośrodku rynku.',
+  hints:['Stoi na środku dużego placu, otoczony ogródkami kawiarni.','Ma bogato zdobiony szczyt i zegar na wschodniej ścianie.','W jego piwnicy działa jedna z najstarszych restauracji w Europie.'],
+  reel:[['archive','Wrocławski Ratusz budowano i przebudowywano przez około 250 lat, od końca XIII do XVI wieku.'],['now','To jeden z najcenniejszych zabytków późnogotyckiej architektury świeckiej w Polsce.'],['ai','W piwnicy działa Piwnica Świdnicka, jedna z najstarszych restauracji w Europie.'],['now','Dziś w Ratuszu mieści się Muzeum Sztuki Mieszczańskiej.']],
+  src:[['Wikipedia: Ratusz we Wrocławiu','https://pl.wikipedia.org/wiki/Ratusz_we_Wroc%C5%82awiu'],['Wikidata','https://www.wikidata.org/']]},
+ {id:'katedra',name:'Archikatedra św. Jana',x:860,y:221,kind:'twin',color:'#8c4532',finds:356,year:'XIII–XIV w.',church:true,
+  task:'Znajdź kościół z dwiema wysokimi, ostrymi wieżami.',
+  hints:['Szukaj na wyspie, na którą prowadzi most pełen kłódek.','Wieczorem latarnik ręcznie zapala tu gazowe latarnie.','To najważniejszy kościół archidiecezji, na Ostrowie Tumskim.'],
+  reel:[['archive','Ostrów Tumski to najstarsza część Wrocławia. Tu zaczynało się miasto.'],['now','Obecna gotycka katedra powstawała od XIII do XIV wieku.'],['archive','W 1945 roku świątynia została poważnie zniszczona.'],['ai','Charakterystyczne hełmy wież odtworzono dopiero w 1991 roku.']],
+  src:[['Wikipedia: Archikatedra św. Jana Chrzciciela','https://pl.wikipedia.org/wiki/Archikatedra_%C5%9Bw._Jana_Chrzciciela_we_Wroc%C5%82awiu'],['Wikimedia Commons','https://commons.wikimedia.org/']]},
+ {id:'elzbieta',name:'Kościół św. Elżbiety',x:200,y:434,kind:'single',color:'#8f4a35',finds:187,year:'XIV w.',church:true,
+  task:'Znajdź kościół z jedną bardzo wysoką wieżą tuż przy rynku.',
+  hints:['Obok stoją dwie małe kamieniczki połączone bramą.','Na wieżę można wejść i zobaczyć całe Stare Miasto.','Te kamieniczki nazywają się Jaś i Małgosia.'],
+  reel:[['archive','Gotycka bazylika św. Elżbiety powstała w XIV wieku.'],['now','Jej wieża ma ponad 90 metrów i należy do najwyższych we Wrocławiu.'],['archive','W latach 70. XX wieku pożar zniszczył dużą część wnętrza.'],['ai','Obok stoją kamieniczki Jaś i Małgosia, dawne domy altarystów.']],
+  src:[['Wikipedia: Kościół św. Elżbiety','https://pl.wikipedia.org/wiki/Ko%C5%9Bci%C3%B3%C5%82_%C5%9Bw._El%C5%BCbiety_we_Wroc%C5%82awiu'],['Polska-org.pl','https://polska-org.pl/']]},
+ {id:'uniwersytet',name:'Gmach Uniwersytetu',x:380,y:241,kind:'baroque',color:'#c9b48a',finds:164,year:'1728–1742',church:false,
+  task:'Znajdź długi barokowy gmach nad samą Odrą.',
+  hints:['Patrz od strony rzeki, między dwoma mostami.','Przed wejściem od placu stoi fontanna z szermierzem.','W środku jest słynna barokowa Aula Leopoldina.'],
+  reel:[['archive','Uczelnię założył w 1702 roku cesarz Leopold I. Stąd nazwa Leopoldina.'],['now','Gmach główny to jeden z największych barokowych budynków w Europie Środkowej.'],['ai','Aula Leopoldina zachwyca iluzjonistycznymi malowidłami na suficie.'],['now','Z uczelnią związanych było kilku laureatów Nagrody Nobla.']],
+  src:[['Wikipedia: Uniwersytet Wrocławski','https://pl.wikipedia.org/wiki/Uniwersytet_Wroc%C5%82awski'],['Wikidata','https://www.wikidata.org/']]},
+ {id:'most',name:'Most Tumski',x:720,y:241,kind:'bridge',color:'#4f7a5c',finds:298,year:'koniec XIX w.',church:false,
+  task:'Znajdź zielony most obwieszony kłódkami.',
+  hints:['Łączy dwie wyspy na Odrze.','Prowadzi w stronę dwóch wysokich wież katedry.','Zakochani wrzucają stąd klucze do rzeki.'],
+  reel:[['archive','Most Tumski łączy Wyspę Piasek z Ostrowem Tumskim.'],['now','Obecną stalową konstrukcję zbudowano pod koniec XIX wieku.'],['ai','Zakochani zawieszają na nim kłódki, a klucze wrzucają do Odry.'],['now','Wieczorem latarnik ręcznie zapala gazowe latarnie na Ostrowie.']],
+  src:[['Wikipedia: Most Tumski we Wrocławiu','https://pl.wikipedia.org/wiki/Most_Tumski_we_Wroc%C5%82awiu'],['Wikimedia Commons','https://commons.wikimedia.org/']]},
+ {id:'hala',name:'Hala Targowa',x:580,y:331,kind:'hall',color:'#a0573d',finds:121,year:'1906–1908',church:false,
+  task:'Znajdź ceglaną halę, w której od ponad stu lat robi się zakupy.',
+  hints:['Stoi niedaleko Odry, przy ulicy Piaskowej.','W środku dach podpierają betonowe łuki.','Zbudowano ją na początku XX wieku jako targowisko.'],
+  reel:[['archive','Halę Targową zbudowano w latach 1906–1908.'],['now','Projektował ją architekt Richard Plüddemann.'],['ai','Dach podtrzymują żelbetowe łuki, nowatorskie jak na tamte czasy.'],['now','Do dziś działa tu targowisko z warzywami, kwiatami i rękodziełem.']],
+  src:[['Wikipedia: Hala Targowa we Wrocławiu','https://pl.wikipedia.org/wiki/Hala_Targowa_we_Wroc%C5%82awiu'],['NAC','https://www.nac.gov.pl/']]},
+ {id:'piasek',name:'Kościół NMP na Piasku',x:592,y:186,kind:'gothic',color:'#93503a',finds:58,year:'XIV w.',church:true,
+  task:'Znajdź gotycki kościół na małej wyspie, z wysokim dachem i bez wysokiej wieży.',
+  hints:['Wyspa leży między dwoma ramionami Odry.','Obok jest Most Piaskowy i budynek biblioteki.','Nazwa wyspy kojarzy się z plażą.'],
+  reel:[['archive','Kościół NMP na Piasku to gotycka świątynia z XIV wieku.'],['now','Stoi na Wyspie Piasek, między ramionami Odry.'],['archive','W 1945 roku został mocno zniszczony i odbudowany po wojnie.'],['ai','To kościół halowy: nawy mają podobną wysokość.']],
+  src:[['Wikipedia: Kościół NMP na Piasku','https://pl.wikipedia.org/wiki/Ko%C5%9Bci%C3%B3%C5%82_Naj%C5%9Bwi%C4%99tszej_Marii_Panny_na_Piasku_we_Wroc%C5%82awiu'],['Polska-org.pl','https://polska-org.pl/']]},
+ {id:'opera',name:'Opera Wrocławska',x:224,y:862,kind:'opera',color:'#cdb98f',finds:96,year:'1841',church:false,
+  task:'Znajdź klasycystyczny gmach z kolumnami przy fosie miejskiej.',
+  hints:['Stoi przy ulicy Świdnickiej, poza Starym Miastem.','Niedaleko płynie fosa z zielonymi bulwarami.','Od XIX wieku wystawia się tu spektakle muzyczne.'],
+  reel:[['archive','Gmach opery otwarto w 1841 roku.'],['now','Projektował go Carl Ferdinand Langhans.'],['archive','Po pożarach w XIX wieku budynek kilka razy odbudowywano.'],['ai','Dziś to jedna z najważniejszych scen operowych w Polsce.']],
+  src:[['Wikipedia: Opera Wrocławska','https://pl.wikipedia.org/wiki/Opera_Wroc%C5%82awska'],['Wikidata','https://www.wikidata.org/']]},
+];
+const byId=Object.fromEntries(PLACES.map(p=>[p.id,p]));
+const ROUTE=['ratusz','elzbieta','piasek','katedra'];
+const PLAYERS=[['kasia_wro',3100],['MarekZNadodrza',2775],['ola.ostrow',2450],['tomek_h',2100],['Julka',1800],['piotr.breslau',1525],['Ania_K',1200],['wiktor99',900],['Zosia',600]];
+
+const PUB=[
+ {key:'how',type:'public',title:'Jak grać w Łowców Historii',price:0,views:2410,slides:[
+  {icon:'circle',t:'Na mapie pojawia się krąg. Zabytek jest gdzieś w środku.'},
+  {icon:'task',t:'Dostajesz zadanie w jednym prostym zdaniu.'},
+  {icon:'camera',t:'Idziesz na miejsce i robisz zdjęcie budynku.'},
+  {icon:'reward',t:'Za znalezisko dostajesz XP do rankingu, punkty i rolkę o historii miejsca.'}],src:[['Łowcy Historii · BEST Hacks 2026','https://docs.expo.dev/']]},
+ {key:'city',type:'public',title:'Wrocław w 40 sekund',price:0,views:1870,slides:[
+  {v:'archive',k:'twin',c:'#8c4532',t:'Historia Wrocławia zaczyna się na Ostrowie Tumskim ponad tysiąc lat temu.'},
+  {v:'now',k:'bridge',c:'#4f7a5c',t:'Miasto leży na kilkunastu wyspach i ma ponad sto mostów.'},
+  {v:'ai',k:'townhall',c:'#9a5a3c',t:'Należało kolejno do Piastów, Czech, Habsburgów i Prus.'},
+  {v:'archive',k:'ruins',c:'#5b524a',t:'W 1945 roku oblężona Festung Breslau została w dużej części zniszczona.'},
+  {v:'now',k:'baroque',c:'#c9b48a',t:'Po wojnie miasto odbudowali nowi mieszkańcy, wielu przybyło ze Lwowa.'}],
+  src:[['Wikipedia: Historia Wrocławia','https://pl.wikipedia.org/wiki/Historia_Wroc%C5%82awia'],['Narodowe Archiwum Cyfrowe','https://www.nac.gov.pl/']]},
+ {key:'krasnale',type:'public',title:'Skąd się wzięły krasnale?',price:40,views:960,slides:[
+  {v:'now',k:'kamienice',c:'#a96b55',t:'Pierwszy krasnal z brązu, Papa Krasnal, stanął przy ulicy Świdnickiej w 2001 roku.'},
+  {v:'archive',k:'kamienice',c:'#a96b55',t:'Upamiętnia Pomarańczową Alternatywę, ruch, który w latach 80. kpił z władzy happeningami.'},
+  {v:'ai',k:'kamienice',c:'#a96b55',t:'Dziś w mieście stoi kilkaset krasnali, każdy z własnym imieniem.'}],
+  src:[['Wikipedia: Wrocławskie krasnale','https://pl.wikipedia.org/wiki/Wroc%C5%82awskie_krasnale'],['Wikipedia: Pomarańczowa Alternatywa','https://pl.wikipedia.org/wiki/Pomara%C5%84czowa_Alternatywa']]},
+ {key:'festung',type:'public',title:'Festung Breslau 1945',price:60,views:740,slides:[
+  {v:'archive',k:'ruins',c:'#5b524a',t:'W 1945 roku Niemcy ogłosili Wrocław twierdzą: Festung Breslau.'},
+  {v:'archive',k:'townhall',c:'#6b5a4c',t:'Oblężenie trwało od lutego do 6 maja 1945 roku.'},
+  {v:'ai',k:'ruins',c:'#5b524a',t:'Miasto skapitulowało dopiero po upadku Berlina.'},
+  {v:'archive',k:'ruins',c:'#5b524a',t:'Zniszczona została duża część zabudowy.'}],
+  src:[['Wikipedia: Oblężenie Wrocławia (1945)','https://pl.wikipedia.org/wiki/Obl%C4%99%C5%BCenie_Wroc%C5%82awia_(1945)'],['Narodowe Archiwum Cyfrowe','https://www.nac.gov.pl/']]},
+ {key:'panorama',type:'public',title:'Panorama Racławicka',price:50,views:615,slides:[
+  {v:'now',k:'rotunda',c:'#b8ad98',t:'Panorama Racławicka to ogromny obraz namalowany w 1894 roku.'},
+  {v:'ai',k:'rotunda',c:'#b8ad98',t:'Stworzyli go Jan Styka i Wojciech Kossak.'},
+  {v:'archive',k:'rotunda',c:'#b8ad98',t:'Przedstawia bitwę pod Racławicami z 1794 roku.'},
+  {v:'now',k:'rotunda',c:'#b8ad98',t:'Po wojnie przywieziono ją ze Lwowa. We Wrocławiu jest pokazywana od 1985 roku.'}],
+  src:[['Wikipedia: Panorama Racławicka','https://pl.wikipedia.org/wiki/Panorama_Rac%C5%82awicka'],['Wikidata','https://www.wikidata.org/']]},
+];
+const pubBy=Object.fromEntries(PUB.map(r=>[r.key,r]));
+const DISCOVER=['city','ratusz','krasnale','katedra','elzbieta','festung','uniwersytet','most','panorama','hala','piasek','opera','how'];
+const SHOP_HINTS=[{key:'hint1',name:'Podpowiedź',desc:'Nie obniża nagrody za rundę',price:30,n:1},{key:'hint3',name:'3 podpowiedzi',desc:'Pakiet, taniej o 15 pkt',price:75,n:3}];
+const PARTNERS=[{key:'kawa',name:'Kawa −20%',desc:'Kawiarnia partnerska przy Rynku',price:120},{key:'muzeum',name:'Bilet do muzeum −30%',desc:'Muzeum partnerskie, kupon ważny 30 dni',price:200}];
+const CMT={
+ ratusz:[['kasia_wro','Zegar na ścianie od razu mnie zdradził'],['tomek_h','Mijam go codziennie i nie wiedziałem o tej piwnicy']],
+ katedra:[['ola.ostrow','Latarnik naprawdę zapala lampy o zmroku, polecam przyjść wieczorem'],['Julka','Wjechałam windą na wieżę, widok obłędny']],
+ elzbieta:[['wiktor99','Jaś i Małgosia to najlepsza podpowiedź'],['Ania_K','Schody na wieżę dają w kość']],
+ uniwersytet:[['piotr.breslau','Szermierz przed wejściem jest kultowy'],['Zosia','Szukałam od złej strony, od rzeki jest łatwiej']],
+ most:[['MarekZNadodrza','Kłódek jest tyle, że most aż się ugina'],['kasia_wro','Najładniejszy o zachodzie słońca']],
+ hala:[['tomek_h','Przy okazji kupiłem pierogi'],['Julka','W środku te łuki robią wrażenie']],
+ piasek:[['ola.ostrow','Najtrudniejsze zadanie do tej pory'],['Zosia','Długo myślałam, że to katedra']],
+ opera:[['Ania_K','Kolumny nie do pomylenia'],['piotr.breslau','Fosa obok to świetne miejsce na spacer']],
+ city:[['MarekZNadodrza','Nie wiedziałem, że Wrocław ma tyle wysp'],['Julka','Fajny skrót przed pierwszym spacerem']],
+ how:[['wiktor99','Proste, zaczynam!']],
+ krasnale:[['kasia_wro','Teraz rozumiem, skąd te krasnale']],
+ festung:[['tomek_h','Mocny materiał, dobrze, że są źródła']],
+ panorama:[['Zosia','Muszę zobaczyć ją na żywo']],
+};
+
+/* ---------- state ---------- */
+let DRAFT_EMAIL='';
+function pwHash(em,pw){let h=5381;for(const c of em+'|'+pw)h=((h<<5)+h+c.charCodeAt(0))|0;return (h>>>0).toString(16)}
+function needAuth(){if(S.nick)return false;S.screen=S.email?'nick':'login';render();return true}
+function fresh(){return{screen:'welcome',onboarded:false,gift:false,nick:'',email:'',accounts:{},authMode:'register',points:0,xp:0,hints:0,found:{},owned:{},coupons:[],comments:{},round:null,player:{x:300,y:610},demo:true,photo:null,last:null,cam:true,loc:true,miniDay:null,sound:false,feedList:'all',feedStart:null,refs:0}}
+const KEY='lh-proto3';
+let S;try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+if(!S||typeof S!=='object')S=fresh();
+S.accounts=S.accounts||{};S.email=S.email||'';S.authMode=S.authMode||'register';
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+let MV={cx:430,cy:470,w:640};
+
+/* ---------- helpers ---------- */
+const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+const meters=u=>Math.max(10,Math.round(u*UNIT_M/10)*10);
+const foundCount=()=>Object.keys(S.found).length;
+const unfound=()=>PLACES.filter(p=>!S.found[p.id]);
+const factor=()=>S.round?Math.max(.25,1-.25*(S.round.paid||0)):1;
+const rXP=()=>Math.round(XP_BASE*factor()), rPts=()=>Math.round(PTS_BASE*factor());
+const inCircle=()=>S.round&&dist(S.player,{x:S.round.cx,y:S.round.cy})<=S.round.r+12;
+const today=()=>new Date().toLocaleDateString('sv');
+function untilMidnight(){const n=new Date(),m=new Date(n);m.setHours(24,0,0,0);const min=Math.ceil((m-n)/60000);return `${Math.floor(min/60)} h ${min%60} min`}
+function toast(t){toastEl.innerHTML=`<div class="toast">${t}</div>`;clearTimeout(toast.t);toast.t=setTimeout(()=>toastEl.innerHTML='',2400)}
+function hash(s){let h=7;for(const c of s)h=(h*31+c.charCodeAt(0))%9973;return h/9973}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+const fmt=n=>n>=1000?(n/1000).toFixed(1).replace('.',',')+' tys.':String(n);
+function refCode(){const b=(S.nick||'LOWCA').normalize('NFD').replace(/[^A-Za-z0-9]/g,'').toUpperCase().slice(0,8)||'LOWCA';return b+(10+Math.floor(hash(S.nick||'x')*89))}
+function reelBy(k){if(pubBy[k])return pubBy[k];const p=byId[k];return{key:k,type:'place',title:p.name,slides:p.reel.map(([v,t])=>({v,k:p.kind,c:p.color,t})),src:p.src,views:p.finds}}
+const owns=k=>pubBy[k]?(pubBy[k].price===0||!!S.owned[k]):!!S.found[k];
+const commentList=k=>[...(CMT[k]||[]),...(S.comments[k]||[])];
+
+/* ---------- silhouettes (placeholder imagery) ---------- */
+function wins(x0,y0,cols,rows,dx,dy,w,h,arch){let s='';for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){const x=x0+c*dx,y=y0+r*dy;s+=arch?`<path d="M${x},${y+h}V${y+w/2}A${w/2},${w/2} 0 0 1 ${x+w},${y+w/2}V${y+h}Z" fill="var(--win)"/>`:`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="var(--win)"/>`}return s}
+function scene(k){
+ const g='<rect x="-20" y="330" width="340" height="90" fill="var(--ground)"/>';
+ switch(k){
+ case'townhall':return g+`<rect x="50" y="205" width="200" height="125" fill="var(--sil)"/><polygon points="58,205 112,118 166,205" fill="var(--sil)"/>${[0,1,2,3,4].map(i=>`<rect x="${70+i*18}" y="${150+Math.abs(2-i)*14}" width="6" height="22" fill="var(--sil)"/>`).join('')}<rect x="186" y="100" width="34" height="105" fill="var(--sil)"/><polygon points="183,100 203,38 223,100" fill="var(--sil)"/><circle cx="112" cy="178" r="12" fill="var(--win)"/><line x1="112" y1="178" x2="112" y2="170" stroke="var(--sil)" stroke-width="2"/>${wins(64,232,9,2,20,46,10,26,true)}`;
+ case'twin':return g+`<rect x="30" y="215" width="240" height="115" fill="var(--sil)"/><polygon points="120,215 150,175 180,215" fill="var(--sil)"/><rect x="82" y="118" width="42" height="212" fill="var(--sil)"/><rect x="176" y="118" width="42" height="212" fill="var(--sil)"/><polygon points="80,118 103,22 126,118" fill="var(--sil)"/><polygon points="174,118 197,22 220,118" fill="var(--sil)"/>${wins(94,140,1,3,0,50,18,32,true)}${wins(188,140,1,3,0,50,18,32,true)}<path d="M136,330V270A14,14 0 0 1 164,270V330Z" fill="var(--win)"/>${wins(40,240,2,1,22,0,12,40,true)}${wins(232,240,2,1,18,0,12,40,true)}`;
+ case'single':return g+`<rect x="20" y="262" width="34" height="68" fill="var(--sil)"/><polygon points="20,262 37,236 54,262" fill="var(--sil)"/><rect x="62" y="270" width="30" height="60" fill="var(--sil)"/><polygon points="62,270 77,246 92,270" fill="var(--sil)"/><rect x="50" y="290" width="16" height="10" fill="var(--sil)"/><rect x="118" y="88" width="62" height="242" fill="var(--sil)"/><polygon points="114,88 149,30 184,88" fill="var(--sil)"/><rect x="146" y="12" width="6" height="22" fill="var(--sil)"/><rect x="175" y="205" width="115" height="125" fill="var(--sil)"/><polygon points="175,205 232,150 290,205" fill="var(--sil)"/>${wins(136,110,2,4,16,44,10,30,true)}${wins(188,228,4,1,24,0,12,58,true)}${wins(28,286,1,1,0,0,10,16)}${wins(70,290,1,1,0,0,10,16)}`;
+ case'baroque':return `<rect x="-20" y="318" width="340" height="100" fill="var(--wtr)"/><rect x="10" y="200" width="280" height="118" fill="var(--sil)"/><polygon points="4,200 24,176 276,176 296,200" fill="var(--sil)"/><rect x="138" y="128" width="24" height="50" fill="var(--sil)"/><path d="M134,128Q150,96 166,128Z" fill="var(--sil)"/><rect x="148" y="86" width="4" height="16" fill="var(--sil)"/>${wins(22,214,12,3,22,32,10,18)}<rect x="-20" y="316" width="340" height="4" fill="var(--ground)"/>`;
+ case'bridge':return `<rect x="-20" y="300" width="340" height="120" fill="var(--wtr)"/><rect x="-20" y="296" width="40" height="34" fill="var(--ground)"/><rect x="280" y="296" width="40" height="34" fill="var(--ground)"/><path d="M14,300Q150,175 286,300" fill="none" stroke="var(--sil)" stroke-width="10"/><path d="M14,300Q150,215 286,300" fill="none" stroke="var(--sil)" stroke-width="5"/>${[40,70,100,130,160,190,220,250].map(x=>`<line x1="${x}" y1="300" x2="${x}" y2="${300-(1-Math.pow((x-150)/136,2))*118}" stroke="var(--sil)" stroke-width="3"/>`).join('')}<rect x="8" y="294" width="284" height="10" fill="var(--sil)"/><rect x="22" y="250" width="4" height="46" fill="var(--sil)"/><circle cx="24" cy="248" r="6" fill="var(--win)"/><rect x="274" y="250" width="4" height="46" fill="var(--sil)"/><circle cx="276" cy="248" r="6" fill="var(--win)"/>${[60,90,120,150,180,210,240].map((x,i)=>`<circle cx="${x}" cy="292" r="3" fill="${i%2?'var(--win)':'#c2453a'}"/>`).join('')}`;
+ case'hall':return g+`<rect x="30" y="200" width="240" height="130" fill="var(--sil)"/><polygon points="80,200 150,120 220,200" fill="var(--sil)"/>${[0,1,2,3].map(i=>`<rect x="${92+i*30}" y="${170-Math.min(i,3-i)*22}" width="26" height="40" fill="var(--sil)"/>`).join('')}<path d="M100,300V215A50,50 0 0 1 200,215V300Z" fill="var(--win)"/>${[125,150,175].map(x=>`<line x1="${x}" y1="190" x2="${x}" y2="300" stroke="var(--sil)" stroke-width="3"/>`).join('')}<rect x="20" y="170" width="26" height="160" fill="var(--sil)"/><rect x="254" y="170" width="26" height="160" fill="var(--sil)"/>${wins(42,240,1,2,0,40,10,24,true)}${wins(248,240,1,2,0,40,10,24,true)}`;
+ case'gothic':return g+`<rect x="24" y="200" width="252" height="130" fill="var(--sil)"/><polygon points="20,202 150,96 280,202" fill="var(--sil)"/><rect x="146" y="70" width="8" height="40" fill="var(--sil)"/><polygon points="142,74 150,48 158,74" fill="var(--sil)"/>${wins(40,220,8,1,30,0,14,78,true)}`;
+ case'opera':return g+`<rect x="30" y="215" width="240" height="115" fill="var(--sil)"/><polygon points="80,215 150,168 220,215" fill="var(--sil)"/><polygon points="96,212 150,178 204,212" fill="var(--win)" opacity=".35"/>${[90,112,134,156,178,200].map(x=>`<rect x="${x}" y="222" width="10" height="92" fill="var(--win)"/>`).join('')}<rect x="76" y="314" width="148" height="8" fill="var(--win)"/><rect x="70" y="322" width="160" height="8" fill="var(--win)" opacity=".7"/>${wins(40,236,2,2,18,40,10,26)}${wins(234,236,2,2,18,40,10,26)}`;
+ case'rotunda':return g+`<rect x="40" y="200" width="220" height="130" fill="var(--sil)"/><ellipse cx="150" cy="200" rx="110" ry="22" fill="var(--sil)"/><path d="M60,196Q150,120 240,196Z" fill="var(--sil)"/><rect x="144" y="122" width="12" height="20" fill="var(--sil)"/>${wins(56,232,8,1,25,0,12,64)}<rect x="128" y="290" width="44" height="40" fill="var(--win)"/>`;
+ case'kamienice':return g+[[10,62,170,'#b07a52'],[72,58,150,'#c9a46a'],[130,64,180,'#8e6a4f'],[194,54,160,'#a96b55'],[248,60,175,'#b89a6b']].map(([x,w,y,c])=>`<rect x="${x}" y="${y}" width="${w}" height="${330-y}" fill="${c}"/><polygon points="${x},${y} ${x+w/2},${y-36} ${x+w},${y}" fill="${c}"/>${wins(x+10,y+16,2,4,w/2-6,36,12,20)}`).join('')+`<g transform="translate(150 330)"><ellipse cx="0" cy="0" rx="14" ry="3" fill="#3a3a36"/><rect x="-6" y="-22" width="12" height="20" rx="4" fill="#6d5a3c"/><circle cx="0" cy="-28" r="7" fill="#c9a07a"/><polygon points="-8,-32 0,-50 8,-32" fill="#b5422e"/></g>`;
+ case'ruins':return g+`<path d="M10,330V230L30,210L40,240L60,190L75,236L92,226V330ZM110,330V180L128,200L140,170L150,214L170,190V330ZM190,330V250L210,226L222,260L240,214L262,248L290,236V330Z" fill="var(--sil)"/>${wins(20,262,2,2,30,30,10,14)}${wins(120,230,2,3,24,30,10,14)}${wins(200,272,3,1,28,0,10,14)}<rect x="-20" y="322" width="340" height="12" fill="var(--sil)" opacity=".5"/>`;
+ }
+}
+function photo(kind,style,color,extra=''){return `<div class="photo ${style} ${extra}" style="--sil:${color||'#8e4b36'}"><svg viewBox="0 0 300 400" preserveAspectRatio="xMidYMax slice" aria-hidden="true">${scene(kind)}</svg>${style==='archive'?'<i class="grain"></i>':''}</div>`}
+function iconScene(k){
+ const bg='<rect width="300" height="400" fill="#16233f"/><circle cx="240" cy="70" r="120" fill="#20336b"/>';
+ const map='<rect x="40" y="90" width="220" height="220" rx="18" fill="#e4e8de"/><path d="M40,170C110,150 160,200 260,180" stroke="#b4c9e4" stroke-width="22" fill="none"/>';
+ switch(k){
+ case'circle':return bg+map+'<circle cx="160" cy="230" r="58" fill="#2c52c4" fill-opacity=".18" stroke="#2c52c4" stroke-width="3" stroke-dasharray="8 6"/><circle cx="110" cy="270" r="9" fill="#2c52c4" stroke="#fff" stroke-width="3"/><text x="176" y="236" font-size="30" fill="#b5422e" font-family="serif">?</text>';
+ case'task':return bg+'<rect x="40" y="130" width="220" height="120" rx="20" fill="#fff"/><text x="62" y="176" font-size="20" font-family="Georgia,serif" fill="#1b211e">Znajdź kościół</text><text x="62" y="204" font-size="20" font-family="Georgia,serif" fill="#1b211e">z dwiema wieżami</text><polygon points="80,250 110,250 84,280" fill="#fff"/>';
+ case'camera':return bg+'<rect x="60" y="110" width="180" height="230" rx="22" fill="#0b0d0c" stroke="#fff" stroke-width="3"/><g transform="translate(75 125) scale(.5)">'+scene('twin').replace(/var\(--sil\)/g,'#8c4532').replace(/var\(--win\)/g,'#f2e7c9').replace(/var\(--ground\)/g,'#7d837a')+'</g><circle cx="150" cy="365" r="16" fill="#fff"/>';
+ case'reward':return bg+'<rect x="85" y="70" width="130" height="210" rx="16" fill="#0b0d0c" stroke="#fff" stroke-width="3"/><polygon points="135,145 135,205 180,175" fill="#fff"/><text x="150" y="330" text-anchor="middle" font-size="30" font-family="IBM Plex Mono,monospace" font-weight="600" fill="#b597ff">+100 XP</text><text x="150" y="366" text-anchor="middle" font-size="26" font-family="IBM Plex Mono,monospace" font-weight="600" fill="#e2aa45">+40 pkt</text>';
+ }
+}
+function slideVisual(s){return s.icon?`<div class="photo"><svg viewBox="0 0 300 400" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${iconScene(s.icon)}</svg></div>`:photo(s.k,s.v,s.c)}
+function slideLabel(s){return s.icon?'':s.v==='archive'?'<span class="rlabel">Archiwum</span>':s.v==='ai'?'<span class="rlabel ai">Ilustracja AI</span>':'<span class="rlabel">Zdjęcie współczesne</span>'}
+
+/* ---------- icons ---------- */
+const sv=p=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+const IC={
+ feed:sv('<rect x="5" y="3" width="14" height="18" rx="3"/><path d="M10 9l5 3-5 3z" fill="currentColor"/>'),
+ map:sv('<path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M9 4v14M15 6v14"/>'),
+ bag:sv('<path d="M5 8h14l-1 13H6z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/>'),
+ rank:sv('<path d="M4 20V12h4v8M10 20V6h4v14M16 20v-6h4v6"/>'),
+ user:sv('<circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/>'),
+ near:sv('<circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8"/><path d="M12 1v3M12 20v3M1 12h3M20 12h3"/>'),
+ fire:sv('<path d="M12 22c4 0 7-3 7-7 0-5-5-7-5-12-3 2-4 5-4 7-1-1-2-2-2-4-2 2-3 5-3 9 0 4 3 7 7 7z"/>'),
+ dice:sv('<rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1.2" fill="currentColor"/><circle cx="15" cy="15" r="1.2" fill="currentColor"/><circle cx="15" cy="9" r="1.2" fill="currentColor"/><circle cx="9" cy="15" r="1.2" fill="currentColor"/>'),
+ route:sv('<circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="6" r="2.5"/><path d="M8 17c6 0 2-9 8-10"/>'),
+ foot:sv('<path d="M7.5 15c-1.8 0-2.8-2.4-2.8-5S5.7 5 7.5 5s2.8 2.4 2.8 5-1 5-2.8 5zM6 17.6c0 1.6.7 2.9 1.7 2.9s1.6-1.2 1.6-2.6"/><path d="M16.5 11c-1.8 0-2.8-2.4-2.8-5S14.7 1.5 16.5 1.5s2.8 2.4 2.8 4.5-1 5-2.8 5zM15 13.6c0 1.6.7 2.9 1.7 2.9s1.6-1.2 1.6-2.6"/>'),
+ eye:sv('<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>'),
+ chat:sv('<path d="M4 5h16v11H9l-5 4z"/>'),
+ share:sv('<path d="M14 4l7 7-7 7v-4c-6 0-9 2-11 6 0-7 3-12 11-12z"/>'),
+ pin:sv('<path d="M12 22s7-7 7-12a7 7 0 0 0-14 0c0 5 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/>'),
+ snd:sv('<path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16 9a4 4 0 0 1 0 6M19 6a8 8 0 0 1 0 12"/>'),
+ mute:sv('<path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M17 9l5 6M22 9l-5 6"/>'),
+ target:sv('<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1" fill="currentColor"/>'),
+ lock:sv('<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>'),
+ bulb:sv('<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.8.8 1 1.5 1 2.5h6c0-1 .2-1.7 1-2.5A6 6 0 0 0 12 3z"/>'),
+ ticket:sv('<path d="M3 8a2 2 0 0 0 0 4v4h18v-4a2 2 0 0 1 0-4V4H3z"/><path d="M14 4v16" stroke-dasharray="2 2"/>'),
+};
+
+/* ---------- reel items (shared by the feed and the onboarding overlay) ---------- */
+function side(r,open){const isP=r.type==='place';return `<div class="rside">
+ <button data-act="finders" data-arg="${r.key}" aria-label="${isP?'Ilu graczy znalazło':'Wyświetlenia'}"><span class="ic">${isP?IC.foot:IC.eye}</span><span>${fmt(r.views)}</span></button>
+ <button data-act="comments" data-arg="${r.key}" ${open?'':'disabled'} aria-label="Komentarze"><span class="ic">${IC.chat}</span><span data-cc="${r.key}">${commentList(r.key).length}</span></button>
+ <button data-act="share" data-arg="${r.key}" aria-label="Udostępnij"><span class="ic">${IC.share}</span>Udostępnij</button>
+ ${isP?`<button data-act="showOnMap" data-arg="${r.key}" aria-label="Pokaż na mapie"><span class="ic">${IC.pin}</span>Mapa</button>`:''}</div>`}
+function srcCard(r,mode){
+ const actions=mode==='ov'?`<button class="btn primary block" data-act="reelDone">${(RVO&&RVO.doneLabel)||'Dalej'}</button>`
+  :r.type==='place'?`<button class="btn primary block" data-act="share" data-arg="${r.key}">Pochwal się znaleziskiem</button><button class="btn block" data-act="go" data-arg="next">Szukaj kolejnego miejsca</button>`
+  :`<button class="btn primary block" data-act="vnext">Następna rolka</button>`;
+ return `<div class="rsrc ${mode}"><span class="eyebrow">Karta źródeł</span><h4>${r.title}</h4><p class="small" style="margin:0">Scenariusz napisany wyłącznie na podstawie poniższych źródeł. Kadry oznaczone „Ilustracja AI” są wygenerowane. W prototypie obrazy to kadry zastępcze.</p><ul>${r.src.map(([t,u])=>`<li><a href="${u}" target="_blank" rel="noopener">${t}</a></li>`).join('')}</ul><p class="small" style="margin:0">Zdjęcia: Wikimedia Commons, NAC (licencje CC i domena publiczna). Głos: TTS.</p><div style="flex:1"></div>${actions}</div>`}
+function reelItem(r,mode){
+ const open=owns(r.key);
+ if(!open){const isP=r.type==='place';const p=byId[r.key];
+  return `<section class="ritem locked" data-key="${r.key}" data-n="0"><div class="slide">${isP?photo(p.kind,'archive',p.color):slideVisual(r.slides[0])}</div>
+  <div class="lockc">${IC.lock.replace('<svg','<svg width="30" height="30"')}<b>${isP?'Zamknięte miejsce':esc(r.title)}</b>
+  <span>${isP?'Tę rolkę dostaje się tylko za znalezienie miejsca w terenie.':'Rolka publiczna · '+r.slides.length+' kadry · '+fmt(r.views)+' wyświetleń'}</span>
+  ${isP?`<button class="btn primary" data-act="huntThis" data-arg="${r.key}">Szukaj na mapie</button>`:`<button class="btn primary" data-act="buy" data-arg="${r.key}">Kup za ${r.price} pkt</button><span class="pts" style="font-size:12.5px">Masz ${S.points} pkt</span>`}</div>
+  ${side(r,false)}<div class="rmeta"><b>${isP?'??? · '+p.year:esc(r.title)}</b><span>${isP?`Znalazło je ${p.finds} łowców`:'Do kupienia w sklepie'}</span></div></section>`}
+ const n=r.slides.length;
+ const sub=r.type==='place'?`Odkryte przez Ciebie · ${byId[r.key].year}`:'Rolka publiczna';
+ return `<section class="ritem" data-key="${r.key}" data-n="${n}">
+  <div class="hscroll">${r.slides.map((s,i)=>`<div class="slide${i===0?' on':''}">${slideVisual(s)}${slideLabel(s)}<div class="rcap"><span>${s.t}</span></div><div class="snav"><button data-act="hprev" aria-label="Poprzedni kadr"></button><button data-act="hnext" aria-label="Następny kadr"></button></div></div>`).join('')}<div class="slide">${srcCard(r,mode)}</div></div>
+  <div class="rbars">${Array.from({length:n+1},()=>'<i><b></b></i>').join('')}</div>
+  ${mode==='feed'?side(r,true)+`<div class="rmeta"><b>${esc(r.title)}</b><span>${sub}</span></div>`:''}</section>`}
+
+/* ---------- reel engine: one active item, horizontal slides, auto-advance ---------- */
+const FE={root:null,obs:null,item:null,cur:0,el0:0,last:0,raf:0};
+function mountFeed(root){unmountFeed();if(!root)return;FE.root=root;
+ FE.obs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting&&e.intersectionRatio>=.6)activate(e.target)})},{root,threshold:[.6]});
+ root.querySelectorAll('.ritem').forEach(i=>FE.obs.observe(i));
+ root.querySelectorAll('.hscroll').forEach(h=>h.addEventListener('scroll',()=>onH(h),{passive:true}));
+ FE.last=performance.now();FE.raf=requestAnimationFrame(feTick)}
+function unmountFeed(){if(FE.obs)FE.obs.disconnect();cancelAnimationFrame(FE.raf);FE.root=null;FE.item=null;FE.obs=null;try{speechSynthesis.cancel()}catch(e){}}
+function idx(h){return h&&h.clientWidth?Math.round(h.scrollLeft/h.clientWidth):0}
+function activate(item){if(FE.item===item)return;FE.item=item;FE.cur=idx(item.querySelector('.hscroll'));FE.el0=0;paint();if(FE.root&&FE.root.id==='vfeed'){S.feedStart=item.dataset.key;save()}}
+function onH(h){const item=h.closest('.ritem');if(item!==FE.item)return;const i=idx(h);if(i!==FE.cur){FE.cur=i;FE.el0=0;paint()}}
+function paint(){const it=FE.item;if(!it)return;it.querySelectorAll('.rbars b').forEach((b,k)=>b.style.width=k<FE.cur?'100%':'0');
+ it.querySelectorAll('.hscroll>.slide').forEach((s,k)=>s.classList.toggle('on',k===FE.cur));
+ const cap=it.querySelectorAll('.hscroll>.slide')[FE.cur];const t=cap&&cap.querySelector('.rcap');speak(t?t.textContent:'')}
+function feTick(now){const dt=now-FE.last;FE.last=now;const it=FE.item;
+ if(it&&!it.classList.contains('locked')&&!ov.childElementCount&&document.visibilityState!=='hidden'){const n=+it.dataset.n;
+  if(FE.cur<n){FE.el0+=dt;const b=it.querySelectorAll('.rbars b')[FE.cur];if(b)b.style.width=Math.min(100,FE.el0/DUR*100)+'%';if(FE.el0>=DUR){FE.el0=-100000;goSlide(it,FE.cur+1)}}}
+ FE.raf=requestAnimationFrame(feTick)}
+function goSlide(it,i){const h=it.querySelector('.hscroll');if(!h)return;const n=+it.dataset.n;i=Math.max(0,Math.min(n,i));h.scrollTo({left:i*h.clientWidth,behavior:reduceMotion?'auto':'smooth'})}
+function speak(t){try{speechSynthesis.cancel();if(!S.sound||!t)return;const u=new SpeechSynthesisUtterance(t);u.lang='pl-PL';u.rate=1.05;speechSynthesis.speak(u)}catch(e){}}
+
+/* onboarding overlay (no tabs while onboarding) */
+let RVO=null;
+function openOv(r,opts){closeOv();RVO=opts;rv.innerHTML=`<div class="reel-ov"><div class="vfeed ov" id="ovfeed">${reelItem(r,'ov')}</div><div class="ovtop"><button class="fbtn" data-act="reelDone">Pomiń</button></div></div>`;mountFeed($('#ovfeed'))}
+function closeOv(){if(!rv.innerHTML)return;rv.innerHTML='';RVO=null;unmountFeed()}
+
+/* ---------- screens ---------- */
+function sbar(dark){return `<div class="sbar ${dark?'dark':''}"><span>9:41</span><i></i></div>`}
+const TABOF={feed:'feed',mini:'feed',map:'map',verify:'map',next:'map',shop:'shop',ranking:'ranking',profile:'profile',settings:'profile',contact:'profile'};
+function tabs(){const cur=TABOF[S.screen];const t=[['feed','Odkrywaj',IC.feed],['map','Mapa',IC.map],['shop','Sklep',IC.bag],['ranking','Ranking',IC.rank],['profile','Profil',IC.user]];
+ return `<nav class="tabs" aria-label="Nawigacja">${t.map(([s,l,i])=>`<button data-act="tab" data-arg="${s}" ${cur===s?'aria-current="page"':''}>${i}${l}</button>`).join('')}</nav>`}
+const balance=()=>`<span class="chip"><span class="pts c-xp">${S.xp}</span> XP</span><span class="chip"><span class="pts c-pts">${S.points}</span> pkt</span>`;
+function feedKeys(){if(S.feedList==='mine')return [...PLACES.filter(p=>S.found[p.id]).map(p=>p.id),...PUB.filter(r=>r.price>0&&S.owned[r.key]).map(r=>r.key)];return DISCOVER}
+
+const SCR={
+welcome:()=>`<div class="welcome"><div class="w-art">${photo('twin','archive','#8c4532','kb')}</div><div class="w-body">
+ <span class="eyebrow">Wrocław · gra miejska</span>
+ <h1 class="brand">Łowcy<br><em>Historii</em></h1>
+ <p class="muted" style="margin:0">Szukaj zabytków w mieście, potwierdź znalezisko zdjęciem i odblokuj krótką rolkę o historii miejsca.</p>
+ <button class="btn primary block" data-act="tutorial">Zaczynamy</button>
+ <button class="btn ghost block" data-act="skipTut">Pomiń wprowadzenie</button></div></div>`,
+reward:()=>`<div class="pad" style="min-height:100%;justify-content:center;text-align:center;align-items:center">
+ <span class="eyebrow">Prezent na start</span>
+ <div class="pts c-pts" style="font-size:52px">+50 pkt</div>
+ <p style="margin:0;max-width:30ch">Dostajesz też <b>1 podpowiedź</b>, która nie obniża nagrody. Przyda się, gdy zabytek dobrze się schowa.</p>
+ <button class="btn primary block" data-act="claim">Odbierz prezent</button></div>`,
+login:()=>{const reg=S.authMode!=='login';return `<form class="pad" id="authForm" style="min-height:100%;justify-content:center" novalidate>
+ <span class="eyebrow">${reg?'Krok 1 z 2 · konto':'Witaj ponownie'}</span><h2 class="scr">${reg?'Załóż konto':'Zaloguj się'}</h2>
+ <div class="seg2" role="group" aria-label="Rodzaj"><button type="button" data-act="authMode" data-arg="register" aria-pressed="${reg}">Nowe konto</button><button type="button" data-act="authMode" data-arg="login" aria-pressed="${!reg}">Mam już konto</button></div>
+ <div class="fld"><label class="eyebrow" for="email">E-mail</label><input type="email" id="email" autocomplete="email" inputmode="email" placeholder="np. jan@przyklad.pl" value="${esc(DRAFT_EMAIL)}"></div>
+ <div class="fld"><label class="eyebrow" for="pw">Hasło</label><div class="pwrow"><input type="password" id="pw" autocomplete="${reg?'new-password':'current-password'}" placeholder="${reg?'min. 8 znaków':'Twoje hasło'}"><button type="button" class="btn sm" data-act="pwShow" aria-controls="pw">Pokaż</button></div>${reg?'<span class="muted" style="font-size:12.5px">Co najmniej 8 znaków, w tym litera i cyfra.</span>':''}</div>
+ <div class="err" id="authErr" role="alert"></div>
+ <button class="btn primary block" type="submit">${reg?'Dalej: wybierz nick':'Zaloguj się'}</button>
+ ${reg?'':'<button class="link" type="button" data-act="forgot">Nie pamiętasz hasła?</button>'}
+ <button class="btn ghost block" type="button" data-act="guest">Przeglądaj jako gość</button>
+ <p class="muted" style="margin:0;font-size:12.5px">E-mail służy tylko do logowania i odzyskiwania konta. Inni gracze widzą wyłącznie Twój nick.</p></form>`},
+nick:()=>`<form class="pad" id="loginForm" style="min-height:100%;justify-content:center" novalidate>
+ <span class="eyebrow">Krok 2 z 2 · profil</span><h2 class="scr">Jak mamy Cię nazywać?</h2>
+ <p class="muted" style="margin:0">Nick zobaczą inni gracze w rankingu Wrocławia i pod Twoimi komentarzami. Konto: <b>${esc(S.email||'')}</b></p>
+ <label for="nick" class="eyebrow">Nick</label>
+ <input type="text" id="nick" maxlength="20" autocomplete="nickname" placeholder="np. lowca_z_nadodrza" value="${esc(S.nick||'')}">
+ <div class="err" id="nickErr" role="alert"></div>
+ <button class="btn primary block" type="submit">Graj</button>
+ <button class="link" type="button" data-act="logout">Użyj innego konta</button></form>`,
+feed(){const keys=feedKeys();
+ return `<div class="vfeed" id="vfeed">${keys.length?keys.map(k=>reelItem(reelBy(k),'feed')).join(''):`<section class="ritem"><div class="empty"><b>Tu będą Twoje nagrody</b><span>Każde znalezione miejsce dodaje tu rolkę o jego historii. Kupione rolki publiczne też tu trafią.</span><button class="btn primary" data-act="go" data-arg="map">Szukaj na mapie</button></div></section>`}</div>
+ <div class="ftop"><div class="seg" role="group" aria-label="Lista"><button data-act="feedList" data-arg="all" aria-pressed="${S.feedList!=='mine'}">Dla Ciebie</button><button data-act="feedList" data-arg="mine" aria-pressed="${S.feedList==='mine'}">Moje</button></div>
+ <div style="display:flex;gap:6px"><button class="fbtn" data-act="mini">${IC.target}Zgadnij</button><button class="fbtn" id="sndBtn" data-act="sound" aria-label="Lektor">${S.sound?IC.snd:IC.mute}</button></div></div>`},
+map(){const r=S.round,p=r&&byId[r.id];
+ return `<div class="mapwrap"><svg id="map" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Mapa centrum Wrocławia">${mapBase()}${mapDyn()}</svg>
+ <div class="map-top">${balance()}<span class="chip">Odkryte <span class="pts">${foundCount()}/${PLACES.length}</span></span>${S.demo?'<span class="chip demo">DEMO · tapnij mapę</span>':''}</div>
+ <div class="map-ctrl"><button data-act="zoom" data-arg="in" aria-label="Przybliż">+</button><button data-act="zoom" data-arg="out" aria-label="Oddal">−</button><button data-act="recenter" aria-label="Moja pozycja">◎</button></div>
+ ${r?`<div class="mcard"><div class="th"><span class="eyebrow">Zadanie</span><span style="font-size:13px">Nagroda <span class="pts c-xp">${rXP()} XP</span> · <span class="pts c-pts">${rPts()} pkt</span></span></div>
+  <p class="task-text">${p.task}</p>
+  ${r.hints?`<ul class="hints">${p.hints.slice(0,r.hints).map((h,i)=>`<li><b>${i+1}/3</b>${h}</li>`).join('')}</ul>`:''}
+  <div class="row"><button class="btn primary" data-act="camera">Aparat</button><button class="btn" data-act="hint" ${r.hints>=3?'disabled':''}>${r.hints>=3?'Brak podpowiedzi':S.hints?`Podpowiedź · z zapasu (${S.hints})`:'Podpowiedź · −25% nagrody'}</button></div>
+  <div class="th"><span class="muted" style="font-size:12.5px">${inCircle()?'✓ Jesteś w kręgu poszukiwań':'Wejdź do kręgu, żeby zrobić zdjęcie'}</span><button class="link" data-act="giveUp">Zmień miejsce</button></div></div>`
+ :(S.nick?`<div class="mcard"><span class="eyebrow">${foundCount()?'Runda zakończona':'Witaj, '+esc(S.nick)}</span><p class="task-text">${foundCount()===PLACES.length?'Odkryłeś cały Wrocław w tej wersji demo!':(foundCount()?'Gdzie szukamy teraz?':'Twój pierwszy zabytek jest tuż obok.')}</p>
+   ${foundCount()?'<button class="btn primary block" data-act="go" data-arg="next">Wybierz kolejne miejsce</button>':'<button class="btn primary block" data-act="firstTask">Pierwsze zadanie</button>'}</div>`
+ :`<div class="mcard"><p class="task-text">Zaloguj się, żeby grać.</p><button class="btn primary block" data-act="auth">Zaloguj się lub załóż konto</button></div>`)}
+ </div>`},
+camera(){const r=S.round,p=byId[r.id];const sel=S.photo||r.id;const k=sel==='kamienice'?{kind:'kamienice',name:'Zwykła kamienica'}:byId[sel];
+ const subs=[...PLACES,{id:'kamienice',name:'Zwykła kamienica',kind:'kamienice'}];
+ return `<div class="cam"><div class="cam-top"><button class="x" data-act="go" data-arg="map" aria-label="Zamknij">✕</button><span class="gps ${inCircle()?'ok':'bad'}">GPS · ${inCircle()?'w kręgu':'poza kręgiem'}</span></div>
+ <div class="vf">${photo(k.kind,'now',k.color)}<div class="crn"></div><div class="tk">${p.task}</div></div>
+ <div class="subj-h">Demo · co fotografujesz?</div>
+ <div class="subjects">${subs.map(s=>`<button data-act="pick" data-arg="${s.id}" aria-pressed="${s.id===sel}"><div class="t">${photo(s.kind,'now',s.color)}</div>${s.name}</button>`).join('')}</div>
+ <div class="shoot"><button class="shutter" data-act="shoot" aria-label="Zrób zdjęcie"></button></div></div>`},
+verify(){const L=S.last;const sel=L.photo==='kamienice'?{kind:'kamienice'}:byId[L.photo];
+ return `<div class="pad"><div class="th"><span class="eyebrow">Weryfikacja zdjęcia</span><span class="pts muted" style="font-size:12px" id="vt"></span></div>
+ <div style="display:flex;gap:12px;align-items:center"><div style="width:76px;height:96px;border-radius:12px;overflow:hidden;flex:none">${photo(sel.kind,'now',sel.color)}</div><p class="muted" style="margin:0;font-size:13.5px">Zdjęcie jest sprawdzane na serwerze i usuwane zaraz po weryfikacji. Twoja pozycja nie jest zapisywana.</p></div>
+ <div class="steps">
+  <div class="step" id="st1"><span class="dot">1</span><div><b>Lokalizacja GPS</b><span class="muted" id="st1t" style="font-size:13.5px">Sprawdzamy, czy jesteś w kręgu…</span></div></div>
+  <div class="step" id="st2"><span class="dot">2</span><div style="flex:1;min-width:0"><b>Porównanie obrazu (CLIP)</b><span class="muted" id="st2t" style="font-size:13.5px">Porównanie z ${PLACES.length} zabytkami w bazie</span><div class="bars" id="bars"></div></div></div>
+ </div><div id="vres"></div></div>`},
+next(){const all=foundCount()===PLACES.length;
+ if(all)return `<div class="pad"><span class="eyebrow">Wszystko odkryte</span><h2 class="scr">Znasz już całe demo!</h2><p class="muted" style="margin:0">W pełnej wersji kolejne miejsca dociągają się automatycznie z OpenStreetMap i Wikidata.</p><button class="btn primary block" data-act="mini">Zagraj w „Zgadnij miejsce”</button><button class="btn block" data-act="openMine">Moje nagrody</button></div>`;
+ const n=pickNear(),pop=pickPopular(),rnd=unfound().filter(p=>dist(p,S.player)<470);
+ const rd=ROUTE.filter(id=>S.found[id]).length;
+ return `<div class="pad"><span class="eyebrow">Odkryto ${foundCount()} z ${PLACES.length}</span><h2 class="scr">Dokąd teraz?</h2>
+ <button class="opt" data-act="choose" data-arg="near"><span class="ic">${IC.near}</span><div><b>Najbliższe</b><span>ok. ${meters(dist(n,S.player))} m od Ciebie</span></div></button>
+ <button class="opt" data-act="choose" data-arg="pop"><span class="ic">${IC.fire}</span><div><b>Najpopularniejsze</b><span>znalazło je już ${pop.finds} łowców</span></div></button>
+ <button class="opt" data-act="choose" data-arg="rnd"><span class="ic">${IC.dice}</span><div><b>Losowe w pobliżu</b><span>niespodzianka w promieniu ${meters(470)} m${rnd.length?'':' (brak, wylosujemy dalej)'}</span></div></button>
+ <span class="eyebrow" style="margin-top:6px">Trasy tematyczne</span>
+ <button class="opt" data-act="choose" data-arg="route"><span class="ic" style="color:var(--brick)">${IC.route}</span><div style="flex:1"><b>Gotycki Wrocław</b><span>${ROUTE.length} miejsca · ukończone ${rd}/${ROUTE.length}</span><div class="route">${ROUTE.map(id=>`<i class="${S.found[id]?'on':''}"></i>`).join('')}</div></div></button>
+ <button class="link" data-act="go" data-arg="map">Wróć do mapy</button></div>`},
+shop(){const pubs=PUB.filter(r=>r.price>0);
+ return `<div class="pad"><div><span class="eyebrow">Sklep</span><h2 class="scr">Wydaj punkty</h2></div>
+ <div class="row">${balance()}</div>
+ <p class="muted small" style="margin:0">Punkty to waluta gry. XP liczy się tylko do rankingu i nie da się go wydać. Miejsc nie można kupić: rolkę o miejscu dostajesz wyłącznie za znalezienie go w terenie.</p>
+ <span class="eyebrow">Podpowiedzi</span>
+ <div class="srows">${SHOP_HINTS.map(h=>`<div class="srow"><span class="si">${IC.bulb}</span><div class="st"><b>${h.name}</b><span>${h.desc}</span></div><button class="btn sm" data-act="buy" data-arg="${h.key}">${h.price} pkt</button></div>`).join('')}
+  <div class="srow"><span class="si" style="color:var(--muted)">${IC.bag}</span><div class="st"><b>W zapasie</b><span>Używane przed obniżaniem nagrody</span></div><span class="pts">${S.hints}</span></div></div>
+ <span class="eyebrow">Rolki publiczne</span>
+ <div class="srows">${pubs.map(r=>`<div class="srow"><span class="si">${slideVisual(r.slides[0])}</span><div class="st"><b>${r.title}</b><span>${r.slides.length} kadry · ${fmt(r.views)} wyświetleń</span></div>${S.owned[r.key]?`<button class="btn sm" data-act="openPub" data-arg="${r.key}">Obejrzyj</button>`:`<button class="btn sm" data-act="buy" data-arg="${r.key}">${r.price} pkt</button>`}</div>`).join('')}</div>
+ <span class="eyebrow">Nagrody partnerów · demo</span>
+ <div class="srows">${PARTNERS.map(c=>`<div class="srow"><span class="si">${IC.ticket}</span><div class="st"><b>${c.name}</b><span>${c.desc}</span></div><button class="btn sm" data-act="buy" data-arg="${c.key}">${c.price} pkt</button></div>`).join('')}</div>
+ ${S.coupons.length?`<span class="eyebrow">Moje kupony</span><div class="srows">${S.coupons.map(c=>`<div class="srow"><span class="si">${IC.ticket}</span><div class="st"><b>${c.name}</b><span class="pts">${c.code}</span></div></div>`).join('')}</div>`:''}</div>`},
+ranking(){const list=PLAYERS.map(([n,p])=>({n,p}));if(S.nick)list.push({n:S.nick,p:S.xp,me:1});list.sort((a,b)=>b.p-a.p);
+ return `<div class="pad"><div><span class="eyebrow">Wrocław · cały czas</span><h2 class="scr">Ranking łowców</h2></div>
+ <p class="muted small" style="margin:0">Ranking liczy XP za odkryte miejsca. Punkty wydane w sklepie nie mają na niego wpływu.</p>
+ <ol class="lb">${list.map((x,i)=>`<li class="${x.me?'me':''}"><span class="rk">${i+1}</span><span>${esc(x.n)}${x.me?' <span class="muted">(Ty)</span>':''}</span><span class="pts c-xp">${x.p} XP</span></li>`).join('')}</ol>
+ ${S.nick?'':'<p class="muted" style="margin:0;font-size:13.5px">Zaloguj się, żeby trafić do rankingu.</p><button class="btn primary block" data-act="auth">Zaloguj się lub załóż konto</button>'}</div>`},
+profile(){if(!S.nick)return `<div class="pad"><h2 class="scr">Profil</h2><p class="muted" style="margin:0">Przeglądasz jako gość. Załóż konto, żeby zbierać XP, punkty i nagrody.</p><button class="btn primary block" data-act="auth">Zaloguj się lub załóż konto</button><button class="btn block" data-act="go" data-arg="settings">Ustawienia</button></div>`;
+ const rank=[...PLAYERS.map(p=>p[1]),S.xp].sort((a,b)=>b-a).indexOf(S.xp)+1;
+ const mine=feedKeysMine();
+ return `<div class="pad"><div style="display:flex;gap:14px;align-items:center"><div class="ava">${esc(S.nick[0]||'?').toUpperCase()}</div><div style="min-width:0"><h2 class="scr" style="margin:0;overflow-wrap:anywhere">${esc(S.nick)}</h2><span class="muted" style="font-size:13px">Łowca Historii · Wrocław</span></div></div>
+ <div class="stats"><div class="stat"><b class="c-xp">${S.xp}</b><span>XP · ranking #${rank}</span></div><div class="stat"><b class="c-pts">${S.points}</b><span>punkty do wydania</span></div><div class="stat"><b>${foundCount()}/${PLACES.length}</b><span>odkryte miejsca</span></div><div class="stat"><b>${S.refs}</b><span>polecenia · kod ${refCode()}</span></div></div>
+ <div class="th"><span class="eyebrow">Moje nagrody</span>${mine.length?'<button class="link" data-act="openMine">Oglądaj jak rolki</button>':''}</div>
+ ${mine.length?`<div class="grid3">${mine.map(k=>{const r=reelBy(k);const s=r.slides[0];return `<button class="gthumb" data-act="openMine" data-arg="${k}">${slideVisual(s)}<span>${esc(r.title)}</span></button>`}).join('')}</div>`:'<p class="muted" style="margin:0">Jeszcze nic. Znajdź pierwszy zabytek na mapie.</p>'}
+ <div class="list"><button data-act="mini">Zgadnij miejsce (raz dziennie) <span class="muted">›</span></button><button data-act="go" data-arg="shop">Sklep <span class="muted">›</span></button><button data-act="go" data-arg="settings">Ustawienia <span class="muted">›</span></button><button data-act="go" data-arg="contact">Kontakt z zespołem <span class="muted">›</span></button></div></div>`},
+settings:()=>`<div class="pad"><button class="link" data-act="go" data-arg="profile">‹ Profil</button><h2 class="scr">Ustawienia</h2>
+ <div><label class="eyebrow" for="lang">Język</label><select id="lang" style="margin-top:6px"><option>Polski</option><option disabled>English (wkrótce)</option></select></div>
+ <span class="eyebrow">Uprawnienia</span>
+ <div class="list"><div>Aparat<button class="sw" role="switch" aria-checked="${S.cam}" data-act="sw" data-arg="cam" aria-label="Aparat"></button></div><div>Lokalizacja<button class="sw" role="switch" aria-checked="${S.loc}" data-act="sw" data-arg="loc" aria-label="Lokalizacja"></button></div><div>Lektor w rolkach<button class="sw" role="switch" aria-checked="${S.sound}" data-act="sw" data-arg="sound" aria-label="Lektor"></button></div><div>Tryb demo (pozycja z mapy)<button class="sw" role="switch" aria-checked="${S.demo}" data-act="sw" data-arg="demo" aria-label="Tryb demo"></button></div></div>
+ <p class="muted" style="margin:0;font-size:13px">Zdjęcia są usuwane po weryfikacji. Historii Twoich przejść nie przechowujemy.</p>
+ ${S.email?`<span class="eyebrow">Konto</span><div class="list"><div>E-mail<span class="muted" style="font-size:13.5px;overflow-wrap:anywhere;text-align:right">${esc(S.email)}</span></div><div>Nick<span class="muted" style="font-size:13.5px">${esc(S.nick||'—')}</span></div><button data-act="changePw">Zmień hasło <span class="muted">›</span></button><button data-act="logout" style="color:var(--bad)">Wyloguj się</button></div>`:''}
+ <div class="list"><button data-act="tutorial">Obejrzyj wprowadzenie ponownie</button><button data-act="go" data-arg="contact">Kontakt z zespołem</button><button data-act="reset" style="color:var(--bad)">Zresetuj postęp</button></div></div>`,
+contact:()=>`<div class="pad"><button class="link" data-act="go" data-arg="profile">‹ Profil</button><h2 class="scr">Zespół</h2>
+ <div class="list">${['Lider · backend gry (API, rundy, punkty)','Aplikacja mobilna (Expo): mapa, aparat, rolki','Rozpoznawanie: GPS + CLIP, zdjęcia wzorcowe','Dane i treści: OSM, Wikidata, archiwa, scenariusze, TTS'].map(r=>`<div style="flex-direction:column;align-items:flex-start;gap:2px"><b>[do uzupełnienia]</b><span class="muted" style="font-size:13px">${r}</span></div>`).join('')}</div>
+ <span class="eyebrow">Źródła danych</span><p class="muted" style="margin:0;font-size:13.5px">OpenStreetMap, Wikidata, Wikimedia Commons, Narodowe Archiwum Cyfrowe, Polska-org.pl, dane.gov.pl.</p></div>`,
+mini(){const m=MG;
+ if(!m)return `<div class="pad" style="min-height:100%;justify-content:center;text-align:center;align-items:center"><span class="eyebrow">Zgadnij miejsce</span><h2 class="scr">Na dziś to wszystko</h2><p class="muted" style="margin:0;max-width:30ch">Mini-gra jest dostępna raz dziennie. Nowy zestaw zdjęć archiwalnych za <b>${untilMidnight()}</b>.</p><button class="btn primary block" data-act="go" data-arg="map">Szukaj zabytków w terenie</button></div>`;
+ if(m.i>=5)return `<div class="pad" style="min-height:100%;justify-content:center;text-align:center;align-items:center"><span class="eyebrow">Zgadnij miejsce</span><div class="pts" style="font-size:48px">${m.score}/5</div><p style="margin:0">Zdobyte punkty: <span class="pts c-pts">+${m.score*MINI_PTS}</span></p><p class="muted" style="margin:0;font-size:13.5px">Kolejna gra jutro, za ${untilMidnight()}. XP do rankingu zdobywa się tylko w terenie.</p><button class="btn primary block" data-act="go" data-arg="map">Przejdź do mapy</button></div>`;
+ const q=m.qs[m.i],p=byId[q.id];
+ return `<div class="pad"><div class="th"><span class="eyebrow">Zgadnij miejsce · ${m.i+1}/5</span><span class="pts muted" style="font-size:13px">${m.score} ✓ · +${MINI_PTS} pkt za trafienie</span></div>
+ <h2 class="scr" style="font-size:24px;margin:0">Co to za miejsce?</h2>
+ <div class="mg-photo">${photo(p.kind,'archive',p.color,'kb')}</div>
+ <div class="answers">${q.opts.map(id=>{let c='';if(m.ans){if(id===q.id)c='right';else if(id===m.ans)c='wrong'}return `<button class="btn block ${c}" data-act="miniAns" data-arg="${id}" ${m.ans?'disabled':''}>${byId[id].name}</button>`}).join('')}</div>
+ ${m.ans?`<button class="btn primary block" data-act="miniNext">${m.i<4?'Dalej':'Wynik'}</button>`:''}</div>`},
+};
+function feedKeysMine(){const l=S.feedList;S.feedList='mine';const k=feedKeys();S.feedList=l;return k}
+
+/* ---------- map ---------- */
+function mapBase(){return `<rect x="-600" y="-600" width="2200" height="2200" fill="var(--land)"/>
+ <ellipse cx="900" cy="150" rx="110" ry="60" fill="var(--park)"/><path d="M-20,690C120,705 230,780 330,775S515,690 552,560S615,385 636,300" fill="none" stroke="var(--park)" stroke-width="56" stroke-linecap="round"/>
+ <path d="M-20,690C120,705 230,780 330,775S515,690 552,560S615,385 636,300" fill="none" stroke="var(--water)" stroke-width="16" stroke-linecap="round"/>
+ <path d="M-60,150C150,170 300,200 420,205S600,268 700,285S880,300 1080,330" fill="none" stroke="var(--water)" stroke-width="56" stroke-linecap="round"/>
+ <path d="M420,205C480,150 560,108 660,118S820,118 1080,112" fill="none" stroke="var(--water)" stroke-width="44" stroke-linecap="round"/>
+ <path d="M700,124C710,190 722,240 738,292" fill="none" stroke="var(--water)" stroke-width="24"/>
+ <g stroke="var(--street)" stroke-width="11" stroke-linecap="round" fill="none">
+  <path d="M292,590L250,1000"/><path d="M330,560L700,610L1000,640"/><path d="M330,490L362,240"/><path d="M230,540L-20,560"/><path d="M200,434L60,300"/><path d="M300,490L420,215"/><path d="M560,300L590,190L700,240L860,221"/><path d="M640,610L600,360"/><path d="M120,700L250,700L400,690"/><path d="M380,241L560,300"/></g>
+ <rect x="226" y="488" width="104" height="102" rx="6" fill="var(--street)"/>
+ <text class="m-lab" x="90" y="128">Odra</text><text class="m-lab" x="232" y="616">Rynek</text><text class="m-lab" x="840" y="178">Ostrów Tumski</text><text class="m-lab" x="420" y="742" style="font-size:14px">Fosa Miejska</text><text class="m-lab" x="560" y="150" style="font-size:13px">Wyspa Piasek</text>`}
+function mapDyn(){let s='';const r=S.round;
+ if(r)s+=`<circle cx="${r.cx}" cy="${r.cy}" r="${r.r}" fill="var(--odra)" fill-opacity=".13" stroke="var(--odra)" stroke-width="3" stroke-dasharray="10 7"/>`;
+ for(const p of PLACES){if(r&&r.id===p.id)continue;
+  if(S.found[p.id])s+=`<g data-act="place" data-arg="${p.id}" style="cursor:pointer"><circle cx="${p.x}" cy="${p.y}" r="17" fill="var(--brick)" stroke="var(--land)" stroke-width="3"/><path d="M${p.x-7},${p.y}l5,5l9,-10" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/><text class="mk-label" x="${p.x}" y="${p.y+36}" text-anchor="middle">${p.name}</text></g>`;
+  else s+=`<g data-act="place" data-arg="${p.id}" style="cursor:pointer"><circle cx="${p.x}" cy="${p.y}" r="14" fill="var(--card)" stroke="var(--muted)" stroke-width="2"/><text x="${p.x}" y="${p.y+6}" text-anchor="middle" font-size="17" font-weight="700" fill="var(--muted)" font-family="Georgia,serif">?</text></g>`}
+ const q=S.player;s+=`<circle class="pulse" cx="${q.x}" cy="${q.y}" r="12" fill="var(--odra)"/><circle cx="${q.x}" cy="${q.y}" r="10" fill="var(--odra)" stroke="#fff" stroke-width="3.5"/>`;
+ return s}
+function applyView(){const svg=$('#map');if(!svg)return;const b=svg.getBoundingClientRect();if(!b.width)return;const h=MV.w*b.height/b.width;MV.cx=Math.min(950,Math.max(50,MV.cx));MV.cy=Math.min(950,Math.max(80,MV.cy));svg.setAttribute('viewBox',`${MV.cx-MV.w/2} ${MV.cy-h/2-60} ${MV.w} ${h}`)}
+function focus(x,y){MV.cx=x;MV.cy=y}
+let drag=null;
+document.addEventListener('pointerdown',e=>{const svg=e.target.closest&&e.target.closest('#map');if(!svg)return;drag={x:e.clientX,y:e.clientY,cx:MV.cx,cy:MV.cy,moved:false,t:e.target}});
+window.addEventListener('pointermove',e=>{if(!drag)return;const svg=$('#map');if(!svg)return;const b=svg.getBoundingClientRect();const sc=MV.w/b.width;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(Math.hypot(dx,dy)>6)drag.moved=true;if(drag.moved){MV.cx=drag.cx-dx*sc;MV.cy=drag.cy-dy*sc;applyView()}});
+window.addEventListener('pointerup',e=>{if(!drag)return;const d=drag;drag=null;if(d.moved||d.t.closest('[data-act]')||!S.demo)return;const svg=$('#map');if(!svg)return;const pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;const m=svg.getScreenCTM();if(!m)return;const q=pt.matrixTransform(m.inverse());S.player={x:Math.round(q.x),y:Math.round(q.y)};render();toast(S.round?(inCircle()?'Jesteś w kręgu poszukiwań':'Pozycja ustawiona · poza kręgiem'):'Pozycja ustawiona (demo)')});
+
+/* ---------- game logic ---------- */
+function pickNear(){return unfound().sort((a,b)=>dist(a,S.player)-dist(b,S.player))[0]}
+function pickPopular(){return unfound().sort((a,b)=>b.finds-a.finds)[0]}
+function startRound(id){const p=byId[id];const a=Math.random()*Math.PI*2,d=(0.25+Math.random()*0.35)*R;
+ S.round={id,cx:Math.round(p.x+Math.cos(a)*d),cy:Math.round(p.y+Math.sin(a)*d),r:R,hints:0,paid:0};S.photo=null;focus(S.round.cx,S.round.cy+40);MV.w=Math.min(MV.w,640);go('map')}
+function sims(photoId){return PLACES.map(p=>{let v;
+ if(photoId==='kamienice')v=p.id==='ratusz'?0.61:p.id==='elzbieta'?0.56:0.34+hash(p.id+'k')*0.16;
+ else if(p.id===photoId)v=0.86+hash(p.id)*0.06;
+ else if(p.church&&byId[photoId].church)v=0.64+hash(p.id+photoId)*0.08;
+ else v=0.33+hash(p.id+photoId)*0.24;return{id:p.id,v:Math.round(v*100)/100}}).sort((a,b)=>b.v-a.v)}
+function shoot(){const r=S.round,photoId=S.photo||r.id;const gps=inCircle();
+ const L={photo:photoId,target:r.id,gps,s:gps?sims(photoId):[]};
+ if(!gps)L.out='gps';else{const top=L.s[0];if(top.v<THRESH)L.out='none';else if(top.id===r.id)L.out='ok';else{L.out='wrong';L.wrong=top.id}}
+ if(L.out==='ok'){L.xp=rXP();L.pts=rPts();S.xp+=L.xp;S.points+=L.pts;S.found[r.id]=true;S.round=null;byId[L.target].finds++}
+ if(L.out==='wrong'&&r.hints<3){r.hints++;r.paid=(r.paid||0)+1;L.newHint=r.hints;L.rxp=rXP();L.rpts=rPts()}
+ S.last=L;go('verify')}
+let vTimers=[];
+function runVerify(){vTimers.forEach(clearTimeout);vTimers=[];const L=S.last;const t0=performance.now();
+ const at=(ms,f)=>vTimers.push(setTimeout(f,ms));
+ at(150,()=>{const s=$('#st1');if(s)s.classList.add('on')});
+ at(550,()=>{const s=$('#st1');if(!s)return;s.classList.add(L.gps?'ok':'bad');s.querySelector('.dot').textContent=L.gps?'✓':'✕';$('#st1t').textContent=L.gps?'Jesteś w kręgu poszukiwań.':'Jesteś poza kręgiem, zdjęcie nie jest porównywane.';
+  if(!L.gps)return at(250,()=>finish());$('#st2').classList.add('on');
+  $('#bars').innerHTML=L.s.slice(0,4).map((x,i)=>`<div class="bar ${i===0?'top':''}"><span class="n">${byId[x.id].name}</span><span class="tr" style="--th:${THRESH*100}%"><span class="fl" style="width:0"></span></span><span class="v">${x.v.toFixed(2)}</span></div>`).join('')+`<span class="thnote"><i></i>próg dopasowania ${THRESH.toFixed(2)}</span>`;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>document.querySelectorAll('#bars .fl').forEach((f,i)=>f.style.width=L.s[i].v*100+'%')))});
+ at(1350,()=>{if(!L.gps)return;const s=$('#st2');if(!s)return;const good=L.out!=='none';s.classList.add(good?'ok':'bad');s.querySelector('.dot').textContent=good?'✓':'✕';$('#st2t').textContent=good?`Najbardziej podobne: ${byId[L.s[0].id].name}`:'Żaden zabytek nie przekracza progu.';finish()});
+ function finish(){const vt=$('#vt');if(vt)vt.textContent=((performance.now()-t0)/1000).toFixed(1).replace('.',',')+' s';const el=$('#vres');if(!el)return;const t=byId[L.target];let h='';
+  if(L.out==='ok')h=`<div class="outcome good"><span class="stamp">ODKRYTE</span><span class="eyebrow">Znalezisko potwierdzone</span><h3>${t.name}</h3><div class="gain"><span class="c-xp">+${L.xp} XP</span><span class="c-pts">+${L.pts} pkt</span></div><p class="muted" style="margin:0;font-size:13.5px">XP trafia do rankingu, punkty możesz wydać w sklepie. Odblokowana nagroda: rolka „${t.name}”.</p><button class="btn brick block" data-act="openMine" data-arg="${t.id}">▶ Obejrzyj nagrodę</button><button class="btn block" data-act="share" data-arg="${t.id}">Pochwal się znajomym</button><button class="btn ghost block" data-act="go" data-arg="next">Wybierz kolejne miejsce</button></div>`;
+  else if(L.out==='wrong'){const w=byId[L.wrong];h=`<div class="outcome warn"><span class="eyebrow">To nie ten zabytek</span><h3>To jest ${w.name}. Szukaj dalej.</h3>${L.newHint?`<p style="margin:0"><b class="pts c-pts">Podpowiedź ${L.newHint}/3:</b> ${t.hints[L.newHint-1]}</p><p class="muted" style="margin:0;font-size:13px">Nagroda za tę rundę spada do ${L.rxp} XP i ${L.rpts} pkt. Twoje saldo się nie zmienia.</p>`:'<p class="muted" style="margin:0">Wykorzystałeś już wszystkie podpowiedzi w tej rundzie.</p>'}<button class="btn primary block" data-act="go" data-arg="map">Wróć do mapy</button><button class="btn block" data-act="go" data-arg="camera">Zrób kolejne zdjęcie</button></div>`}
+  else if(L.out==='none')h=`<div class="outcome fail"><span class="eyebrow">Nie rozpoznano</span><h3>Na zdjęciu nie widać zabytku z naszej bazy.</h3><p class="muted" style="margin:0;font-size:13.5px">Spróbuj z innego ujęcia, tak żeby cały budynek był w kadrze.</p><button class="btn primary block" data-act="go" data-arg="camera">Spróbuj ponownie</button><button class="btn block" data-act="go" data-arg="map">Mapa</button></div>`;
+  else h=`<div class="outcome fail"><span class="eyebrow">Poza kręgiem</span><h3>Podejdź bliżej, zabytek jest w zaznaczonym kręgu.</h3><p class="muted" style="margin:0;font-size:13.5px">GPS chroni grę przed zdjęciami z internetu. W trybie demo ustaw pozycję, stukając w mapę.</p><button class="btn primary block" data-act="go" data-arg="map">Wróć do mapy</button></div>`;
+  el.innerHTML=h;el.scrollIntoView({behavior:reduceMotion?'auto':'smooth',block:'nearest'})}
+}
+
+/* ---------- mini game ---------- */
+let MG=null;
+function newMini(){const ids=PLACES.map(p=>p.id).sort(()=>Math.random()-.5).slice(0,5);MG={i:0,score:0,ans:null,qs:ids.map(id=>({id,opts:[id,...PLACES.map(p=>p.id).filter(x=>x!==id).sort(()=>Math.random()-.5).slice(0,3)].sort(()=>Math.random()-.5)}))}}
+
+/* ---------- navigation ---------- */
+function go(s){S.screen=s;render()}
+function render(){const s=S.screen;
+ if(!SCR[s]){S.screen='map';return render()}
+ if((s==='camera'&&!S.round)||(s==='verify'&&!S.last)){S.screen='map';return render()}
+ if(s==='nick'&&!S.email){S.screen='login';return render()}
+ vTimers.forEach(clearTimeout);if(!rv.innerHTML)unmountFeed();
+ const tabbed=!!TABOF[s];const fixed=['map','camera','feed'].includes(s);
+ app.innerHTML=(s==='camera'?'':sbar(s==='feed'))+`<div class="main ${fixed?'fixed':''}" id="main">${SCR[s]()}</div>`+(tabbed?tabs():'');
+ if(s==='map')applyView();
+ if(s==='verify')runVerify();
+ if(s==='feed'){const vf=$('#vfeed');const k=S.feedStart;const el=k&&vf.querySelector(`.ritem[data-key="${k}"]`);if(el)vf.scrollTop=el.offsetTop;if(!rv.innerHTML)mountFeed(vf)}
+ const af=$('#authForm');if(af){$('#email').addEventListener('input',e=>DRAFT_EMAIL=e.target.value);af.addEventListener('submit',e=>{e.preventDefault();const err=t=>$('#authErr').textContent=t;
+  const em=$('#email').value.trim().toLowerCase(),pw=$('#pw').value,reg=S.authMode!=='login';
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(em))return err('Wpisz poprawny adres e-mail, np. jan@przyklad.pl.');
+  const acc=S.accounts[em];
+  if(reg){if(acc){S.authMode='login';DRAFT_EMAIL=em;render();return $('#authErr').textContent='Konto z tym adresem już istnieje. Zaloguj się.'}
+   if(pw.length<8||!/[\p{L}]/u.test(pw)||!/[0-9]/.test(pw))return err('Hasło musi mieć co najmniej 8 znaków, literę i cyfrę.');
+   S.accounts[em]={pw:pwHash(em,pw),nick:''};S.email=em;S.nick='';DRAFT_EMAIL='';return go('nick')}
+  if(!acc||acc.pw!==pwHash(em,pw))return err('Nieprawidłowy e-mail lub hasło. Sprawdź dane albo załóż nowe konto.');
+  S.email=em;DRAFT_EMAIL='';if(acc.nick){S.nick=acc.nick;S.onboarded=true;toast('Zalogowano jako '+acc.nick);return go('map')}go('nick')})}
+ const lf=$('#loginForm');if(lf)lf.addEventListener('submit',e=>{e.preventDefault();const v=$('#nick').value.trim();if(v.length<3){$('#nickErr').textContent='Nick musi mieć co najmniej 3 znaki.';return}if(!/^[\p{L}0-9_.\-]+$/u.test(v)){$('#nickErr').textContent='Użyj liter, cyfr, kropki, myślnika lub podkreślenia.';return}if(PLAYERS.some(p=>p[0].toLowerCase()===v.toLowerCase())){$('#nickErr').textContent='Ten nick jest już zajęty. Wybierz inny.';return}S.nick=v;if(S.accounts[S.email])S.accounts[S.email].nick=v;S.onboarded=true;go('map')});
+ const dt=$('#demoToggle');if(dt)dt.checked=S.demo;
+ save()}
+function sheet(h){ov.innerHTML=`<div class="backdrop" data-act="closeSheet"></div><div class="sheet" role="dialog">${h}</div>`}
+function closeSheet(){ov.innerHTML=''}
+function openFeed(list,key){closeSheet();closeOv();S.feedList=list;S.feedStart=key||null;go('feed')}
+
+/* share & comments */
+let SHARE='';
+function shareSheet(k){const r=reelBy(k);const isP=r.type==='place';const mine=isP&&S.found[k];
+ const msg=isP?(mine?`Zobacz, jak udało mi się znaleźć to miejsce: ${r.title}! Dasz radę też je znaleźć?`:`Znajdziesz to miejsce we Wrocławiu? Zadanie: „${byId[k].task}”`):`Obejrzyj rolkę „${r.title}” w Łowcach Historii.`;
+ const link=`https://lowcyhistorii.pl/${isP?'z':'r'}/${k}?ref=${refCode()}`;SHARE=msg+' '+link;
+ sheet(`<span class="eyebrow">Udostępnij</span><h3>${isP?'Zaproś znajomego do tego zadania':'Poleć rolkę'}</h3>
+ <div class="sharebox"><p>${esc(msg)}</p><code id="shareLink">${link}</code></div>
+ <button class="btn primary block" data-act="copyShare">Kopiuj wiadomość z linkiem</button>
+ <div class="row">${['Instagram','WhatsApp','Messenger'].map(n=>`<button class="btn sm" style="flex:1" data-act="shareTo" data-arg="${n}">${n}</button>`).join('')}</div>
+ <p class="muted small" style="margin:0">Link zawiera Twój kod polecający <b class="pts">${refCode()}</b>. Znajomy zaczyna od ${isP?'tego zadania':'tej rolki'} i dostaje podpowiedź na start, a Ty +${REF_BONUS} pkt, gdy znajdzie swoje pierwsze miejsce.</p>`)}
+function commentsSheet(k){const r=reelBy(k);const list=commentList(k);const mine=S.comments[k]||[];const base=list.length-mine.length;
+ sheet(`<span class="eyebrow">Komentarze · ${list.length}</span><h3>${esc(r.title)}</h3>
+ <ul class="cmts">${list.map(([n,t],i)=>`<li class="${i>=base?'mine':''}"><b>${esc(n)}</b><span>${esc(t)}</span></li>`).join('')}</ul>
+ <form id="cform" class="cform" novalidate><input type="text" id="ctext" maxlength="200" placeholder="${S.nick?'Dodaj komentarz…':'Zaloguj się, żeby komentować'}" aria-label="Komentarz" ${S.nick?'':'disabled'}><button class="btn primary sm" type="submit" ${S.nick?'':'disabled'}>Wyślij</button></form>`);
+ const f=$('#cform');f.addEventListener('submit',e=>{e.preventDefault();const v=$('#ctext').value.trim();if(!v)return;(S.comments[k]=S.comments[k]||[]).push([S.nick,v]);save();document.querySelectorAll(`[data-cc="${k}"]`).forEach(x=>x.textContent=commentList(k).length);commentsSheet(k);const i=$('#ctext');if(i)i.focus()})}
+
+/* ---------- actions ---------- */
+const A={
+ auth:()=>{closeSheet();needAuth()},
+ authMode:a=>{const e=$('#email');if(e)DRAFT_EMAIL=e.value;S.authMode=a;render()},
+ pwShow:(a,el)=>{const i=$('#pw');if(!i)return;const show=i.type==='password';i.type=show?'text':'password';el.textContent=show?'Ukryj':'Pokaż'},
+ forgot:()=>{const e=$('#email');const em=e&&e.value.trim();toast(em?`Wysłaliśmy link do resetu hasła na ${esc(em)} (demo)`:'Wpisz e-mail, a wyślemy link do resetu hasła')},
+ changePw:()=>toast('Link do zmiany hasła wysłany na e-mail (demo)'),
+ logout:()=>{closeSheet();closeOv();S.email='';S.nick='';S.round=null;S.authMode='login';go('login');toast('Wylogowano')},
+ tab:a=>{closeSheet();if((a==='map'||a==='shop')&&!S.nick)return needAuth();if(a==='feed'&&S.screen==='feed'){S.feedList='all';S.feedStart=null}go(a)},
+ go:a=>{closeSheet();closeOv();if(a==='camera'&&!S.round)a='map';go(a)},
+ tutorial:()=>openOv(pubBy.how,{doneLabel:'Dalej: historia Wrocławia',onDone:()=>openOv(pubBy.city,{doneLabel:S.gift?'Gotowe':'Odbierz prezent na start',onDone:()=>{if(!S.gift)go('reward');else if(!needAuth())render()}})}),
+ skipTut:()=>{if(!S.gift)return go('reward');if(!needAuth())go('map')},
+ claim:()=>{if(!S.gift){S.gift=true;S.points+=50;S.hints+=1}S.authMode='register';if(!needAuth())go('map')},
+ guest:()=>{S.onboarded=true;go('feed')},
+ firstTask:()=>startRound(pickNear().id),
+ zoom:a=>{MV.w=Math.min(1100,Math.max(320,MV.w*(a==='in'?.75:1.33)));applyView()},
+ recenter:()=>{focus(S.player.x,S.player.y+40);applyView()},
+ hint:()=>{const r=S.round;if(!r||r.hints>=3)return;r.hints++;if(S.hints>0){S.hints--;toast('Podpowiedź z zapasu, nagroda bez zmian')}else{r.paid=(r.paid||0)+1;toast(`Nagroda za rundę: ${rXP()} XP · ${rPts()} pkt`)}render()},
+ giveUp:()=>{S.round=null;go('next')},
+ camera:()=>{if(!S.round)return;S.photo=S.round.id;go('camera')},
+ pick:a=>{S.photo=a;render()},
+ shoot:()=>shoot(),
+ choose:a=>{let p;if(a==='near')p=pickNear();else if(a==='pop')p=pickPopular();else if(a==='rnd'){const c=unfound().filter(x=>dist(x,S.player)<470);const pool=c.length?c:unfound();p=pool[Math.floor(Math.random()*pool.length)]}else{const id=ROUTE.find(id=>!S.found[id]);if(!id)return toast('Trasa ukończona!');p=byId[id]}startRound(p.id)},
+ place:a=>{const p=byId[a];if(S.found[a])return sheet(`<div class="thumb">${photo(p.kind,'archive',p.color)}</div><span class="eyebrow">Odkryte · ${p.year} · znalazło ${p.finds} łowców</span><h3>${p.name}</h3><p class="muted" style="margin:0">${p.reel[0][1]}</p><button class="btn brick block" data-act="openMine" data-arg="${a}">▶ Obejrzyj nagrodę</button><button class="btn block" data-act="share" data-arg="${a}">Udostępnij</button>`);
+  sheet(`<span class="eyebrow">Zamknięte miejsce · znalazło ${p.finds} łowców</span><h3>Co tu się kryje?</h3><p class="muted" style="margin:0">Rolkę o tym miejscu dostaniesz tylko za znalezienie go w terenie. Punktami go nie odblokujesz.</p>${S.round?'<p class="muted" style="margin:0;font-size:13px">Masz aktywną rundę. Nowe szukanie ją zastąpi.</p>':''}<button class="btn primary block" data-act="huntThis" data-arg="${a}">Szukaj tego miejsca</button>`)},
+ huntThis:a=>{closeSheet();if(needAuth())return;startRound(a)},
+ showOnMap:a=>{const p=byId[a];if(S.found[a]){focus(p.x,p.y+40);MV.w=520;go('map');return}A.place(a)},
+ closeSheet,
+ openMine:a=>openFeed('mine',a),
+ openPub:a=>openFeed('all',a),
+ feedList:a=>{S.feedList=a;S.feedStart=null;render()},
+ sound:()=>{S.sound=!S.sound;save();const b=$('#sndBtn');if(b)b.innerHTML=S.sound?IC.snd:IC.mute;if(FE.item)paint();toast(S.sound?'Lektor włączony':'Lektor wyłączony')},
+ hprev:(a,el)=>{const it=el.closest('.ritem');goSlide(it,idx(it.querySelector('.hscroll'))-1)},
+ hnext:(a,el)=>{const it=el.closest('.ritem');goSlide(it,idx(it.querySelector('.hscroll'))+1)},
+ vnext:()=>{if(FE.root)FE.root.scrollBy({top:FE.root.clientHeight,behavior:reduceMotion?'auto':'smooth'})},
+ finders:a=>{const r=reelBy(a);toast(r.type==='place'?`${r.views} łowców znalazło to miejsce`:`${fmt(r.views)} wyświetleń`)},
+ comments:a=>commentsSheet(a),
+ share:a=>shareSheet(a),
+ copyShare:()=>{const ok=()=>toast('Skopiowano wiadomość z linkiem');const fb=()=>{const c=$('#shareLink');if(c){const rg=document.createRange();rg.selectNodeContents(c);const sl=getSelection();sl.removeAllRanges();sl.addRange(rg)}toast('Link zaznaczony, skopiuj go ręcznie')};try{navigator.clipboard.writeText(SHARE).then(ok,fb)}catch(e){fb()}},
+ shareTo:a=>{closeSheet();toast(`Udostępniono przez ${a} (demo)`)},
+ buy:a=>{if(!S.nick){closeSheet();return needAuth()}
+  const it=SHOP_HINTS.find(x=>x.key===a)||PARTNERS.find(x=>x.key===a)||pubBy[a];if(!it)return;
+  if(S.points<it.price)return toast(`Brakuje ${it.price-S.points} pkt`);
+  S.points-=it.price;
+  if(it.n){S.hints+=it.n;toast(`+${it.n} podpowiedzi w zapasie`)}
+  else if(pubBy[a]){S.owned[a]=true;S.feedStart=a;toast('Rolka odblokowana')}
+  else{const code='LH-'+Math.random().toString(36).slice(2,8).toUpperCase();S.coupons.push({name:it.name,code});render();return sheet(`<span class="eyebrow">Kupon partnera · demo</span><h3>${it.name}</h3><div class="coupon">${code}</div><p class="muted small" style="margin:0">Pokaż kod przy kasie. Kupon znajdziesz też w sklepie w sekcji „Moje kupony”.</p><button class="btn primary block" data-act="closeSheet">Gotowe</button>`)}
+  render()},
+ mini:()=>{closeSheet();if(MG&&MG.i<5)return go('mini');if(S.miniDay===today()){MG=null;return go('mini')}newMini();S.miniDay=today();go('mini')},
+ miniAns:a=>{if(MG.ans)return;MG.ans=a;if(a===MG.qs[MG.i].id){MG.score++;S.points+=MINI_PTS;toast(`+${MINI_PTS} pkt`)}render()},
+ miniNext:()=>{MG.i++;MG.ans=null;render()},
+ sw:a=>{S[a]=!S[a];render()},
+ reelDone:()=>{const f=RVO&&RVO.onDone;closeOv();if(f)f();else if(S.screen==='feed')mountFeed($('#vfeed'))},
+ /* panel */
+ jump:a=>{closeSheet();closeOv();const ensure=()=>{if(!S.nick){S.email=S.email||'demo@lowcyhistorii.pl';S.accounts[S.email]=S.accounts[S.email]||{pw:pwHash(S.email,'demo1234'),nick:''};S.nick=S.accounts[S.email].nick||'lowca_demo';S.accounts[S.email].nick=S.nick;S.onboarded=true}if(!S.gift){S.gift=true;S.points+=50;S.hints++}};
+  const ensureRound=()=>{if(!S.round){if(!unfound().length)S.found={};startRound(pickNear().id)}};
+  if(a==='welcome'){S.screen='welcome';return render()}
+  if(a==='login'){S.email='';S.nick='';S.round=null;S.authMode='register';return go('login')}
+  ensure();
+  if(['map','profile','next','ranking','shop'].includes(a))return go(a);
+  if(a==='feed')return openFeed('all',null);
+  if(a==='camera'){ensureRound();S.player={x:S.round.cx-20,y:S.round.cy+15};S.photo=S.round.id;return go('camera')}
+  if(a==='success'){ensureRound();S.player={x:S.round.cx,y:S.round.cy};S.photo=S.round.id;return shoot()}
+  if(a==='reward'){let k=PLACES.find(p=>S.found[p.id]);if(!k){S.found.ratusz=true;k=byId.ratusz;if(S.round&&S.round.id==='ratusz')S.round=null}return openFeed('mine',k.id)}
+  if(a==='share'){openFeed('all','ratusz');return shareSheet('ratusz')}
+  if(a==='mini')return A.mini()},
+ placeIn:()=>{if(!S.round)return toast('Najpierw rozpocznij rundę');S.player={x:S.round.cx-15,y:S.round.cy+10};focus(S.player.x,S.player.y+40);render();toast('Jesteś w kręgu poszukiwań')},
+ placeOut:()=>{if(!S.round)return toast('Najpierw rozpocznij rundę');S.player={x:S.round.cx+S.round.r+90,y:S.round.cy+60};render();toast('Pozycja poza kręgiem')},
+ addPts:()=>{S.points+=100;render();toast('+100 pkt')},
+ miniReset:()=>{S.miniDay=null;MG=null;save();if(S.screen==='mini')render();toast('Limit mini-gry zresetowany')},
+ reset:()=>{closeOv();closeSheet();S=fresh();MG=null;MV={cx:430,cy:470,w:640};render();toast('Postęp zresetowany')},
+};
+document.addEventListener('click',e=>{const t=e.target.closest('[data-act]');if(!t||t.tagName==='INPUT'||t.disabled)return;const f=A[t.dataset.act];if(!f)return;e.preventDefault();f(t.dataset.arg,t)});
+document.addEventListener('change',e=>{if(e.target.id==='demoToggle'){S.demo=e.target.checked;render()}});
+window.addEventListener('resize',()=>applyView());
+render();
+})();
+</script>
+
+</body></html>
