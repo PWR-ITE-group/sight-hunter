@@ -1,0 +1,4 @@
+# Commons candidates are re-downloadable with fetch_places; only reviewed refs are committed.
+refs/*/candidates/
+# Own test photos may show people; keep them off GitHub.
+test-photos/
