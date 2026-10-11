@@ -191,7 +191,7 @@ const routes: [string, RegExp, Handler][] = [
       throw new MockHttpError(409, 'email_taken', 'Ten e-mail jest już zajęty.');
     }
     state = freshState();
-    state.user = { id: 'user-1', email, nickname: null, avatar_url: null, points: 0, xp: 0, ref_code: 'LOWCY2026' };
+    state.user = { id: `mock-user:${email}`, email, nickname: null, avatar_url: null, points: 0, xp: 0, ref_code: 'LOWCY2026' };
     state.password = String(body?.password ?? '');
     state.points = WELCOME_POINTS;
     return tokens();
@@ -202,7 +202,7 @@ const routes: [string, RegExp, Handler][] = [
       // Any credentials work for a fresh mock session, so the demo never gets stuck on login.
       if (state.user) throw new MockHttpError(401, 'invalid_credentials', 'Nieprawidłowy e-mail lub hasło.');
       state = freshState();
-      state.user = { id: 'user-1', email, nickname: null, avatar_url: null, points: 0, xp: 0, ref_code: 'LOWCY2026' };
+      state.user = { id: `mock-user:${email}`, email, nickname: null, avatar_url: null, points: 0, xp: 0, ref_code: 'LOWCY2026' };
       state.password = String(body?.password ?? '');
       state.points = WELCOME_POINTS;
     }

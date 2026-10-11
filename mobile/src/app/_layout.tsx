@@ -32,7 +32,7 @@ export default function RootLayout() {
   const hydrate = useAuthStore((s) => s.hydrate);
   const setUser = useAuthStore((s) => s.setUser);
   const logout = useAuthStore((s) => s.logout);
-  const onboarded = useSettingsStore((s) => s.onboarded);
+  const onboarded = useSettingsStore((s) => !!user && s.onboardedUserIds.includes(user.id));
   const settingsHydrated = useSettingsStore((s) => s.hydrated);
 
   const router = useRouter();

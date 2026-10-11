@@ -23,7 +23,7 @@ export function ShareSheet({ url, visible, onClose }: ShareSheetProps) {
 
   const handleShare = async () => {
     try {
-      await Share.share({ message: `Sprawdź to odkrycie w Łowcach Historii! ${url}`, url });
+      await Share.share({ message: `Sprawdź to odkrycie w Sight Hunters! ${url}`, url });
     } catch {
       // The player closed the system sheet; nothing to report.
     }

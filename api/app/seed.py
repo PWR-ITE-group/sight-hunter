@@ -85,7 +85,6 @@ PLACES: list[PlaceSeed] = [
 ]
 
 PUBLIC_REELS: list[PublicReelSeed] = [
-    {"key": "how", "title": "Jak grać w Łowców Historii", "video": "ForBiggerFun.mp4"},
     {"key": "city", "title": "Wrocław w 40 sekund", "video": "ForBiggerJoyrides.mp4"},
     {
         "key": "krasnale",

@@ -10,13 +10,14 @@ import { ErrorBanner, errorMessage } from '../../components/ui/ErrorBanner';
 import { useReelFeed } from '../../api/hooks/useReels';
 import { useReelActions } from '../../hooks/useReelActions';
 import { HowItWorksCard } from '../../components/reels/HowItWorksCard';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-const TAB_BAR_HEIGHT = 80;
 const VIEWABILITY_CONFIG = { itemVisiblePercentThreshold: 60 };
 
 export default function FeedTab() {
   const { height: windowHeight } = useWindowDimensions();
-  const itemHeight = windowHeight - TAB_BAR_HEIGHT;
+  const [itemHeight, setItemHeight] = useState(windowHeight);
+  const insets = useSafeAreaInsets();
 
   const feed = useReelFeed();
   const actions = useReelActions();
@@ -47,9 +48,9 @@ export default function FeedTab() {
   const reels = feed.data ?? [];
 
   return (
-    <View className="flex-1 bg-black">
+    <View className="flex-1 bg-black" onLayout={(event) => setItemHeight(event.nativeEvent.layout.height)}>
       {(feed.error || actions.error) && (
-        <View className="absolute top-12 left-4 right-4 z-10">
+        <View className="absolute left-4 right-4 z-10" style={{ top: insets.top + 12 }}>
           <ErrorBanner
             message={actions.error ?? errorMessage(feed.error)}
             onRetry={feed.error ? () => feed.refetch() : undefined}
@@ -61,6 +62,7 @@ export default function FeedTab() {
       <FlatList
         data={reels}
         ListHeaderComponent={<HowItWorksCard height={itemHeight} />}
+        contentInsetAdjustmentBehavior="never"
         keyExtractor={(item) => item.id}
         pagingEnabled
         snapToInterval={itemHeight}

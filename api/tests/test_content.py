@@ -65,24 +65,25 @@ async def test_feed_locks_reward_and_paid_reels(client: AsyncClient, auth: dict[
     body = r.json()
     assert body["next_cursor"] is None
     by_id = {i["id"]: i for i in body["items"]}
-    assert len(by_id) == 5
+    assert len(by_id) == 4
+    assert str(sid("reel:how")) not in by_id
     reward = by_id[str(sid("reel:ratusz"))]
     assert reward["locked"] is True and reward["playback_url"] is None
     assert reward["finders_count"] == 0
-    free = by_id[str(sid("reel:how"))]
+    free = by_id[str(sid("reel:city"))]
     assert free["locked"] is False and free["playback_url"].startswith("https://")
     paid = by_id[str(sid("reel:krasnale"))]
     assert paid["locked"] is True and paid["price_points"] == 40
 
 
 async def test_reel_likes_are_gone(client: AsyncClient, auth: dict[str, str]) -> None:
-    reel = f"/api/v1/reels/{sid('reel:how')}"
+    reel = f"/api/v1/reels/{sid('reel:city')}"
     assert (await client.put(f"{reel}/like", headers=auth)).status_code == 404
     assert (await client.delete(f"{reel}/like", headers=auth)).status_code == 404
     item = next(
         i
         for i in (await client.get("/api/v1/reels/feed", headers=auth)).json()["items"]
-        if i["id"] == str(sid("reel:how"))
+        if i["id"] == str(sid("reel:city"))
     )
     assert "likes_count" not in item and "liked_by_me" not in item
 

@@ -2,13 +2,16 @@ import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-q
 import { getReelFeed, countReelView, listComments, addComment } from '../endpoints/reels';
 import { queryKeys } from './queryKeys';
 
+// The native tutorial replaces both mock and already-seeded API placeholders.
+const LEGACY_TUTORIAL_IDS = new Set(['reel-how', '2890500e-4b68-59ba-85fc-579573a9603a']);
+
 export function useReelFeed() {
   return useInfiniteQuery({
     queryKey: queryKeys.reelFeed,
     queryFn: ({ pageParam }) => getReelFeed(pageParam),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => lastPage.next_cursor ?? undefined,
-    select: (data) => data.pages.flatMap((p) => p.items),
+    select: (data) => data.pages.flatMap((p) => p.items).filter((reel) => !LEGACY_TUTORIAL_IDS.has(reel.id)),
   });
 }
 

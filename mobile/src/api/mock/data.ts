@@ -90,7 +90,6 @@ export interface MockPublicReel {
 }
 
 export const PUBLIC_REELS: MockPublicReel[] = [
-  { id: 'reel-how', title: 'Jak grać w Łowców Historii', video: `${SAMPLE}ForBiggerJoyrides.mp4`, price_points: null },
   { id: 'reel-city', title: 'Wrocław w 40 sekund', video: `${SAMPLE}ForBiggerMeltdowns.mp4`, price_points: null },
   { id: 'reel-krasnale', title: 'Skąd się wzięły krasnale?', video: `${SAMPLE}ElephantsDream.mp4`, price_points: 40 },
   { id: 'reel-festung', title: 'Festung Breslau 1945', video: `${SAMPLE}BigBuckBunny.mp4`, price_points: 60 },

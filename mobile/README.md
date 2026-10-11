@@ -12,6 +12,11 @@ npm run lint
 
 Installed: expo-camera, expo-location, expo-video, expo-secure-store, expo-image-manipulator, react-native-maps, @tanstack/react-query, zustand. Add packages with `npx expo install`, see `AGENTS.md`.
 
+The Sight Hunters tutorial is shared by onboarding and the first feed card. Completion is stored
+per account on the device and only marked after the final "Zacznij grę" action. The old device-wide
+onboarding flag does not skip this tutorial. Legacy seeded tutorial videos are excluded from the
+mobile feed; no database reseed is required.
+
 `src/` still holds the create-expo-app demo screens. They fail `npm run lint` (`use-color-scheme.web.ts`) and get replaced by our screens.
 
 ## Without a backend

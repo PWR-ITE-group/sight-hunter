@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
+  Pressable,
   ScrollView,
   Text,
   View,
@@ -8,9 +9,12 @@ import {
   type NativeSyntheticEvent,
 } from 'react-native';
 import { Camera, CircleHelp, Landmark, MapPin, Play, Trophy } from 'lucide-react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useReducedMotion } from 'react-native-reanimated';
+import { Colors } from '../../constants/colors';
 
 const INK = '#16233f';
-const BLUE = '#2c52c4';
+const BLUE = Colors.primary;
 const GOLD = '#e2aa45';
 const PURPLE = '#b597ff';
 
@@ -103,53 +107,93 @@ function StepIllustration({ step }: { step: (typeof SLIDES)[number]['id'] }) {
         </View>
       </View>
       <View className="flex-row items-center mt-8">
-        <Text className="font-bold text-xl mr-4" style={{ color: PURPLE }}>+100 XP</Text>
-        <Text className="font-bold text-xl" style={{ color: GOLD }}>+40 pkt</Text>
+        <Text className="font-bold text-xl mr-4" style={{ color: PURPLE }}>+ XP</Text>
+        <Text className="font-bold text-xl" style={{ color: GOLD }}>+ punkty</Text>
       </View>
     </View>
   );
 }
 
-export function HowItWorksCard({ height }: { height: number }) {
+export function HowItWorksCard({ height, onComplete }: { height: number; onComplete?: () => void }) {
   const { width } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
+  const reduceMotion = useReducedMotion();
+  const scrollRef = useRef<ScrollView>(null);
+  const indexRef = useRef(0);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const illustrationHeight = Math.min(300, Math.max(220, height * 0.38));
+  const [illustrationHeight, setIllustrationHeight] = useState(280);
+  const illustrationScale = Math.max(0, Math.min(1, (illustrationHeight - 16) / 290, (width - 48) / 236));
+  const lastSlide = currentIndex === SLIDES.length - 1;
 
-  const onMomentumScrollEnd = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ x: indexRef.current * width, animated: false });
+  }, [width]);
+
+  const onScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     if (width > 0) {
       const index = Math.round(event.nativeEvent.contentOffset.x / width);
-      setCurrentIndex(Math.max(0, Math.min(SLIDES.length - 1, index)));
+      indexRef.current = Math.max(0, Math.min(SLIDES.length - 1, index));
+      setCurrentIndex(indexRef.current);
     }
   };
 
+  const goToSlide = (index: number) => {
+    scrollRef.current?.scrollTo({ x: index * width, animated: !reduceMotion });
+    indexRef.current = index;
+    setCurrentIndex(index);
+  };
+
   return (
-    <View style={{ width, height, backgroundColor: INK }} className="justify-between px-6 py-8">
-      <View className="pt-3">
+    <View
+      style={{
+        width,
+        height,
+        backgroundColor: INK,
+        paddingTop: insets.top + 12,
+        paddingBottom: (onComplete ? insets.bottom : 0) + 16,
+      }}
+      className="px-6"
+    >
+      <View>
         <Text className="text-xs font-bold tracking-[3px] mb-2" style={{ color: '#a9bce9' }}>INSTRUKCJA • 4 KROKI</Text>
-        <Text className="text-white text-3xl font-bold">Jak grać w Łowców Historii</Text>
+        <Text className="text-white text-2xl font-bold">Jak grać w Sight Hunters</Text>
       </View>
 
-      <View style={{ height: illustrationHeight + 20, marginHorizontal: -24 }}>
+      <View
+        style={{ flex: 1, overflow: 'hidden', marginHorizontal: -24 }}
+        onLayout={(event) => setIllustrationHeight(event.nativeEvent.layout.height)}
+      >
         <ScrollView
+          ref={scrollRef}
           horizontal
           pagingEnabled
           nestedScrollEnabled
+          directionalLockEnabled
+          contentInsetAdjustmentBehavior="never"
           showsHorizontalScrollIndicator={false}
-          onMomentumScrollEnd={onMomentumScrollEnd}
+          onScroll={onScroll}
+          scrollEventThrottle={16}
           style={{ flex: 1 }}
         >
           {SLIDES.map((slide) => (
-            <View key={slide.id} style={{ width, height: illustrationHeight + 20 }} className="items-center justify-center">
-              <StepIllustration step={slide.id} />
+            <View key={slide.id} style={{ width, height: illustrationHeight }} className="items-center justify-center">
+              <View
+                accessible={false}
+                accessibilityElementsHidden
+                importantForAccessibility="no-hide-descendants"
+                style={{ transform: [{ scale: illustrationScale }] }}
+              >
+                <StepIllustration step={slide.id} />
+              </View>
             </View>
           ))}
         </ScrollView>
       </View>
 
-      <View className="pb-3">
-        <Text className="text-white text-2xl font-bold mb-2">{SLIDES[currentIndex].title}</Text>
+      <View>
+        <Text className="text-white text-xl font-bold mb-2" accessibilityRole="header">{SLIDES[currentIndex].title}</Text>
         <Text className="text-white/80 text-base leading-6">{SLIDES[currentIndex].description}</Text>
-        <View className="flex-row items-center justify-between mt-6">
+        <View className="flex-row items-center justify-between mt-4">
           <View className="flex-row items-center gap-x-2">
             {SLIDES.map((slide, index) => (
               <View
@@ -158,8 +202,35 @@ export function HowItWorksCard({ height }: { height: number }) {
               />
             ))}
           </View>
-          <Text className="text-white/60 text-xs">Przesuń, aby zobaczyć dalej →</Text>
+          <Text className="text-white/80 text-xs" accessibilityLabel={`Krok ${currentIndex + 1} z ${SLIDES.length}`}>
+            {currentIndex + 1} / {SLIDES.length}
+          </Text>
         </View>
+        <View className="flex-row gap-x-3 mt-4">
+          <Pressable
+            accessibilityRole="button"
+            accessibilityState={{ disabled: currentIndex === 0 }}
+            disabled={currentIndex === 0}
+            onPress={() => goToSlide(currentIndex - 1)}
+            className="flex-1 items-center justify-center rounded-2xl py-3"
+            style={{ backgroundColor: 'rgba(255,255,255,0.12)', opacity: currentIndex === 0 ? 0.4 : 1 }}
+          >
+            <Text className="text-white font-semibold">Wstecz</Text>
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            onPress={lastSlide ? (onComplete ?? (() => goToSlide(0))) : () => goToSlide(currentIndex + 1)}
+            className="flex-1 items-center justify-center rounded-2xl py-3"
+            style={{ backgroundColor: BLUE }}
+          >
+            <Text className="text-white font-semibold">
+              {lastSlide ? (onComplete ? 'Zacznij grę' : 'Od początku') : 'Dalej'}
+            </Text>
+          </Pressable>
+        </View>
+        {!onComplete && (
+          <Text className="text-white/80 text-xs text-center mt-3">Przesuń w górę, aby oglądać rolki</Text>
+        )}
       </View>
     </View>
   );

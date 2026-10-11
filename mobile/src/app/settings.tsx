@@ -70,7 +70,7 @@ export default function SettingsScreen() {
     {
       title: 'O aplikacji',
       data: [
-        { id: 'version', label: 'Wersja', value: 'Łowcy Historii v1.0.0', icon: Info, type: 'info' },
+        { id: 'version', label: 'Wersja', value: 'Sight Hunters v1.0.0', icon: Info, type: 'info' },
         { id: 'event', label: 'Wydarzenie', value: 'BEST Hacks 2026', icon: Info, type: 'info' },
       ],
     },

@@ -5,14 +5,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 interface SettingsState {
   ttsEnabled: boolean;
   language: 'pl';
-  /** Onboarding slides were shown on this device. */
-  onboarded: boolean;
+  /** Accounts that completed the tutorial on this device. */
+  onboardedUserIds: string[];
   /** The player's picks in today's quiz, so the summary survives a reload. */
   dailyAnswers: { date: string; answers: Record<string, number> } | null;
   /** Persisted state has been read from AsyncStorage (the auth guard waits for this). */
   hydrated: boolean;
   setTts: (on: boolean) => void;
-  setOnboarded: (done: boolean) => void;
+  completeOnboarding: (userId: string) => void;
   setDailyAnswers: (date: string, answers: Record<string, number>) => void;
 }
 
@@ -21,11 +21,15 @@ export const useSettingsStore = create<SettingsState>()(
     (set) => ({
       ttsEnabled: true,
       language: 'pl',
-      onboarded: false,
+      onboardedUserIds: [],
       dailyAnswers: null,
       hydrated: false,
       setTts: (on) => set({ ttsEnabled: on }),
-      setOnboarded: (done) => set({ onboarded: done }),
+      completeOnboarding: (userId) => set((s) => ({
+        onboardedUserIds: s.onboardedUserIds.includes(userId)
+          ? s.onboardedUserIds
+          : [...s.onboardedUserIds, userId],
+      })),
       setDailyAnswers: (date, answers) => set({ dailyAnswers: { date, answers } }),
     }),
     {
@@ -34,7 +38,7 @@ export const useSettingsStore = create<SettingsState>()(
       partialize: (s) => ({
         ttsEnabled: s.ttsEnabled,
         language: s.language,
-        onboarded: s.onboarded,
+        onboardedUserIds: s.onboardedUserIds,
         dailyAnswers: s.dailyAnswers,
       }),
       onRehydrateStorage: () => () => {
