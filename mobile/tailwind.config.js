@@ -6,6 +6,8 @@ module.exports = {
     "./src/components/**/*.{js,jsx,ts,tsx}",
   ],
   presets: [require("nativewind/preset")],
+  // NativeWind: the system scheme is toggled by expo (userInterfaceStyle automatic); 'media' throws on web.
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {

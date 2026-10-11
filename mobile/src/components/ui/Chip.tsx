@@ -1,8 +1,8 @@
 import React from 'react';
-import { Pressable, Text, ViewStyle, StyleProp } from 'react-native';
-import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import { Text, ViewStyle, StyleProp } from 'react-native';
+import { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import { AnimatedPressable } from './interop';
 
-const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 export interface ChipProps {
   label: string;
