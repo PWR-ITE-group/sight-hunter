@@ -1,8 +1,9 @@
-import React, { useEffect } from 'react';
-import { View, Text, Dimensions } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { View, Text, Dimensions, Pressable } from 'react-native';
+import Animated, { useSharedValue, useAnimatedStyle, withSequence, withTiming, withDelay } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { VideoView, useVideoPlayer } from 'expo-video';
-import { Lock, Users } from 'lucide-react-native';
+import { Lock, Users, Heart } from 'lucide-react-native';
 import { ReelOverlay } from './ReelOverlay';
 import { Button } from '../ui/Button';
 import { Colors } from '../../constants/colors';
@@ -11,6 +12,7 @@ import { components } from '../../api/schema';
 export type Reel = components['schemas']['Reel'];
 
 const { width } = Dimensions.get('window');
+const DOUBLE_TAP_MS = 300;
 
 interface ReelCardProps {
   reel: Reel;
@@ -60,9 +62,41 @@ export function ReelCard({
 }: ReelCardProps) {
   const canPlay = !reel.locked && !!reel.playback_url;
 
+  // Double tap anywhere on the video likes the reel (never un-likes) and flashes a heart.
+  const lastTap = useRef(0);
+  const [heartVisible, setHeartVisible] = useState(false);
+  const heartScale = useSharedValue(0);
+  const heartStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: heartScale.value }],
+    opacity: heartScale.value,
+  }));
+  const handleTap = () => {
+    const now = Date.now();
+    if (now - lastTap.current < DOUBLE_TAP_MS) {
+      lastTap.current = 0;
+      if (!reel.liked_by_me) onLike();
+      setHeartVisible(true);
+      // eslint-disable-next-line react-hooks/immutability -- reanimated shared value, mutated on the UI thread
+      heartScale.value = withSequence(
+        withTiming(1.2, { duration: 150 }),
+        withTiming(1, { duration: 100 }),
+        withDelay(500, withTiming(0, { duration: 200 }))
+      );
+      setTimeout(() => setHeartVisible(false), 1000);
+    } else {
+      lastTap.current = now;
+    }
+  };
+
   return (
     <View style={{ height, width }} className="bg-black justify-center items-center relative">
       {canPlay && <ReelVideo url={reel.playback_url!} isActive={isActive} />}
+      {!reel.locked && <Pressable onPress={handleTap} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />}
+      {heartVisible && (
+        <Animated.View pointerEvents="none" style={[{ position: 'absolute' }, heartStyle]}>
+          <Heart color="#ffffff" fill="#ffffff" size={120} />
+        </Animated.View>
+      )}
 
       {reel.locked && (
         <View className="absolute inset-0 bg-black/60 justify-center items-center px-6">

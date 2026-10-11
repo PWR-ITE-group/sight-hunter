@@ -10,12 +10,15 @@ import { ErrorBanner, errorMessage } from '../components/ui/ErrorBanner';
 import { formatDate } from '../utils/formatters';
 import { useDailyGame, useStartDailyGame, useSubmitDailyAnswers } from '../api/hooks/useDailyGame';
 import { ApiClientError } from '../api/client';
+import { useSettingsStore } from '../store/settingsStore';
 
 export default function DailyTab() {
   const game = useDailyGame();
   const startGame = useStartDailyGame();
   const submit = useSubmitDailyAnswers();
 
+  const savedAnswers = useSettingsStore((s) => s.dailyAnswers);
+  const setDailyAnswers = useSettingsStore((s) => s.setDailyAnswers);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [currentStep, setCurrentStep] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -71,6 +74,8 @@ export default function DailyTab() {
 
   if (data.played && data.result) {
     const correctByQuestion = new Map(data.result.correct.map((c) => [c.question_id, c.option_index]));
+    // Picks from this session, or the ones saved for today when the screen was reopened.
+    const picks = Object.keys(answers).length > 0 ? answers : savedAnswers?.date === data.date ? savedAnswers.answers : {};
     return (
       <View className="flex-1 bg-paper">
         {header}
@@ -79,14 +84,14 @@ export default function DailyTab() {
           total={questions.length}
           pointsAwarded={data.result.points_awarded}
           items={questions.map((q) => {
-            const mine = answers[q.id];
+            const mine = picks[q.id];
             const correct = correctByQuestion.get(q.id);
             return {
               questionId: q.id,
               question: q.text,
               answer: mine !== undefined ? q.options[mine] ?? null : null,
               correctAnswer: correct !== undefined ? q.options[correct] ?? '—' : '—',
-              isCorrect: mine !== undefined && correct === mine,
+              isCorrect: mine === undefined ? null : correct === mine,
             };
           })}
         />
@@ -111,6 +116,7 @@ export default function DailyTab() {
       return;
     }
     setError(null);
+    setDailyAnswers(data.date, answers);
     try {
       await submit.mutateAsync(
         questions.map((q) => ({ question_id: q.id, option_index: answers[q.id] }))

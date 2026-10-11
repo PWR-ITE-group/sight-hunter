@@ -72,18 +72,23 @@ export default function CameraScreen() {
     return (
       <View className="flex-1 bg-black">
         <Image source={{ uri: photoUri }} style={{ flex: 1 }} contentFit="cover" />
-        <View className="absolute bottom-10 left-0 right-0 flex-row justify-center gap-4 px-6">
-          <View className="flex-1">
-            <Button
-              title="Powtórz"
-              variant="outline"
-              onPress={handleRetake}
-              icon={<RotateCcw size={20} color={Colors.primary} />}
-            />
-          </View>
-          <View className="flex-1">
-            <Button title="Wyślij" variant="primary" onPress={handleSend} icon={<Check size={20} color="#fff" />} />
-          </View>
+        <View className="absolute bottom-10 left-0 right-0 flex-row gap-3 px-6">
+          <Button
+            title="Powtórz"
+            variant="outline"
+            size="lg"
+            onPress={handleRetake}
+            icon={<RotateCcw size={20} color={Colors.primary} />}
+            style={{ flex: 1 }}
+          />
+          <Button
+            title="Wyślij"
+            variant="primary"
+            size="lg"
+            onPress={handleSend}
+            icon={<Check size={20} color="#fff" />}
+            style={{ flex: 1 }}
+          />
         </View>
       </View>
     );

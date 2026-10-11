@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, ScrollView } from 'react-native';
-import { CheckCircle2, XCircle } from 'lucide-react-native';
+import { CheckCircle2, XCircle, HelpCircle } from 'lucide-react-native';
 import { Card } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import { Colors } from '../../constants/colors';
@@ -11,7 +11,8 @@ export interface QuizResultItem {
   /** Player's answer, or null when unknown (result shown after a reload). */
   answer: string | null;
   correctAnswer: string;
-  isCorrect: boolean;
+  /** null when the player's pick is unknown (opened later on another device). */
+  isCorrect: boolean | null;
 }
 
 interface QuizResultProps {
@@ -48,7 +49,9 @@ export function QuizResult({ score, total, pointsAwarded, items }: QuizResultPro
             <View key={item.questionId} className="p-4 bg-paper rounded-xl">
               <View className="flex-row items-start">
                 <View className="mr-3 mt-0.5">
-                  {item.isCorrect ? (
+                  {item.isCorrect === null ? (
+                    <HelpCircle color={Colors.textTertiary} size={22} />
+                  ) : item.isCorrect ? (
                     <CheckCircle2 color={Colors.success} size={22} />
                   ) : (
                     <XCircle color={Colors.error} size={22} />
@@ -56,10 +59,11 @@ export function QuizResult({ score, total, pointsAwarded, items }: QuizResultPro
                 </View>
                 <View className="flex-1">
                   <Text className="text-text-secondary text-xs font-bold uppercase mb-1">
-                    Pytanie {index + 1} · {item.isCorrect ? 'Poprawnie' : 'Niepoprawnie'}
+                    Pytanie {index + 1}
+                    {item.isCorrect === null ? '' : item.isCorrect ? ' · Poprawnie' : ' · Niepoprawnie'}
                   </Text>
                   <Text className="text-app-text font-medium mb-2">{item.question}</Text>
-                  {item.answer !== null && !item.isCorrect && (
+                  {item.answer !== null && item.isCorrect === false && (
                     <Text className="text-error text-sm">Twoja odpowiedź: {item.answer}</Text>
                   )}
                   <Text className="text-success text-sm">Poprawna odpowiedź: {item.correctAnswer}</Text>
