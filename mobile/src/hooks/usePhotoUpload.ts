@@ -26,6 +26,13 @@ export function usePhotoUpload() {
       });
 
       if (!uploadResponse.ok) {
+        console.warn('Photo upload diagnostics', {
+          status: uploadResponse.status,
+          localResponseContentType: response.headers.get('content-type'),
+          blobType: blob.type,
+          blobSize: blob.size,
+          requestedContentType: 'image/jpeg',
+        });
         const body = await uploadResponse.text().catch(() => '');
         throw new Error(`Upload failed with status ${uploadResponse.status}: ${body}`);
       }
