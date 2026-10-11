@@ -78,7 +78,28 @@ class OpenClipEmbedder:
         return _normalize(v)
 
 
+class TinyEmbedder:
+    """16x16 RGB thumbnail (768 values, same width as DINOv2-base) as the embedding.
+
+    No model and no weights: `MODEL_NAME=tiny` lets end-to-end tests and smoke runs exercise
+    the whole queue/DB contract in milliseconds. Identical pixels give similarity 1.0; it is
+    useless for recognising real places.
+    """
+
+    dim = EMBEDDING_DIM
+
+    def embed(self, img: Image.Image) -> np.ndarray:
+        thumb = img.resize((16, 16), Image.Resampling.BILINEAR)
+        v = np.asarray(thumb, dtype=np.float32).reshape(-1) / 255.0
+        return _normalize(v - v.mean())
+
+
+TINY_MODEL = "tiny"
+
+
 def build_embedder(model_name: str, device: str = "cpu", flip_tta: bool = True) -> Embedder:
+    if model_name == TINY_MODEL:
+        return TinyEmbedder()
     if model_name.startswith("clip:"):
         return OpenClipEmbedder(model_name.removeprefix("clip:"), device=device)
     return DinoV2Embedder(model_name, device=device, flip_tta=flip_tta)
