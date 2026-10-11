@@ -33,7 +33,14 @@ class Claim(Protocol):
 class AttemptRepository(Protocol):
     def claim(self, attempt_id: UUID) -> AbstractAsyncContextManager[Claim | None]: ...
 
+    async def status(self, attempt_id: UUID) -> str | None:
+        """Current `attempts.status` without locking; None when the row doesn't exist."""
+        ...
 
+
+# No SKIP LOCKED: the API enqueues the job inside the transaction that sets status = 'queued',
+# so the worker may get here before that commit. Waiting for the row lock (milliseconds) and
+# re-checking the status is what makes the claim see the committed 'queued' row.
 _CLAIM = text("""
     SELECT a.id, a.photo_key, t.place_id, p.name
     FROM attempts a
@@ -41,8 +48,10 @@ _CLAIM = text("""
     JOIN tasks t ON t.id = r.task_id
     JOIN places p ON p.id = t.place_id
     WHERE a.id = :id AND a.status = 'queued'
-    FOR UPDATE OF a SKIP LOCKED
+    FOR UPDATE OF a
 """)
+
+_STATUS = text("SELECT status FROM attempts WHERE id = :id")
 
 _NEAREST = text("""
     SELECT r.place_id, p.name, 1 - (r.embedding <=> :q) AS sim
@@ -98,3 +107,8 @@ class SqlAttemptRepository:
                 yield None
                 return
             yield SqlClaim(conn, row[0], row[1], row[2], row[3])
+
+    async def status(self, attempt_id: UUID) -> str | None:
+        async with self.engine.connect() as conn:
+            status = await conn.scalar(_STATUS, {"id": attempt_id})
+            return str(status) if status is not None else None

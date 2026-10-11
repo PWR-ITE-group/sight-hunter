@@ -5,6 +5,8 @@ from dataclasses import dataclass, field
 from uuid import UUID, uuid4
 
 import numpy as np
+import pytest
+from arq import Retry
 from PIL import Image
 
 from app.decision import PlaceScore, Reason, Status, Verdict
@@ -45,12 +47,16 @@ class FakeClaim:
 
 
 class FakeRepo:
-    def __init__(self, claim: FakeClaim | None) -> None:
+    def __init__(self, claim: FakeClaim | None, status: str | None = None) -> None:
         self._claim = claim
+        self._status = status
 
     @asynccontextmanager
     async def claim(self, attempt_id: UUID) -> AsyncIterator[FakeClaim | None]:
         yield self._claim
+
+    async def status(self, attempt_id: UUID) -> str | None:
+        return self._status
 
 
 class FakeStorage:
@@ -90,11 +96,11 @@ class YesJudge:
 
 def make(claim: FakeClaim | None, photo: bytes | None = None,
          judge: object | None = None, delete_photo: bool = False,
-         ) -> tuple[Deps, FakeStorage, FakeSink]:
+         status: str | None = None) -> tuple[Deps, FakeStorage, FakeSink]:
     storage, sink = FakeStorage(photo or jpeg()), FakeSink()
     settings = Settings(thresholds=Thresholds(t_low=0.45, t_high=0.7, margin=0.05, t_single=0.6),
                         delete_photo_after_verdict=delete_photo)
-    deps = Deps(settings, FakeRepo(claim), storage, FakeEmbedder(),
+    deps = Deps(settings, FakeRepo(claim, status), storage, FakeEmbedder(),
                 judge or NoneJudge(), sink)  # type: ignore[arg-type]
     return deps, storage, sink
 
@@ -119,10 +125,21 @@ async def test_wrong_place_is_published_with_the_other_place() -> None:
     assert sink.published == [(claim.attempt_id, v)]
 
 
-async def test_not_queued_is_skipped() -> None:
-    deps, storage, sink = make(None)
-    assert await run_verification(deps, uuid4()) is None
-    assert sink.published == [] and storage.deleted == []
+async def test_already_decided_or_missing_is_skipped() -> None:
+    for status in ("accepted", "rejected", None):
+        deps, storage, sink = make(None, status=status)
+        assert await run_verification(deps, uuid4()) is None
+        assert sink.published == [] and storage.deleted == []
+
+
+async def test_job_ahead_of_the_api_commit_is_retried() -> None:
+    # The API enqueues inside the transaction that sets status = 'queued'; if the job runs
+    # before that commit the claim finds nothing. The job must be retried, not dropped.
+    for status in ("awaiting_upload", "queued"):
+        deps, _, sink = make(None, status=status)
+        with pytest.raises(Retry):
+            await run_verification(deps, uuid4())
+        assert sink.published == []
 
 
 async def test_broken_image_rejected() -> None:
