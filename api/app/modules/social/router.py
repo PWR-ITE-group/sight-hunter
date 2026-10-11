@@ -1,24 +1,12 @@
 import uuid
 
-from fastapi import APIRouter, Response, status
+from fastapi import APIRouter, status
 
 from app.core.deps import CurrentUser, RedisDep, SessionDep
 from app.modules.social import service
 from app.modules.social.schemas import CommentOut, CommentRequest, CommentsOut, ShareLinkOut
 
 social_router = APIRouter(tags=["social"])
-
-
-@social_router.put("/reels/{reel_id}/like", status_code=status.HTTP_204_NO_CONTENT)
-async def like_reel(reel_id: uuid.UUID, user: CurrentUser, session: SessionDep) -> Response:
-    await service.like(session, user, reel_id)
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
-
-
-@social_router.delete("/reels/{reel_id}/like", status_code=status.HTTP_204_NO_CONTENT)
-async def unlike_reel(reel_id: uuid.UUID, user: CurrentUser, session: SessionDep) -> Response:
-    await service.unlike(session, user, reel_id)
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @social_router.get("/reels/{reel_id}/comments", response_model=CommentsOut)

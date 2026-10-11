@@ -44,7 +44,7 @@ Done (all under `/api/v1`, see Swagger at `/docs`):
 - quests: `/places/nearby` with offset zones, `/places/next` (nearest / popular / random), `/tasks/{id}`, rounds, hints (points only)
 - finds: attempts with geofence + GPS slack, presigned upload, submit (idempotent), polling; `app.worker` applies verdicts and pays rewards in one transaction, then leaderboard + photo deletion
 - wallet: ledgers, `/leaderboard` (Redis, rebuilt from `xp_ledger` when missing)
-- media/social: `/reels/feed`, views, likes, comments (10/min), share link
+- media/social: `/reels/feed` (with `finders_count`), views, comments (10/min), share link. No likes (team decision 2026-10-11)
 - shop: public reels for points, `SELECT … FOR UPDATE` on the player, Idempotency-Key
 - admin: SQLAdmin at `/admin` (places with WKT input, tasks, reels, read-only players/finds)
 

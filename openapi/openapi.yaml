@@ -320,21 +320,6 @@ paths:
       parameters: [{ $ref: "#/components/parameters/ReelId" }]
       responses:
         "204": { description: Counted }
-  /reels/{reelId}/like:
-    put:
-      operationId: likeReel
-      summary: Like a reel
-      tags: [social]
-      parameters: [{ $ref: "#/components/parameters/ReelId" }]
-      responses:
-        "204": { description: Liked }
-    delete:
-      operationId: unlikeReel
-      summary: Remove a like
-      tags: [social]
-      parameters: [{ $ref: "#/components/parameters/ReelId" }]
-      responses:
-        "204": { description: Unliked }
   /reels/{reelId}/comments:
     get:
       operationId: listComments
@@ -673,7 +658,7 @@ components:
 
     Reel:
       type: object
-      required: [id, kind, title, locked, duration_s, finders_count, likes_count, liked_by_me]
+      required: [id, kind, title, locked, duration_s, finders_count]
       properties:
         id: { type: string, format: uuid }
         place_id: { type: [string, "null"], format: uuid }
@@ -682,9 +667,7 @@ components:
         locked: { type: boolean }
         playback_url: { type: [string, "null"], format: uri, description: null when locked }
         duration_s: { type: number }
-        finders_count: { type: integer }
-        likes_count: { type: integer }
-        liked_by_me: { type: boolean }
+        finders_count: { type: integer, description: players who found the reel's place; 0 for public reels }
         price_points: { type: [integer, "null"], description: public reels sold in the shop }
 
     Comment:

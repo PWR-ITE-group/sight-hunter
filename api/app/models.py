@@ -7,7 +7,7 @@ from app.modules.finds.models import Attempt, Find
 from app.modules.media.models import Reel, ReelUnlock
 from app.modules.quests.models import Place, PlaceRef, Task, TaskRound
 from app.modules.shop.models import DailyGame, Purchase
-from app.modules.social.models import ReelComment, ReelLike, ReelView
+from app.modules.social.models import ReelComment, ReelView
 from app.modules.wallet.models import WalletLedger, XpLedger
 
 __all__ = [
@@ -21,7 +21,6 @@ __all__ = [
     "Purchase",
     "Reel",
     "ReelComment",
-    "ReelLike",
     "ReelUnlock",
     "ReelView",
     "RefreshToken",

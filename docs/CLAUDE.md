@@ -30,7 +30,7 @@ Roles come from the work plan: A — backend and lead, B — mobile game loop, C
 | `content/` — places | C | `fetch_places.py`, `add_refs`, coordinates/radius, tasks and hints (Polish), reference photos, thresholds |
 | `content/` — reels | D | `generate_reel.py`, onboarding reels, fact sources |
 | `mobile/` — game loop | B | Screens: login and nickname, map, task, hint dialog, camera + upload + status polling, result, next place, demo mode (long tap). Also the app skeleton: root `_layout.tsx`, bottom tabs, `src/api/` client setup, EAS/APK build |
-| `mobile/` — content screens | D | Screens: reels feed, reward, profile, leaderboard, shop, onboarding, likes/comments/share, settings |
+| `mobile/` — content screens | D | Screens: reels feed, reward, profile, leaderboard, shop, onboarding, comments/share, settings |
 | `openapi/openapi.yaml` | everyone | Changes only by team agreement, said aloud; update it right away |
 | `README.md` (root) | B + C | Final "run with one command" pass in the finish phase |
 

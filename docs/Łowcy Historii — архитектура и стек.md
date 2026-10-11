@@ -147,7 +147,7 @@ Oct 10, 2026 · @Oleg
 | `finds` | user\_id, task\_id, attempt\_id, points\_awarded, xp\_awarded, found\_at | Засчитанные находки; уникальность (user\_id, task\_id) |
 | `reels` | id, place\_id, kind (reward / public), video\_provider, playback\_url, duration\_s, author\_id | Видео-контент |
 | `reel_unlocks` | user\_id, reel\_id, source (find / purchase) | Кому какой рилс открыт |
-| `reel_likes`, `reel_comments`, `reel_views` | user\_id, reel\_id, … | Социальная часть ленты |
+| `reel_comments`, `reel_views` | user\_id, reel\_id, … | Социальная часть ленты |
 | `wallet_ledger` | user\_id, delta, reason (find / purchase / referral / daily), ref\_id | Очки: только добавление записей |
 | `xp_ledger` | user\_id, delta, reason, ref\_id | XP для лидерборда; топ кэшируется в Redis |
 | `daily_game` | user\_id, date, started\_at, score | Мини-игра раз в день: уникальность (user\_id, date) |
@@ -222,14 +222,13 @@ Oct 10, 2026 · @Oleg
    - `rejected` → «Не похоже. Попробуй с другого ракурса» + сколько попыток осталось.
 9. **Обрыв сети** после загрузки — клиент повторяет `submit`; он идемпотентен, двойной задачи не будет.
 
-### 6. Лента рилсов: «Смотреть», лайк, комментарий, «Поделиться»
+### 6. Лента рилсов: «Смотреть», комментарий, «Поделиться»
 
-1. **Открыть ленту** → `GET /reels/feed?cursor=…` → открытые игроку reward-рилсы, публичные и купленные: `playback_url`, «нашли N человек» (счётчик кэшируется в Redis), лайки, `liked_by_me`.
+1. **Открыть ленту** → `GET /reels/feed?cursor=…` → открытые игроку reward-рилсы, публичные и купленные: `playback_url`, «нашли N человек» (`finders_count`). Лайков нет (решение команды 2026-10-11): вместо сердечка показываем число нашедших.
 2. **Прокрутка:** `FlatList` с постраничной прокруткой; `onViewableItemsChanged` включает видимое видео и ставит на паузу остальные; следующее предзагружается.
 3. **Просмотр засчитан** после \~3 с → `POST /reels/{id}/views` (клиент копит и шлёт пачкой).
-4. **Лайк:** сердечко загорается сразу (оптимистичное обновление) → `PUT /reels/{id}/like` или `DELETE`. Ошибка — откат иконки.
-5. **Комментарий:** `POST /reels/{id}/comments {text}` → сервер проверяет длину и лимит частоты; список — `GET /reels/{id}/comments?cursor=…`.
-6. **Закрытый рилс** (место ещё не найдено) → сервер отдаёт заглушку без `playback_url`; клиент показывает «Найди место, чтобы открыть».
+4. **Комментарий:** `POST /reels/{id}/comments {text}` → сервер проверяет длину и лимит частоты; список — `GET /reels/{id}/comments?cursor=…`.
+5. **Закрытый рилс** (место ещё не найдено) → сервер отдаёт заглушку без `playback_url`; клиент показывает «Найди место, чтобы открыть».
 7. **«Поделиться»** → `GET /tasks/{id}/share-link` → ссылка вида `https://<домен>/t/{task_id}?ref={код}` → системное меню `Share.share()`.
    - У друга есть приложение → deep link (`expo-linking`) открывает задание.
    - Нет → страница загрузки; код из ссылки уходит в `ref_code` при регистрации.
@@ -272,7 +271,7 @@ Oct 10, 2026 · @Oleg
 | `POST /rounds/{id}/attempts` | Гео-проверка, ссылка на загрузку | `attempts` |
 | `POST /attempts/{id}/submit`, `GET /attempts/{id}` | Постановка в очередь, статус | `attempts`; воркер — `finds`, журналы, `reel_unlocks` |
 | `GET /reels/feed`, `POST /reels/{id}/views` | Лента, просмотры | `reel_views` |
-| `PUT/DELETE /reels/{id}/like`, `POST /reels/{id}/comments` | Лайк, комментарий | `reel_likes`, `reel_comments` |
+| `POST /reels/{id}/comments` | Комментарий | `reel_comments` |
 | `GET /tasks/{id}/share-link` | Реферальная ссылка | — |
 | `GET /daily-game`, `POST /daily-game/start`, `POST /daily-game/answers` | Мини-игра | `daily_game`, `wallet_ledger` |
 | `GET /leaderboard` | Топ из Redis | — |

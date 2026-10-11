@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.modules.finds.models import Find
 from app.modules.media.models import Reel, ReelKind, ReelUnlock
 from app.modules.quests.models import Task
-from app.modules.social.models import ReelLike, ReelView
+from app.modules.social.models import ReelView
 
 
 async def get_reel(session: AsyncSession, reel_id: uuid.UUID) -> Reel | None:
@@ -42,8 +42,8 @@ async def unlocked_reel_id_for_task(
 
 async def feed_page(
     session: AsyncSession, user_id: uuid.UUID, offset: int, limit: int
-) -> Sequence[Row[Reel, bool, int, int, bool]]:
-    """(reel, unlocked, finders_count, likes_count, liked_by_me), newest first."""
+) -> Sequence[Row[Reel, bool, int]]:
+    """(reel, unlocked, finders_count), newest first."""
     unlocked = exists().where(ReelUnlock.user_id == user_id, ReelUnlock.reel_id == Reel.id)
     finders = (
         select(func.count())
@@ -52,11 +52,9 @@ async def feed_page(
         .where(Task.place_id == Reel.place_id)
         .scalar_subquery()
     )
-    likes = select(func.count()).where(ReelLike.reel_id == Reel.id).scalar_subquery()
-    liked = exists().where(ReelLike.user_id == user_id, ReelLike.reel_id == Reel.id)
-    rows: Sequence[Row[Reel, bool, int, int, bool]] = (
+    rows: Sequence[Row[Reel, bool, int]] = (
         await session.execute(
-            select(Reel, unlocked.label("unlocked"), finders, likes, liked.label("liked"))
+            select(Reel, unlocked.label("unlocked"), finders)
             .order_by(Reel.created_at.desc(), Reel.id)
             .offset(offset)
             .limit(limit)

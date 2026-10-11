@@ -25,18 +25,6 @@ async def _require_reel(session: AsyncSession, reel_id: uuid.UUID) -> None:
         raise not_found("reel")
 
 
-async def like(session: AsyncSession, user: User, reel_id: uuid.UUID) -> None:
-    await _require_reel(session, reel_id)
-    await repo.like(session, user.id, reel_id)
-    await session.commit()
-
-
-async def unlike(session: AsyncSession, user: User, reel_id: uuid.UUID) -> None:
-    await _require_reel(session, reel_id)
-    await repo.unlike(session, user.id, reel_id)
-    await session.commit()
-
-
 def _decode_cursor(cursor: str | None) -> int:
     if not cursor:
         return 0

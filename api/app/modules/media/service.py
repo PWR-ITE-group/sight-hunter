@@ -54,7 +54,7 @@ async def feed(session: AsyncSession, user: User, cursor: str | None) -> FeedOut
     offset = _decode_cursor(cursor)
     rows = await repo.feed_page(session, user.id, offset, PAGE_SIZE + 1)
     items = []
-    for reel, unlocked, finders, likes, liked in rows[:PAGE_SIZE]:
+    for reel, unlocked, finders in rows[:PAGE_SIZE]:
         locked = is_locked(reel, unlocked)
         items.append(
             ReelOut(
@@ -66,8 +66,6 @@ async def feed(session: AsyncSession, user: User, cursor: str | None) -> FeedOut
                 playback_url=None if locked else reel.playback_url,
                 duration_s=reel.duration_s,
                 finders_count=finders,
-                likes_count=likes,
-                liked_by_me=liked,
                 price_points=reel.price_points,
             )
         )

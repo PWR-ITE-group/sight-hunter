@@ -75,24 +75,16 @@ async def test_feed_locks_reward_and_paid_reels(client: AsyncClient, auth: dict[
     assert paid["locked"] is True and paid["price_points"] == 40
 
 
-async def test_like_is_idempotent_and_counted(client: AsyncClient, auth: dict[str, str]) -> None:
+async def test_reel_likes_are_gone(client: AsyncClient, auth: dict[str, str]) -> None:
     reel = f"/api/v1/reels/{sid('reel:how')}"
-    assert (await client.put(f"{reel}/like", headers=auth)).status_code == 204
-    assert (await client.put(f"{reel}/like", headers=auth)).status_code == 204
+    assert (await client.put(f"{reel}/like", headers=auth)).status_code == 404
+    assert (await client.delete(f"{reel}/like", headers=auth)).status_code == 404
     item = next(
         i
         for i in (await client.get("/api/v1/reels/feed", headers=auth)).json()["items"]
         if i["id"] == str(sid("reel:how"))
     )
-    assert item["likes_count"] == 1 and item["liked_by_me"] is True
-    assert (await client.delete(f"{reel}/like", headers=auth)).status_code == 204
-    item = next(
-        i
-        for i in (await client.get("/api/v1/reels/feed", headers=auth)).json()["items"]
-        if i["id"] == str(sid("reel:how"))
-    )
-    assert item["likes_count"] == 0 and item["liked_by_me"] is False
-    assert (await client.put(f"/api/v1/reels/{uuid.uuid4()}/like", headers=auth)).status_code == 404
+    assert "likes_count" not in item and "liked_by_me" not in item
 
 
 async def test_comments_and_views(client: AsyncClient, auth: dict[str, str]) -> None:

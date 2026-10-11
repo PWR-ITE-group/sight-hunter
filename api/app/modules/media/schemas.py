@@ -14,8 +14,6 @@ class ReelOut(BaseModel):
     playback_url: str | None
     duration_s: float
     finders_count: int
-    likes_count: int
-    liked_by_me: bool
     price_points: int | None
 
 
