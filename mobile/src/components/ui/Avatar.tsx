@@ -34,7 +34,7 @@ export function Avatar({ uri, nickname, size = 'md', className = '' }: AvatarPro
 
   return (
     <View
-      className={`rounded-full overflow-hidden items-center justify-center bg-primary-light ${className}`}
+      className={`rounded-full overflow-hidden items-center justify-center bg-primary ${className}`}
       style={{ width: sizePx, height: sizePx }}
     >
       {uri ? (
@@ -45,7 +45,7 @@ export function Avatar({ uri, nickname, size = 'md', className = '' }: AvatarPro
           transition={200}
         />
       ) : (
-        <Text className={`font-bold text-primary ${textClass}`}>
+        <Text className={`font-bold text-white ${textClass}`}>
           {initials}
         </Text>
       )}

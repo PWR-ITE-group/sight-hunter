@@ -84,7 +84,7 @@ export default function GameMap({ places, userPosition, onMarkerPress, onLongPre
         onPress={handleCenter}
         activeOpacity={0.8}
       >
-        <Feather name="navigation" size={24} color="#2c52c4" />
+        <Feather name="navigation" size={24} color="#b5422e" />
       </TouchableOpacity>
     </View>
   );

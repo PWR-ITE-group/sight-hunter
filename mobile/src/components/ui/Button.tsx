@@ -59,12 +59,12 @@ export function Button({
     case 'outline':
       variantContainerClasses = 'bg-surface border border-app-border';
       variantTextClasses = 'text-primary font-semibold';
-      spinnerColor = '#2c52c4'; // primary color
+      spinnerColor = '#b5422e'; // primary color
       break;
     case 'ghost':
       variantContainerClasses = 'bg-transparent border border-transparent';
       variantTextClasses = 'text-primary font-semibold';
-      spinnerColor = '#2c52c4';
+      spinnerColor = '#b5422e';
       break;
   }
 

@@ -17,7 +17,7 @@ export interface LoadingSpinnerProps {
 
 export function LoadingSpinner({
   size = 24,
-  color = '#2c52c4', // Primary color
+  color = '#b5422e', // Primary color
   className = '',
   style,
 }: LoadingSpinnerProps) {

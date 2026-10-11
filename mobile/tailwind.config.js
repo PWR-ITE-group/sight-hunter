@@ -10,11 +10,11 @@ module.exports = {
     extend: {
       colors: {
         primary: {
-          DEFAULT: '#2c52c4',
-          dark: '#23429e',
-          light: '#e3e9f8',
+          DEFAULT: '#b5422e',
+          dark: '#93351f',
+          light: '#f3e4df',
         },
-        secondary: '#b5422e',
+        secondary: '#2c52c4',
         success: '#2c8350',
         error: '#c03838',
         warning: '#b9800f',
@@ -28,9 +28,9 @@ module.exports = {
         'app-border': '#d3d9d0',
         'app-overlay': 'rgba(27,33,30,0.5)',
         'marker-found': '#2c8350',
-        'marker-unfound': '#2c52c4',
-        'search-circle': 'rgba(44,82,196,0.14)',
-        'search-circle-border': 'rgba(44,82,196,0.4)',
+        'marker-unfound': '#b5422e',
+        'search-circle': 'rgba(181,66,46,0.14)',
+        'search-circle-border': 'rgba(181,66,46,0.45)',
       },
     },
   },
