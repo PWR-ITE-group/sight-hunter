@@ -1,0 +1,62 @@
+[project]
+name = "lowcy-worker"
+version = "0.1.0"
+description = "Łowcy Historii photo recognition worker (arq + DINOv2 + pgvector)"
+requires-python = ">=3.12,<3.15"
+dependencies = [
+    "arq (>=0.28.0,<0.29.0)",
+    "redis (>=5.2,<6)",
+    "pydantic-settings (>=2.15.0,<3.0.0)",
+    "sqlalchemy[asyncio] (>=2.1.4,<3.0.0)",
+    "asyncpg (>=0.32.0,<0.33.0)",
+    "pgvector (>=0.5.1,<0.6.0)",
+    "boto3 (>=1.43.111,<2.0.0)",
+    "pillow (>=12.0.0)",
+    "numpy (>=2.3.0)",
+    "torch (>=2.9.0)",
+    "transformers (>=4.57.0)",
+    "httpx (>=0.28.1,<0.29.0)",
+    "pyyaml (>=6.0.2)",
+]
+
+[project.optional-dependencies]
+# Only for comparing models in calibrate.py, not needed at runtime.
+clip = ["open-clip-torch (>=3.2.0)"]
+
+[dependency-groups]
+dev = [
+    "pytest (>=9.1.1,<10.0.0)",
+    "pytest-asyncio (>=1.4.0,<2.0.0)",
+    "ruff (>=0.17.0,<0.18.0)",
+    "mypy (>=2.4.0,<3.0.0)",
+    "types-pyyaml",
+]
+
+[tool.poetry]
+package-mode = false
+
+# CPU-only torch wheels: the default Linux wheel pulls CUDA and is several GB larger.
+[tool.poetry.dependencies]
+torch = { source = "pytorch-cpu" }
+
+[[tool.poetry.source]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+priority = "explicit"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "ASYNC"]
+
+[tool.mypy]
+strict = true
+plugins = ["pydantic.mypy"]
+ignore_missing_imports = true

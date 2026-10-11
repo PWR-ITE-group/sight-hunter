@@ -146,6 +146,26 @@ paths:
                     type: array
                     items: { $ref: "#/components/schemas/PlaceMarker" }
 
+  /places/next:
+    get:
+      operationId: getNextPlace
+      summary: Next place to play (agreed 2026-10-10 as a contract addition)
+      tags: [places]
+      parameters:
+        - { name: lat, in: query, required: true, schema: { type: number } }
+        - { name: lng, in: query, required: true, schema: { type: number } }
+        - name: mode
+          in: query
+          schema: { type: string, enum: [nearest, popular, random], default: nearest }
+          description: nearest unfound place; most found by all players; random one of the 5 nearest
+      responses:
+        "200":
+          description: An unfound place as a marker (offset zone, no name) with the distance
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/NextPlace" }
+        "404": { $ref: "#/components/responses/Error" }  # not_found — everything is found
+
   /tasks/{taskId}:
     get:
       operationId: getTask
@@ -199,8 +219,8 @@ paths:
       tags: [rounds]
       summary: Reveal the next hint; lowers the round reward, never the balance
       description: |
-        OPEN QUESTION: whether hints from the player's stock are spent first without a
-        penalty, and whether XP is reduced too (prototype vs architecture doc differ).
+        Decided 2026-10-10: no hint stock. Each hint cuts only the round's points by 25% of
+        the base (floor 25%); XP is unchanged. Max 3 hints per round.
       parameters:
         - { $ref: "#/components/parameters/RoundId" }
         - { $ref: "#/components/parameters/IdempotencyKey" }
@@ -300,21 +320,6 @@ paths:
       parameters: [{ $ref: "#/components/parameters/ReelId" }]
       responses:
         "204": { description: Counted }
-  /reels/{reelId}/like:
-    put:
-      operationId: likeReel
-      summary: Like a reel
-      tags: [social]
-      parameters: [{ $ref: "#/components/parameters/ReelId" }]
-      responses:
-        "204": { description: Liked }
-    delete:
-      operationId: unlikeReel
-      summary: Remove a like
-      tags: [social]
-      parameters: [{ $ref: "#/components/parameters/ReelId" }]
-      responses:
-        "204": { description: Unliked }
   /reels/{reelId}/comments:
     get:
       operationId: listComments
@@ -595,6 +600,14 @@ components:
         name: { type: [string, "null"], description: only when found }
         zone: { $ref: "#/components/schemas/Zone" }
 
+    NextPlace:
+      allOf:
+        - { $ref: "#/components/schemas/PlaceMarker" }
+        - type: object
+          required: [distance_m]
+          properties:
+            distance_m: { type: integer }
+
     Task:
       type: object
       required: [id, place_id, riddle, hints_total, reward_points, reward_xp]
@@ -645,7 +658,7 @@ components:
 
     Reel:
       type: object
-      required: [id, kind, title, locked, duration_s, finders_count, likes_count, liked_by_me]
+      required: [id, kind, title, locked, duration_s, finders_count]
       properties:
         id: { type: string, format: uuid }
         place_id: { type: [string, "null"], format: uuid }
@@ -654,9 +667,7 @@ components:
         locked: { type: boolean }
         playback_url: { type: [string, "null"], format: uri, description: null when locked }
         duration_s: { type: number }
-        finders_count: { type: integer }
-        likes_count: { type: integer }
-        liked_by_me: { type: boolean }
+        finders_count: { type: integer, description: players who found the reel's place; 0 for public reels }
         price_points: { type: [integer, "null"], description: public reels sold in the shop }
 
     Comment:
