@@ -1,0 +1,92 @@
+# Local development infrastructure plus the API, its verdict worker and the ML worker.
+# Photos are plain files in ./.storage, shared by api, api-worker and worker.
+name: lowcy
+
+services:
+  postgres:
+    build: docker/postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?set in .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set in .env}
+      POSTGRES_DB: ${POSTGRES_DB:?set in .env}
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7.4-alpine
+    ports:
+      - "127.0.0.1:${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build: api
+    env_file: .env
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      STORAGE_LOCAL_ROOT: /data/storage
+    # Player photos (the phone PUTs them to the API) and reference photos. A host folder, so
+    # the content CLIs run from worker/ (`../.storage`) see the same files.
+    volumes:
+      - ./.storage:/data/storage
+    ports:
+      - "${API_PORT:-8000}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # Applies verdicts from the ML worker: reward transaction, leaderboard, photo deletion.
+  api-worker:
+    build: api
+    env_file: .env
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      STORAGE_LOCAL_ROOT: /data/storage
+    volumes:
+      - ./.storage:/data/storage
+    command: ["arq", "app.worker.WorkerSettings"]
+    depends_on:
+      api:
+        condition: service_started
+
+  # ML recognition worker (worker/, role C): verify_attempt jobs from arq:queue:ml, verdicts
+  # back to arq:queue:api. First build downloads CPU torch and the DINOv2 weights (~1.5 GB).
+  worker:
+    build: worker
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-lowcy}:${POSTGRES_PASSWORD:-change-me}@postgres:5432/${POSTGRES_DB:-lowcy}
+      REDIS_URL: redis://redis:6379/0
+      STORAGE_LOCAL_ROOT: /data/storage
+    volumes:
+      - ./.storage:/data/storage
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+
+volumes:
+  postgres-data:
+  redis-data:

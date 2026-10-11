@@ -1,0 +1,132 @@
+# Places of the demo route. Source of truth for places, tasks and hints (Polish).
+# Hand-written: slug, name, wiki_pl, radius_m, era, category, task, hints, rewards.
+# Filled by `python -m app.cli.fetch_places` (from worker/): wikidata, lat, lng, osm, commons_category.
+# Texts come from the UI prototype (NotForGithub/Łowcy Historii.html).
+
+defaults:
+  radius_m: 50
+  base_reward_points: 40
+  base_xp: 100
+places:
+- slug: ratusz
+  name: Ratusz
+  wiki_pl: Ratusz we Wrocławiu
+  radius_m: 60
+  era: XIII–XVI w.
+  category: townhall
+  task: Znajdź gotycki budynek z wieżą i zegarem pośrodku rynku.
+  hints:
+  - Stoi na środku dużego placu, otoczony ogródkami kawiarni.
+  - Ma bogato zdobiony szczyt i zegar na wschodniej ścianie.
+  - W jego piwnicy działa jedna z najstarszych restauracji w Europie.
+  wikidata: Q910225
+  lat: 51.109581
+  lng: 17.032078
+  commons_category: Wrocław Town Hall
+  osm: way/859819576
+- slug: elzbieta
+  name: Kościół św. Elżbiety
+  wiki_pl: Bazylika św. Elżbiety we Wrocławiu
+  era: XIV w.
+  category: church
+  task: Znajdź kościół z jedną bardzo wysoką wieżą tuż przy rynku.
+  hints:
+  - Obok stoją dwie małe kamieniczki połączone bramą.
+  - Na wieżę można wejść i zobaczyć całe Stare Miasto.
+  - Te kamieniczki nazywają się Jaś i Małgosia.
+  wikidata: Q1330584
+  lat: 51.111667
+  lng: 17.030278
+  commons_category: Saint Elisabeth of Hungary church in Wrocław
+  osm: way/368635824
+- slug: piasek
+  name: Kościół NMP na Piasku
+  wiki_pl: Kościół Najświętszej Marii Panny na Piasku we Wrocławiu
+  era: XIV w.
+  category: church
+  task: Znajdź gotycki kościół na małej wyspie, z wysokim dachem i bez wysokiej wieży.
+  hints:
+  - Wyspa leży między dwoma ramionami Odry.
+  - Obok jest Most Piaskowy i budynek biblioteki.
+  - Nazwa wyspy kojarzy się z plażą.
+  wikidata: Q2320729
+  lat: 51.114631
+  lng: 17.041239
+  commons_category: Church of St Mary on the Sand, Wrocław
+  osm: way/101205863
+- slug: katedra
+  name: Archikatedra św. Jana
+  wiki_pl: Archikatedra św. Jana Chrzciciela we Wrocławiu
+  radius_m: 70
+  era: XIII–XIV w.
+  category: church
+  task: Znajdź kościół z dwiema wysokimi, ostrymi wieżami.
+  hints:
+  - Szukaj na wyspie, na którą prowadzi most pełen kłódek.
+  - Wieczorem latarnik ręcznie zapala tu gazowe latarnie.
+  - To najważniejszy kościół archidiecezji, na Ostrowie Tumskim.
+  wikidata: Q910211
+  lat: 51.114217
+  lng: 17.04663
+  commons_category: Wrocław Cathedral
+  osm: way/483710219
+- slug: uniwersytet
+  name: Gmach Uniwersytetu
+  wiki_pl: Gmach główny Uniwersytetu Wrocławskiego
+  radius_m: 80
+  era: 1728–1742
+  category: baroque
+  task: Znajdź długi barokowy gmach nad samą Odrą.
+  hints:
+  - Patrz od strony rzeki, między dwoma mostami.
+  - Przed wejściem od placu stoi fontanna z szermierzem.
+  - W środku jest słynna barokowa Aula Leopoldina.
+  wikidata: Q9268883
+  lat: 51.11398
+  lng: 17.034025
+  commons_category: Collegium Maximum in Wrocław
+- slug: most
+  name: Most Tumski
+  wiki_pl: Most Tumski
+  radius_m: 40
+  era: koniec XIX w.
+  category: bridge
+  task: Znajdź zielony most obwieszony kłódkami.
+  hints:
+  - Łączy dwie wyspy na Odrze.
+  - Prowadzi w stronę dwóch wysokich wież katedry.
+  - Zakochani wrzucają stąd klucze do rzeki.
+  wikidata: Q7852706
+  lat: 51.1147
+  lng: 17.0423
+  commons_category: Tumski Bridge in Wrocław
+- slug: hala
+  name: Hala Targowa
+  wiki_pl: Hala Targowa przy ul. Piaskowej we Wrocławiu
+  era: 1906–1908
+  category: hall
+  task: Znajdź ceglaną halę, w której od ponad stu lat robi się zakupy.
+  hints:
+  - Stoi niedaleko Odry, przy ulicy Piaskowej.
+  - W środku dach podpierają betonowe łuki.
+  - Zbudowano ją na początku XX wieku jako targowisko.
+  wikidata: Q1093429
+  lat: 51.112438
+  lng: 17.040313
+  commons_category: Wrocław Market Hall No I
+  osm: way/101200681
+- slug: opera
+  name: Opera Wrocławska
+  wiki_pl: Opera Wrocławska
+  era: '1841'
+  category: opera
+  task: Znajdź klasycystyczny gmach z kolumnami przy fosie miejskiej.
+  hints:
+  - Stoi przy ulicy Świdnickiej, poza Starym Miastem.
+  - Niedaleko płynie fosa z zielonymi bulwarami.
+  - Od XIX wieku wystawia się tu spektakle muzyczne.
+  wikidata: Q1336270
+  lat: 51.108813
+  lng: 17.0564409
+  commons_category: Wrocław Opera
+  osm: way/369574311
