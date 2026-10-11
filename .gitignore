@@ -225,3 +225,5 @@ __marimo__/
 .env.local
 .env.*.local
 .DS_Store
+tamplete/
+template/

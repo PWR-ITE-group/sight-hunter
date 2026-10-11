@@ -1,6 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 // Keep in sync with src/constants/colors.ts (palette from the HTML prototype).
 module.exports = {
+  darkMode: 'class',
   content: [
     "./src/app/**/*.{js,jsx,ts,tsx}",
     "./src/components/**/*.{js,jsx,ts,tsx}",

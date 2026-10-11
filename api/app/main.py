@@ -2,8 +2,10 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 from fastapi import APIRouter, FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 
+from app.core.config import get_settings
 from app.core.db import get_engine
 from app.core.errors import install_error_handlers
 from app.core.redis import close_arq, get_redis
@@ -27,6 +29,17 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
 
 def create_app() -> FastAPI:
     app = FastAPI(title="Łowcy Historii API", version="0.1.0", lifespan=lifespan)
+
+    settings = get_settings()
+    if settings.env == "dev":
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=["*"],
+            allow_credentials=False,
+            allow_methods=["*"],
+            allow_headers=["*"],
+        )
+
     install_error_handlers(app)
 
     @app.get("/health", include_in_schema=False)
