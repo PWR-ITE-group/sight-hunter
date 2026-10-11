@@ -13,7 +13,8 @@ poetry run pytest; poetry run ruff check .; poetry run mypy app
 ```
 
 Settings come from env or `worker/.env` (see `app/settings.py`): `DATABASE_URL`, `REDIS_URL`,
-`STORAGE_BACKEND` (`local` until S3 exists, then `s3` + `S3_*`), `MODEL_NAME` (`tiny` = pixel
+`STORAGE_LOCAL_ROOT` (photo folder shared with the API, default `../.storage` = the repo's
+`.storage/`), `MODEL_NAME` (`tiny` = pixel
 thumbnails without weights, for the end-to-end tests in `api/tests/test_e2e_ml_worker.py`),
 `JUDGE_PROVIDER`, thresholds `VERIFY_T_LOW`, `VERIFY_T_HIGH`, `VERIFY_MARGIN`,
 `VERIFY_T_SINGLE`.
@@ -71,5 +72,6 @@ Run from `worker/`; data lives in `content/`.
 ## Docker
 
 `docker build -t lowcy-worker worker` bakes the model weights into the image. In the repo's
-`docker-compose.yml` this is the `worker` service (same Postgres, Redis and S3 as the API);
+`docker-compose.yml` this is the `worker` service (same Postgres and Redis as the API, and the
+repo's `.storage/` mounted at `/data/storage`, the folder the API writes player photos to);
 the first build downloads CPU torch and DINOv2 (~1.5 GB).

@@ -20,8 +20,8 @@ cp .env.example .env      # set a password; change ports if 5432/6379 are taken
 docker compose up -d --build
 ```
 
-Starts PostgreSQL 17 with PostGIS and pgvector, and Redis. API and worker services are added to compose once they have code.
+Starts PostgreSQL 17 with PostGIS and pgvector, Redis, the API (`:8000`), its verdict worker and the ML worker.
 
-**Not done yet:** local S3-compatible storage. MinIO images are no longer published, a replacement (likely SeaweedFS) is pending.
+Photos are plain files in `.storage/` (gitignored), mounted into `api`, `api-worker` and `worker`. There is no S3: the phone PUTs the photo to the `upload_url` it gets from the API, which points back at the API itself (`PUT /api/v1/uploads/{token}`).
 
 See the README in each folder for details.

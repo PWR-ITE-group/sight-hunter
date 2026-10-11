@@ -1,4 +1,5 @@
 import uuid
+from collections.abc import AsyncIterator
 from datetime import UTC, datetime
 from typing import Any, Literal
 
@@ -12,7 +13,8 @@ from app.core.errors import AppError, not_found
 from app.core.geo import geo_point
 from app.core.idempotency import run_idempotent
 from app.core.redis import API_QUEUE, ML_QUEUE
-from app.core.storage import Storage
+from app.core.security import decode_upload_token, make_upload_token
+from app.core.storage import Storage, TooLarge
 from app.modules.auth import repository as users
 from app.modules.auth.models import User
 from app.modules.finds import repository as repo
@@ -30,12 +32,14 @@ Verdict = Literal["accepted", "rejected"]
 
 async def create_attempt(
     session: AsyncSession,
-    storage: Storage,
     user: User,
     round_id: uuid.UUID,
     body: AttemptRequest,
+    base_url: str,
 ) -> AttemptCreated:
-    """Fast checks before any upload: active round, attempt limit, mock GPS, geofence."""
+    """Fast checks before any upload: active round, attempt limit, mock GPS, geofence.
+
+    `base_url` is where the phone reaches the API; the upload URL points back at it."""
     settings = get_settings()
     rnd = await quests.get_round_for_update(session, round_id)
     if rnd is None or rnd.user_id != user.id:
@@ -74,11 +78,45 @@ async def create_attempt(
             taken_at=body.taken_at,
         ),
     )
-    upload_url, expires_at = await storage.presign_put(photo_key, "image/jpeg")
+    token, expires_at = make_upload_token(attempt_id, photo_key)
+    upload_url = f"{(settings.public_base_url or base_url).rstrip('/')}/api/v1/uploads/{token}"
     await session.commit()
     return AttemptCreated(
         attempt_id=attempt_id, upload_url=upload_url, upload_expires_at=expires_at
     )
+
+
+async def receive_upload(
+    session: AsyncSession,
+    storage: Storage,
+    token: str,
+    content_type: str | None,
+    content_length: int | None,
+    chunks: AsyncIterator[bytes],
+) -> None:
+    """The phone's PUT of the photo. Only while the attempt still waits for it."""
+    decoded = decode_upload_token(token)
+    if decoded is None:
+        raise AppError("upload_forbidden", status.HTTP_403_FORBIDDEN)
+    attempt_id, key = decoded
+    attempt = await repo.get_attempt(session, attempt_id)
+    if (
+        attempt is None
+        or attempt.status != AttemptStatus.AWAITING_UPLOAD
+        or attempt.photo_key != key
+    ):
+        raise AppError("upload_not_expected", status.HTTP_409_CONFLICT)
+    # Close the read transaction: the body may take a while on a slow phone connection.
+    await session.commit()
+    if not (content_type or "").lower().startswith("image/"):
+        raise AppError("upload_not_image", status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
+    max_bytes = get_settings().max_upload_mb * 1024 * 1024
+    if content_length is not None and content_length > max_bytes:
+        raise AppError("upload_too_large", status.HTTP_413_CONTENT_TOO_LARGE)
+    try:
+        await storage.save(key, chunks, max_bytes)
+    except TooLarge:
+        raise AppError("upload_too_large", status.HTTP_413_CONTENT_TOO_LARGE) from None
 
 
 async def attempt_out(session: AsyncSession, attempt: Attempt) -> AttemptOut:

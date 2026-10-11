@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Łowcy Historii** (repo name: sight-hunter) is a BEST Hacks 2026 hackathon project: a location-based game where players in Wrocław get a riddle or an archival photo of a place, go there, photograph it, and receive points/XP and an unlocked short video ("reel") about the place's history.
 
-State: `api/` implements the whole contract except the daily mini-game (see `api/README.md` → Status); `mobile/` has every screen wired to the API with a mock mode; `docker/` + `docker-compose.yml` run Postgres, Redis, SeaweedFS, api, api-worker and the ML `worker`; `worker/` verifies photos (DINOv2 + pgvector, verdicts back to the API queue, see `worker/README.md` → Contract) and `content/` holds the 8 demo places with reference photos. The design source of truth is in `docs/`: `Łowcy Historii — архитектура и стек.md` (architecture, data model, endpoint flows), `Łowcy Historii — план работ на 4 человек.md` (work plan, scope cut order), `Łowcy Historii — opis projektu (BEST Hacks 2026).md`, and the HTML UI prototype `Łowcy Historii.html`. Read the relevant document before implementing a feature. Real build, lint and test commands are in each folder's README (`api/README.md`, `mobile/README.md`, `mobile/AGENTS.md`).
+State: `api/` implements the whole contract except the daily mini-game (see `api/README.md` → Status); `mobile/` has every screen wired to the API with a mock mode; `docker/` + `docker-compose.yml` run Postgres, Redis, api, api-worker and the ML `worker` (photos in the shared `./.storage` folder); `worker/` verifies photos (DINOv2 + pgvector, verdicts back to the API queue, see `worker/README.md` → Contract) and `content/` holds the 8 demo places with reference photos. The design source of truth is in `docs/`: `Łowcy Historii — архитектура и стек.md` (architecture, data model, endpoint flows), `Łowcy Historii — план работ на 4 человек.md` (work plan, scope cut order), `Łowcy Historii — opis projektu (BEST Hacks 2026).md`, and the HTML UI prototype `Łowcy Historii.html`. Read the relevant document before implementing a feature. Real build, lint and test commands are in each folder's README (`api/README.md`, `mobile/README.md`, `mobile/AGENTS.md`).
 
 ## Planned layout and stack
 
@@ -16,7 +16,7 @@ Monorepo:
 - `mobile/` — Expo + TypeScript, expo-router, TanStack Query, Zustand, expo-camera, expo-location, expo-video, react-native-maps, tokens in expo-secure-store. TS API client generated from OpenAPI (orval or openapi-typescript), not hand-written.
 - `content/` — scripts such as `fetch_places.py` (OSM Overpass / Wikidata / Commons), `add_refs` (reference embeddings), `generate_reel.py` (facts → script → TTS → ffmpeg 720p vertical with subtitles and a sources card).
 
-Infra: PostgreSQL with PostGIS + pgvector (custom image from `postgres:17` plus both packages — no official image has both), Redis, S3-compatible storage (SeaweedFS locally — MinIO images are no longer published; Cloudflare R2 in prod). Local dev is `docker compose up` (api, api-worker, postgres, redis, seaweedfs).
+Infra: PostgreSQL with PostGIS + pgvector (custom image from `postgres:17` plus both packages — no official image has both), Redis, and plain local file storage for photos (`./.storage`, mounted into api, api-worker and worker; no S3). Local dev is `docker compose up` (api, api-worker, worker, postgres, redis).
 
 ## Who writes where
 
@@ -25,7 +25,7 @@ Roles come from the work plan: A — backend and lead, B — mobile game loop, C
 | Path | Owner | What exactly |
 | --- | --- | --- |
 | `api/` | A | All modules in `app/modules/` (`auth`, `quests`, `finds`, `wallet`, `media`, `social`, `shop`, `admin`), Alembic migrations, seed script, SQLAdmin |
-| `docker/`, `docker-compose.yml`, `.env.example` | A | Local infra and prod deploy (server, R2, Caddy) |
+| `docker/`, `docker-compose.yml`, `.env.example` | A | Local infra and prod deploy (server, photo storage folder, Caddy) |
 | `worker/` | C | Recognition worker. Exception: the first `verify_attempt` stub (always `accepted`) is written by A while C is out taking photos |
 | `content/` — places | C | `fetch_places.py`, `add_refs`, coordinates/radius, tasks and hints (Polish), reference photos, thresholds |
 | `content/` — reels | D | `generate_reel.py`, onboarding reels, fact sources |
@@ -38,7 +38,7 @@ In `mobile/`, every route file in `src/app/` belongs to the owner of that screen
 
 ## Core architecture rules
 
-- **Async photo verification flow:** `POST /rounds/{id}/attempts` (server-side PostGIS `ST_DWithin` geofence check *before* upload, `too_far` with distance) → presigned PUT straight to storage (files never go through the API) → `POST /attempts/{id}/submit` (idempotent, enqueues `verify_attempt`, returns 202) → worker writes verdict → client polls `GET /attempts/{id}` ~1/s.
+- **Async photo verification flow:** `POST /rounds/{id}/attempts` (server-side PostGIS `ST_DWithin` geofence check *before* upload, `too_far` with distance) → `PUT upload_url` (the API's `/uploads/{token}`, a 5-minute one-attempt token, no Authorization header; the API writes the file into the shared storage folder) → `POST /attempts/{id}/submit` (idempotent, enqueues `verify_attempt`, returns 202) → worker writes verdict → client polls `GET /attempts/{id}` ~1/s.
 - **Money is a ledger:** points (`wallet_ledger`) and XP (`xp_ledger`) are append-only; balances are computed from them, never stored as a mutable number. XP is leaderboard-only; points are shop currency.
 - **Reward is one DB transaction:** `finds` (unique `user_id, task_id`) + both ledger entries + `reel_unlocks` + round closed. Redis leaderboard `ZINCRBY` happens after commit; leaderboard must be rebuildable from `xp_ledger`.
 - Hints (max 3 per round) never touch the player's balance and there is no hint stock (team decision 2026-10-10, overriding the prototype): each hint cuts only the round's **points** by 25% of base, floored at 25%; XP is unchanged. The shop therefore sells public reels only.

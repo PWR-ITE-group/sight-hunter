@@ -11,7 +11,7 @@ from app.core.errors import install_error_handlers
 from app.core.redis import close_arq, get_redis
 from app.modules.admin.setup import setup_admin
 from app.modules.auth.router import auth_router, me_router
-from app.modules.finds.router import attempts_router, rounds_attempts_router
+from app.modules.finds.router import attempts_router, rounds_attempts_router, uploads_router
 from app.modules.media.router import reels_router
 from app.modules.quests.router import places_router, rounds_router, tasks_router
 from app.modules.shop.router import shop_router
@@ -57,6 +57,7 @@ def create_app() -> FastAPI:
     api.include_router(rounds_router)
     api.include_router(rounds_attempts_router)
     api.include_router(attempts_router)
+    api.include_router(uploads_router)
     api.include_router(reels_router)
     api.include_router(social_router)
     api.include_router(leaderboard_router)

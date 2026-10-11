@@ -1,0 +1,34 @@
+TYTUŁ (PL): Gotycki widok, hełmy z 1991 roku
+ЗАМЫСЕЛ: Послевоенное возвращение узнаваемого силуэта собора Святого Иоанна Крестителя продолжалось ещё сорок лет после повторного освящения.
+
+ОЗВУЧКА (PL)
+Te hełmy nie są średniowieczne. Wrocławska katedra Jana Chrzciciela odzyskała je znacznie później. W tysiąc dziewięćset czterdziestym piątym roku oblężenie miasta przyniosło świątyni bardzo poważne zniszczenia. Powojenna odbudowa pozwoliła ponownie konsekrować katedrę już w tysiąc dziewięćset pięćdziesiątym pierwszym roku. Ale powrót do użytkowania nie oznaczał jeszcze odzyskania sylwetki, którą znamy z fotografii. Obecne smukłe hełmy zachodnich wież zamontowano dopiero w tysiąc dziewięćset dziewięćdziesiątym pierwszym roku. Między ponowną konsekracją a ich powrotem minęło więc czterdzieści lat, nie kilka sezonów. Ten gotycki widok jest również opowieścią o odbudowie.
+
+СЛОВ: 86
+Подсчёт по словам, разделённым пробелами; даты полностью написаны словами. Ориентир: 37,4 секунды речи при 138 словах/мин и около 2,6 секунды пауз. Длинные даты требуют особенно тщательной проверки: это НЕ измеренный TTS. Перед монтажом записать/синтезировать польский голос, измерить каждую реплику и паузы; первые шесть — до 6 секунд, последняя — до 4. Крючок «Te hełmy nie są średniowieczne» должен прозвучать в первые 2–3 секунды. Итог ровно 40 секунд, без механического ускорения речи.
+
+РАСКАДРОВКА
+Поля: номер | интервал финального монтажа | точный текст PL | изображение RU | движение RU | надпись PL, добавляемая только в монтаже | промпты относительно video-scripts
+01 | 00-06 | Te hełmy nie są średniowieczne. Wrocławska katedra Jana Chrzciciela odzyskała je znacznie później. | Широкий современный вид западного фасада с площади Katedralny: обе целые высокие башни, вход и основной объём. | Плавное приближение 2%. | Hełmy nie są średniowieczne | prompts\katedra\01_image.txt ; prompts\katedra\01_video.txt
+02 | 06-12 | W tysiąc dziewięćset czterdziestym piątym roku oblężenie miasta przyniosło świątyni bardzo poważne zniszczenia. | Общий сегодняшний вид с той же точки, обе башни и фасад целы; никаких руин или военной реконструкции. | Медленный сдвиг кадрирования вправо 1%. | 1945: poważne zniszczenia | prompts\katedra\02_image.txt ; prompts\katedra\02_video.txt
+03 | 12-18 | Powojenna odbudowa pozwoliła ponownie konsekrować katedrę już w tysiąc dziewięćset pięćdziesiątym pierwszym roku. | Общий вид с немного большим пространством площади перед входом, обе башни целиком. | Плавное приближение 2%. | 1951: ponowna konsekracja | prompts\katedra\03_image.txt ; prompts\katedra\03_video.txt
+04 | 18-24 | Ale powrót do użytkowania nie oznaczał jeszcze odzyskania sylwetki, którą znamy z fotografii. | Немного более тесный общий план, полный силуэт с двумя нынешними завершениями и основным фасадом. | Плавное приближение 2%. | Odbudowa trwała dalej | prompts\katedra\04_image.txt ; prompts\katedra\04_video.txt
+05 | 24-30 | Obecne smukłe hełmy zachodnich wież zamontowano dopiero w tysiąc dziewięćset dziewięćdziesiątym pierwszym roku. | Оба современных завершения в контексте целых башен и узнаваемого фасада; не показывать монтаж краном. | Медленный сдвиг кадрирования вверх 1%. | 1991: obecne hełmy | prompts\katedra\05_image.txt ; prompts\katedra\05_video.txt
+06 | 30-36 | Między ponowną konsekracją a ich powrotem minęło więc czterdzieści lat, nie kilka sezonów. | Спокойный общий вид с пространством площади, обе башни и основной корпус непрерывно видимы. | Медленный сдвиг кадрирования влево 1%. | 1951–1991: czterdzieści lat | prompts\katedra\06_image.txt ; prompts\katedra\06_video.txt
+07 | 36-40 | Ten gotycki widok jest również opowieścią o odbudowie. | Финальный широкий узнаваемый вид всего западного фасада и обеих башен на Ostrowie Tumskim. | Плавное приближение 1%; оставить первые 4 секунды. | Sylwetka odzyskana po wojnie | prompts\katedra\07_image.txt ; prompts\katedra\07_video.txt
+
+ПРОВЕРЕННЫЕ ИСТОЧНИКИ
+1. https://en.wikipedia.org/wiki/Wroc%C5%82aw_Cathedral
+Прочитан исторический раздел: тяжёлые повреждения при осаде в конце Второй мировой; восстановление и повторное освящение в 1951 году; возвращение остроконечных завершений башен в 1991 году.
+2. https://medievalheritage.eu/pl/strona-glowna/zabytki/polska/wroclaw-archikatedra-sw-jana/
+Прочитан раздел Historia: разрушения 1945 года; послевоенное восстановление 1946–1951; длительные последующие работы; нынешние стройные завершения западных башен относятся к работам 1988–1991. Этот источник подтверждает период работ, а точный финальный год 1991 дополнительно подтверждён первым.
+Проверяемые опорные факты: разрушения 1945; повторное освящение 1951; нынешние завершения 1991. Сорок лет — арифметическая разница 1991−1951, не отдельное историческое утверждение.
+Ограничения: оба источника вторичные. Профильные страницы муниципального туристического портала оказались недоступны, страница прихода не открылась из-за транспортной ошибки; они не указаны как подтверждения. Не заявляем точный процент разрушения и не называем весь собор новоделом: крючок относится исключительно к нынешним завершениям западных башен.
+
+РЕФЕРЕНСЫ И КОНТРОЛЬ
+Для каждого image-промпта вручную приложить реальные наружные фотографии именно Archikatedra św. Jana Chrzciciela we Wrocławiu на Ostrowie Tumskim; возможная папка content\refs\katedra. Фотографии не создавались и не изменялись, их наличие/актуальность здесь не проверены. Старые/тестовые фото не гарантируют нынешнее состояние. Проверить свежесть и права; выбрать широкий ракурс западного фасада, где обе башни видимы целиком. Если требуемого ракурса нет, использовать подтверждённый широкий вид без дорисовки скрытой архитектуры. Во всех кадрах современный собор, без руин, кранов, достройки и исторических реконструкций. Узнаваемый объект присутствует все 40 секунд, детали отдельно не показывать.
+
+МОНТАЖ
+Генерировать семь исходных клипов по 6 секунд. Сцены 01–06 сохранить полностью, у 07 взять первые 4 секунды: 42 секунды исходников превращаются в 40 секунд финала. Склейки на 06/12/18/24/30/36; не использовать заставку или затемнение, закрывающее собор.
+Вертикаль 9:16, минимум 1080x1920, 30 fps, MP4 H.264 и AAC; опционально нативный 4K. Постоянный мягкий облачный дневной свет, естественный кирпич, патинированные завершения, нейтральное серое небо. Голос польский, чёткий и спокойный; тихая лицензированная музыка без вокала, приглушённая под речь.
+Польские субтитры из озвучки, 1–2 строки, накладывать только в монтаже. Безопасная область x=10–85%, y=70–82%; поля интерфейса: верх 10%, низ 18%, справа 15%. Субтитры не перекрывают обе башни и ключевые контуры фасада. Надписи из таблицы необязательны и не конкурируют с субтитрами. Без CTA, рекламы, логотипов или водяных знаков.

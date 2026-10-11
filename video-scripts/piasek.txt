@@ -1,0 +1,33 @@
+TYTUŁ (PL): Wieża, która nigdy nie urosła
+ЗАМЫСЕЛ: Незавершённая северная башня объясняет асимметрию костёла Богоматери на Пяску во Вроцлаве.
+
+ОЗВУЧКА (PL)
+Ta druga wieża nigdy nie urosła. To wrocławski kościół Marii Panny na Piasku. W jego zachodniej fasadzie zaplanowano dwie wieże, ale ich historia potoczyła się inaczej. Południową ukończono w piętnastym wieku, dzięki funduszom zgromadzonym przez opata Jodoka z Głuchołaz. Północna natomiast nigdy nie osiągnęła zamierzonej wysokości i pozostała na poziomie murów naw. Dlatego patrząc od zachodu, widzimy nie symetryczną parę, lecz wyraźnie nierówną sylwetkę świątyni. Ten brak nie jest złudzeniem perspektywy, tylko śladem budowy, której planu nie dokończono. Tutaj nawet to, czego nie wzniesiono, opowiada historię.
+
+СЛОВ: 86
+Подсчёт: слова, разделённые пробелами; числа написаны словами. Оценка: 37,4 секунды речи при 138 словах/мин плюс примерно 2,6 секунды пауз. Это НЕ измеренный хронометраж TTS: до монтажа записать/синтезировать голос, измерить все фрагменты и проверить естественное чтение. Первые шесть реплик — максимум 6 секунд каждая, последняя — максимум 4; первая фраза должна прозвучать в первые 2–3 секунды. Итоговый мастер ровно 40 секунд.
+
+РАСКАДРОВКА
+Поля: номер | интервал финального монтажа | точный текст PL | изображение RU | движение RU | надпись PL, добавляемая только в монтаже | промпты относительно video-scripts
+01 | 00-06 | Ta druga wieża nigdy nie urosła. To wrocławski kościół Marii Panny na Piasku. | Широкий современный вид западной стороны с улицы Świętej Jadwigi: обе неравные части фасада, высокая южная башня и основной объём. | Плавное приближение 2%. | Wieża, która nie urosła | prompts\piasek\01_image.txt ; prompts\piasek\01_video.txt
+02 | 06-12 | W jego zachodniej fasadzie zaplanowano dwie wieże, ale ich historia potoczyła się inaczej. | Чуть более тесный общий вид того же фасада; обе стороны и крыша видимы, симметрию не исправлять. | Плавное приближение 3%. | Plan: dwie wieże | prompts\piasek\02_image.txt ; prompts\piasek\02_video.txt
+03 | 12-18 | Południową ukończono w piętnastym wieku, dzięki funduszom zgromadzonym przez opata Jodoka z Głuchołaz. | Общий план с высокой южной башней справа при взгляде строго с запада; весь храм остаётся узнаваемым. | Медленный сдвиг кадрирования вправо 1%. | Południowa: ukończona w XV wieku | prompts\piasek\03_image.txt ; prompts\piasek\03_video.txt
+04 | 18-24 | Północna natomiast nigdy nie osiągnęła zamierzonej wysokości i pozostała na poziomie murów naw. | Общий план с низкой северной частью слева; высокая южная башня и крыша тоже остаются в кадре. | Медленный сдвиг кадрирования влево 1%. | Północna: niedokończona | prompts\piasek\04_image.txt ; prompts\piasek\04_video.txt
+05 | 24-30 | Dlatego patrząc od zachodu, widzimy nie symetryczną parę, lecz wyraźnie nierówną sylwetkę świątyni. | Уравновешенный широкий кадр западного фасада; реальная асимметрия без графической дорисовки. | Плавное приближение 2%. | Nierówna sylwetka | prompts\piasek\05_image.txt ; prompts\piasek\05_video.txt
+06 | 30-36 | Ten brak nie jest złudzeniem perspektywy, tylko śladem budowy, której planu nie dokończono. | Общий вид с чуть большим пространством улицы, обе части фасада и главный объём всё время видимы. | Плавное приближение 2%. | Ślad niedokończonego planu | prompts\piasek\06_image.txt ; prompts\piasek\06_video.txt
+07 | 36-40 | Tutaj nawet to, czego nie wzniesiono, opowiada historię. | Финальный широкий узнаваемый вид западной стороны со всей высокой башней и основным корпусом. | Плавное приближение 1%; взять первые 4 секунды. | Historia niedokończonej wieży | prompts\piasek\07_image.txt ; prompts\piasek\07_video.txt
+
+ПРОВЕРЕННЫЕ ИСТОЧНИКИ
+1. https://medievalheritage.eu/pl/strona-glowna/zabytki/polska/wroclaw-kosciol-nmp-na-piasku/
+Прочитаны Historia и Architektura: западный фасад с двумя башнями; южная завершена благодаря средствам, собранным аббатом Jodok z Głuchołaz, занимавшим должность в 1429–1447; северная не достигла запланированной высоты и не поднялась выше стен нефов.
+2. https://pl.wikipedia.org/wiki/Ko%C5%9Bci%C3%B3%C5%82_Naj%C5%9Bwi%C4%99tszej_Marii_Panny_na_Piasku_we_Wroc%C5%82awiu
+Прочитаны исторический и архитектурный разделы: южная башня завершена в 1430 году; северная осталась незавершённой и не поднимается над стенами нефов; храм расположен на острове Piasek. В озвучке использован общий XV век, согласующийся с обоими источниками.
+Ограничения: это доступные вторичные источники, а не архивная экспертиза. Профильная страница муниципального туристического портала visitWroclaw при проверке оказалась удалённой/недоступной и не используется как источник. Не утверждаем неизвестную причину остановки северной башни и не изображаем её как разрушенную войной. «Не выросла» в крючке означает, что башня не достигла запланированной высоты, а не отсутствие её основания.
+
+РЕФЕРЕНСЫ И КОНТРОЛЬ
+Для каждого image-промпта вручную приложить реальные современные наружные фотографии именно Kościół Najświętszej Marii Panny na Piasku we Wrocławiu; возможная папка content\refs\piasek. Существование, актуальность и права на фотографии здесь не проверены: старые/тестовые снимки не гарантируют нынешний вид. Нужен подтверждённый западный общий ракурс; не заменять объект собором Jana Chrzciciela. Не изменять фотографии. Северную башню не достраивать, южную не удваивать; сохранять фактическую крышу и окружение. Если нужная точка не покрыта референсом, выбрать доступную широкую композицию без выдуманного обхода здания. Никаких исторических реконструкций и отдельных вставок деталей: архитектура узнаваема все 40 секунд.
+
+МОНТАЖ
+Семь исходных клипов по 6 секунд = 42 секунды; 01–06 использовать целиком, у 07 оставить первые 4 секунды. Склейки на 06/12/18/24/30/36, без заставки, скрывающей храм. Финальная длительность 40 секунд.
+9:16, минимум 1080x1920, 30 fps, MP4 H.264, AAC; опционально нативный 4K. Единый мягкий облачный дневной свет, естественный красный кирпич и нейтральное серое небо. Польский голос чёткий, музыка тихая, лицензированная, без вокала, с приглушением под речь.
+Польские субтитры из точной озвучки, 1–2 строки. Добавлять после генерации в безопасной области x=10–85%, y=70–82%; оставить верхние 10%, нижние 18% и правые 15% под интерфейс. Не перекрывать силуэт башен; надписи таблицы необязательны и не должны дублировать субтитры одновременно. Никаких CTA, рекламы, текста генератора, логотипов или водяных знаков.

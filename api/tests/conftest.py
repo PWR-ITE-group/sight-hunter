@@ -1,14 +1,13 @@
 """Tests run against the real Postgres (PostGIS + pgvector) and Redis from docker compose.
 
 A separate database `<POSTGRES_DB>_test` is created on first run and migrated with Alembic; tables
-are truncated after every test. Storage is replaced by an in-memory fake, so no S3 is needed.
+are truncated after every test. Storage is replaced by an in-memory fake.
 """
 
 import asyncio
 import os
 import uuid
 from collections.abc import AsyncIterator, Iterator
-from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import pytest
@@ -32,29 +31,34 @@ get_settings.cache_clear()
 
 from app.core.db import get_engine, get_sessionmaker  # noqa: E402
 from app.core.redis import get_redis  # noqa: E402
-from app.core.storage import Storage, get_storage  # noqa: E402
+from app.core.storage import Storage, TooLarge, get_storage  # noqa: E402
 from app.main import create_app  # noqa: E402
 from app.models import Base  # noqa: E402
 
 
 class FakeStorage:
     def __init__(self) -> None:
-        self.objects: set[str] = set()
+        self.objects: dict[str, bytes] = {}
         self.deleted: list[str] = []
 
-    async def presign_put(self, key: str, content_type: str) -> tuple[str, datetime]:
-        return f"http://storage.test/{key}?signed", datetime.now(UTC) + timedelta(minutes=5)
+    async def save(self, key: str, chunks: AsyncIterator[bytes], max_bytes: int) -> None:
+        data = b""
+        async for chunk in chunks:
+            data += chunk
+            if len(data) > max_bytes:
+                raise TooLarge
+        self.objects[key] = data
 
     async def exists(self, key: str) -> bool:
         return key in self.objects
 
     async def delete(self, key: str) -> None:
-        self.objects.discard(key)
+        self.objects.pop(key, None)
         self.deleted.append(key)
 
-    def upload(self, key: str) -> None:
-        """What the phone does with the presigned URL."""
-        self.objects.add(key)
+    def upload(self, key: str, data: bytes = b"jpeg") -> None:
+        """What the phone's PUT to `upload_url` ends with."""
+        self.objects[key] = data
 
 
 def _create_test_db() -> None:

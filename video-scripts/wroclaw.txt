@@ -1,0 +1,37 @@
+TYTUŁ: Wrocław zaczął się gdzie indziej
+ОБЪЕКТ: Wrocław; главная линия — от поселения на Ostrów Tumski к городу на берегах Одры.
+ИДЕЯ: Узнаваемая Рыночная площадь не была местом, с которого начался Вроцлав.
+
+ОЗВУЧКА (PL)
+Wrocław nie zaczął się na Rynku. Jego najstarsza historia prowadzi na Ostrów Tumski. To właśnie tutaj, nad Odrą, rozwijał się gród, zanim miasto rozrosło się wokół dzisiejszego centrum. W roku tysięcznym utworzono we Wrocławiu biskupstwo. To ważny punkt w jego udokumentowanej historii. Ale życie nie zatrzymało się na jednej wyspie. Osadnictwo rozwijało się także na Piasku. Z czasem miasto rozrosło się na lewym brzegu Odry. Tam powstało jego handlowe serce. Dlatego Wrocław można czytać jak drogę: od nadodrzańskiego grodu do tętniących życiem miejskich placów. Rynek jest symbolem. Ale początek kryje się nad Odrą.
+
+СЛОВ: 93
+ХРОНОМЕТРАЖ: проект на 40 секунд; проверить продолжительность польской озвучки после синтеза. Пауза после первого предложения обязательна; не делать длинных пауз на каждой склейке.
+
+РАСКАДРОВКА
+Сцена | Таймкод | Озвучка PL | Изображение | Камера / переход | Надпись PL | Промпты
+01 | 00-06 | Wrocław nie zaczął się na Rynku. Jego najstarsza historia prowadzi na Ostrów Tumski. | Rynek с восточным фасадом Старой ратуши. Узнаваемый современный Вроцлав с первой секунды. | Медленное приближение. | Nie tutaj był początek | prompts\wroclaw\01_image.txt; prompts\wroclaw\01_video.txt
+02 | 06-12 | To właśnie tutaj, nad Odrą, rozwijał się gród, zanim miasto rozrosło się wokół dzisiejszego centrum. | Современная панорама Ostrów Tumski через Одру, видны башни собора. | Небольшая панорама с фиксированного берега, не полёт. | Ostrów Tumski | prompts\wroclaw\02_image.txt; prompts\wroclaw\02_video.txt
+03 | 12-18 | W roku tysięcznym utworzono we Wrocławiu biskupstwo. To ważny punkt w jego udokumentowanej historii. | Современный западный фасад собора Святого Иоанна с двумя башнями. Это не реконструкция здания 1000 года. | Мягкое отдаление с сохранением обеих башен. | Biskupstwo: rok 1000 | prompts\wroclaw\03_image.txt; prompts\wroclaw\03_video.txt
+04 | 18-24 | Ale życie nie zatrzymało się na jednej wyspie. Osadnictwo rozwijało się także na Piasku. | Современная Wyspa Piasek с узнаваемым костёлом NMP na Piasku и водой. | Короткая боковая панорама. | Miasto przekracza brzegi | prompts\wroclaw\04_image.txt; prompts\wroclaw\04_video.txt
+05 | 24-30 | Z czasem miasto rozrosło się na lewym brzegu Odry. Tam powstało jego handlowe serce. | Современная Рыночная площадь: ратуша и окружающие фасады, по референсу. | Плавный короткий проезд на уровне пешехода. | Rynek i handel | prompts\wroclaw\05_image.txt; prompts\wroclaw\05_video.txt
+06 | 30-36 | Dlatego Wrocław można czytać jak drogę: od nadodrzańskiego grodu do tętniących życiem miejskich placów. | Современная панорама через Одру на главный корпус университета: визуальная связь города с рекой, не средневековый университет. | Небольшое приближение с набережной. | Historia nad Odrą | prompts\wroclaw\06_image.txt; prompts\wroclaw\06_video.txt
+07 | 36-40 | Rynek jest symbolem. Ale początek kryje się nad Odrą. | Возвращение к панораме Ostrów Tumski через реку; собор узнаваем. | Плавное отдаление, финальная композиция к четвёртой секунде. | Początek nad Odrą | prompts\wroclaw\07_image.txt; prompts\wroclaw\07_video.txt
+
+МОНТАЖ И ЗВУК
+Семь шестисекундных исходников, последний обрезать до первых 4 секунд. Прямые склейки дают итоговые 40 секунд. Во всех сценах настоящий узнаваемый Вроцлав, без случайных европейских панорам. Современные мосты и здания не выдаются за облик города в X-XIII веках.
+Заинтересованный польский голос, негромкая лицензированная музыка с плавным нарастанием, атмосфера воды и площади. Субтитры PL, максимум 2 строки, безопасные поля; не закрывать башни. Все даты, названия и подписи накладывать редактором.
+9:16, минимум 1080x1920, 30 fps, MP4 / H.264 / AAC; нативное 4K опционально. Согласовать дневной свет и цвет всех сцен. Не использовать пролёт, который выдумывает географию между далёкими точками.
+
+РЕФЕРЕНСЫ И ОГРАНИЧЕНИЯ
+Использовать content\refs\ratusz\, katedra\, piasek\, uniwersytet\ для соответствующих объектов. Для панорам с рекой нужны фотографии именно этого берега и направления; одиночный фасад не даёт генератору достаточной географической информации. Недостающий ракурс запросить отдельно. Лицензии проверить в sources.yaml; исходники могут быть устаревшими.
+Не утверждаем точный год основания города. Создание епископства в 1000 году не равно строительству нынешнего собора; нынешний собор показывается как узнаваемый ориентир места. Это одна линия происхождения и роста города, а не вся его тысячелетняя история.
+
+ФАКТЫ И ИСТОЧНИКИ
+1. https://en.wikipedia.org/wiki/History_of_Wroc%C5%82aw
+Прочитано: раннее поселение на Ostrów Tumski, епископство в 1000 году, расширение на Wyspa Piasek и левый берег Одры, торговая роль города. Вторичный обзор; не использованы спорные версии происхождения названия или точной даты основания.
+2. https://muzeum.miejskie.wroclaw.pl/?s=1000+lat
+Официальный сайт Muzeum Miejskie Wrocławia, описание путеводителя по выставке «1000 lat Wrocławia»: начало её хронологии связано с учреждением епископства в 1000 году. Прочитано описание, не полная книга; оно подтверждает только этот факт.
+3. https://en.wikipedia.org/wiki/Wroc%C5%82aw_Town_Hall
+Прочитано: положение Старой ратуши на Рыночной площади и торговая функция раннего здания. Поддерживает связь Rynek с торговой жизнью; не источник точной даты основания площади.
+История и формулировки авторские. Финальное «początek kryje się nad Odrą» — образное обобщение, не цитата.

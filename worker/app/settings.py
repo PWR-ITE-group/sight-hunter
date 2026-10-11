@@ -1,5 +1,4 @@
 from functools import lru_cache
-from typing import Literal
 
 from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -41,13 +40,8 @@ class Settings(BaseSettings):
     embed_flip_tta: bool = True
     search_top_k: int = 20
 
-    storage_backend: Literal["local", "s3"] = "local"
+    # Shared with the API (its STORAGE_LOCAL_ROOT): player photos and reference photos.
     storage_local_root: str = "../.storage"
-    s3_endpoint_url: str | None = None
-    s3_bucket: str = "lowcy"
-    s3_access_key: str | None = None
-    s3_secret_key: str | None = None
-    s3_region: str = "auto"
     # The API deletes the player photo when it applies the verdict (NFT-06); only turn this on
     # when the worker runs without the API's apply_verdict consumer.
     delete_photo_after_verdict: bool = False

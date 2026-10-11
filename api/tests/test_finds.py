@@ -1,5 +1,7 @@
 import uuid
+from collections.abc import AsyncIterator
 from datetime import UTC, datetime
+from pathlib import Path
 from typing import Any
 
 import pytest
@@ -10,6 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import get_settings
 from app.core.redis import API_QUEUE, ML_QUEUE
+from app.core.storage import LocalStorage, TooLarge
 from app.modules.finds.models import Attempt
 from app.modules.quests.models import TaskRound
 from app.modules.wallet.models import WalletLedger
@@ -115,14 +118,19 @@ async def test_full_round_accepted(
     round_id = await start_round(client, auth)
     created = await create_attempt(client, auth, round_id, position(RATUSZ))
     attempt_id = created["attempt_id"]
-    assert created["upload_url"].startswith("http://storage.test/attempts/")
+    assert created["upload_url"].startswith("http://test/api/v1/uploads/")
 
     # Submitting before the upload landed.
     r = await submit(client, auth, attempt_id)
     assert r.status_code == 409
     assert r.json()["code"] == "upload_missing"
 
-    storage.upload(f"attempts/{attempt_id}.jpg")
+    # The phone PUTs the photo to upload_url with no Authorization header.
+    r = await client.put(
+        created["upload_url"], content=b"\xff\xd8photo", headers={"Content-Type": "image/jpeg"}
+    )
+    assert r.status_code == 204, r.text
+    assert storage.objects[f"attempts/{attempt_id}.jpg"] == b"\xff\xd8photo"
     key = str(uuid.uuid4())
     r = await submit(client, auth, attempt_id, key)
     assert r.status_code == 202
@@ -308,3 +316,82 @@ async def test_attempt_of_other_user_is_hidden(client: AsyncClient, auth: dict[s
     assert r.status_code == 404
     r = await submit(client, other, attempt_id)
     assert r.status_code == 404
+
+
+async def test_upload_rejects_bad_requests(
+    client: AsyncClient, auth: dict[str, str], storage: FakeStorage
+) -> None:
+    round_id = await start_round(client, auth)
+    created = await create_attempt(client, auth, round_id, position(RATUSZ))
+    url = created["upload_url"]
+    jpeg = {"Content-Type": "image/jpeg"}
+
+    r = await client.put("/api/v1/uploads/not-a-token", content=b"x", headers=jpeg)
+    assert r.status_code == 403 and r.json()["code"] == "upload_forbidden"
+    # An access token is not an upload token.
+    access = auth["Authorization"].removeprefix("Bearer ")
+    r = await client.put(f"/api/v1/uploads/{access}", content=b"x", headers=jpeg)
+    assert r.status_code == 403
+
+    r = await client.put(url, content=b"x", headers={"Content-Type": "text/plain"})
+    assert r.status_code == 415 and r.json()["code"] == "upload_not_image"
+
+    s = get_settings()
+    s.max_upload_mb, saved = 1, s.max_upload_mb
+    try:
+        r = await client.put(url, content=b"x" * (1024 * 1024 + 1), headers=jpeg)
+    finally:
+        s.max_upload_mb = saved
+    assert r.status_code == 413 and r.json()["code"] == "upload_too_large"
+    assert storage.objects == {}
+
+    assert (await client.put(url, content=b"ok", headers=jpeg)).status_code == 204
+    assert (await submit(client, auth, created["attempt_id"])).status_code == 202
+    # Once submitted, the photo can't be swapped under the verifier.
+    r = await client.put(url, content=b"other", headers=jpeg)
+    assert r.status_code == 409 and r.json()["code"] == "upload_not_expected"
+    assert storage.objects[f"attempts/{created['attempt_id']}.jpg"] == b"ok"
+
+
+async def test_upload_token_expires(
+    client: AsyncClient, auth: dict[str, str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(get_settings(), "upload_url_ttl_s", -1)
+    round_id = await start_round(client, auth)
+    created = await create_attempt(client, auth, round_id, position(RATUSZ))
+    r = await client.put(
+        created["upload_url"], content=b"x", headers={"Content-Type": "image/jpeg"}
+    )
+    assert r.status_code == 403
+
+
+async def test_upload_url_uses_public_base_url(
+    client: AsyncClient, auth: dict[str, str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(get_settings(), "public_base_url", "https://tunnel.example/")
+    round_id = await start_round(client, auth)
+    created = await create_attempt(client, auth, round_id, position(RATUSZ))
+    assert created["upload_url"].startswith("https://tunnel.example/api/v1/uploads/")
+
+
+async def test_local_storage_roundtrip(tmp_path: Path) -> None:
+    store = LocalStorage(tmp_path)
+
+    async def body(*parts: bytes) -> AsyncIterator[bytes]:
+        for p in parts:
+            yield p
+
+    await store.save("attempts/a.jpg", body(b"ab", b"cd"), max_bytes=4)
+    assert (tmp_path / "attempts" / "a.jpg").read_bytes() == b"abcd"
+    assert await store.exists("attempts/a.jpg")
+
+    with pytest.raises(TooLarge):
+        await store.save("attempts/b.jpg", body(b"abc", b"de"), max_bytes=4)
+    assert sorted(p.name for p in (tmp_path / "attempts").iterdir()) == ["a.jpg"]
+
+    with pytest.raises(ValueError):
+        await store.exists("../outside.jpg")
+
+    await store.delete("attempts/a.jpg")
+    await store.delete("attempts/a.jpg")
+    assert not await store.exists("attempts/a.jpg")
