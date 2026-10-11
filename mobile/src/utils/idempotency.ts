@@ -1,3 +1,5 @@
+import { randomUUID } from 'expo-crypto';
+
 export function generateIdempotencyKey(): string {
-  return crypto.randomUUID();
+  return randomUUID();
 }
