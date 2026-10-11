@@ -3,6 +3,7 @@
 from app.core.db import Base
 from app.core.models import IdempotencyKey
 from app.modules.auth.models import RefreshToken, User
+from app.modules.daily.models import QuizQuestion
 from app.modules.finds.models import Attempt, Find
 from app.modules.media.models import Reel, ReelUnlock
 from app.modules.quests.models import Place, PlaceRef, Task, TaskRound
@@ -19,6 +20,7 @@ __all__ = [
     "Place",
     "PlaceRef",
     "Purchase",
+    "QuizQuestion",
     "Reel",
     "ReelComment",
     "ReelUnlock",

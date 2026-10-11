@@ -17,6 +17,7 @@ from wtforms import StringField
 from app.core.config import get_settings
 from app.core.db import get_engine
 from app.modules.auth.models import User
+from app.modules.daily.models import QuizQuestion
 from app.modules.finds.models import Find
 from app.modules.media.models import Reel
 from app.modules.quests.models import Place, PlaceRef, Task
@@ -134,6 +135,23 @@ class FindAdmin(ModelView, model=Find):
     column_list = [Find.user_id, Find.task_id, Find.points_awarded, Find.xp_awarded, Find.found_at]
 
 
+class QuizQuestionAdmin(ModelView, model=QuizQuestion):
+    name = "Pytanie quizu"
+    name_plural = "Pytania quizu"
+    icon = "fa-solid fa-circle-question"
+    column_list = [QuizQuestion.id, QuizQuestion.text, QuizQuestion.day_order, QuizQuestion.correct_option]
+    column_searchable_list = [QuizQuestion.text, QuizQuestion.id]
+    form_columns = [
+        QuizQuestion.id,
+        QuizQuestion.text,
+        QuizQuestion.image_url,
+        QuizQuestion.options,
+        QuizQuestion.correct_option,
+        QuizQuestion.explanation,
+        QuizQuestion.day_order,
+    ]
+
+
 def setup_admin(app: FastAPI) -> Admin:
     s = get_settings()
     admin = Admin(
@@ -142,6 +160,6 @@ def setup_admin(app: FastAPI) -> Admin:
         title="Łowcy Historii — admin",
         authentication_backend=AdminAuth(secret_key=s.jwt_secret),
     )
-    for view in (PlaceAdmin, TaskAdmin, ReelAdmin, PlaceRefAdmin, UserAdmin, FindAdmin):
+    for view in (PlaceAdmin, TaskAdmin, ReelAdmin, PlaceRefAdmin, UserAdmin, FindAdmin, QuizQuestionAdmin):
         admin.add_view(view)
     return admin

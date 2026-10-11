@@ -32,3 +32,4 @@ class DailyGame(Base):
     started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     score: Mapped[int | None] = mapped_column(Integer)
+    points_awarded: Mapped[int | None] = mapped_column(Integer)

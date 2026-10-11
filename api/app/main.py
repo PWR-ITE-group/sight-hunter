@@ -1,7 +1,9 @@
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import APIRouter, FastAPI
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 
@@ -11,6 +13,7 @@ from app.core.errors import install_error_handlers
 from app.core.redis import close_arq, get_redis
 from app.modules.admin.setup import setup_admin
 from app.modules.auth.router import auth_router, me_router
+from app.modules.daily.router import daily_router
 from app.modules.finds.router import attempts_router, rounds_attempts_router, uploads_router
 from app.modules.media.router import reels_router
 from app.modules.quests.router import places_router, rounds_router, tasks_router
@@ -62,8 +65,15 @@ def create_app() -> FastAPI:
     api.include_router(social_router)
     api.include_router(leaderboard_router)
     api.include_router(shop_router)
+    api.include_router(daily_router)
     app.include_router(api)
     setup_admin(app)
+
+    # Dev: serve player photos and reel videos from local storage over HTTP.
+    storage_root = Path(settings.storage_local_root)
+    if storage_root.exists():
+        app.mount("/storage", StaticFiles(directory=str(storage_root)), name="storage")
+
     return app
 
 

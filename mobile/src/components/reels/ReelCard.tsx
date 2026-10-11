@@ -8,6 +8,8 @@ import { Button } from '../ui/Button';
 import { Colors } from '../../constants/colors';
 import { components } from '../../api/schema';
 
+import { Config } from '../../constants/config';
+
 export type Reel = components['schemas']['Reel'];
 
 const { width } = Dimensions.get('window');
@@ -24,8 +26,18 @@ interface ReelCardProps {
   unlocking?: boolean;
 }
 
+function resolveVideoUrl(url: string): string {
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
+  }
+  // Remove /api/v1 from Config.API_BASE_URL to get host origin
+  const origin = Config.API_BASE_URL.replace(/\/api\/v1\/?$/, '');
+  return `${origin}${url.startsWith('/') ? '' : '/'}${url}`;
+}
+
 function ReelVideo({ url, isActive }: { url: string; isActive: boolean }) {
-  const player = useVideoPlayer(url, (p) => {
+  const fullUrl = resolveVideoUrl(url);
+  const player = useVideoPlayer(fullUrl, (p) => {
     p.loop = true;
   });
 
