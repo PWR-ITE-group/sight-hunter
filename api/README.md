@@ -22,6 +22,8 @@ Real content (8 places of the demo route, reference photos) is loaded from `work
 
 Checks: `poetry run ruff check .`, `poetry run mypy app`, `poetry run pytest` (needs the Postgres and Redis from compose; tests use a separate `<POSTGRES_DB>_test` database and Redis db 9).
 
+`tests/test_e2e_ml_worker.py` is end-to-end: the HTTP API, the real ML worker (`worker/`, started from `worker/.venv` as a subprocess with `MODEL_NAME=tiny`, no weights) and our verdict worker exchange jobs through the real queues and database. It is skipped until `cd worker && poetry install` has been run.
+
 ## Settings that matter for the demo
 
 - `DEMO_MODE=true` — the API accepts the position the client sends (long tap on the map).

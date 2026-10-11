@@ -13,7 +13,8 @@ poetry run pytest; poetry run ruff check .; poetry run mypy app
 ```
 
 Settings come from env or `worker/.env` (see `app/settings.py`): `DATABASE_URL`, `REDIS_URL`,
-`STORAGE_BACKEND` (`local` until S3 exists, then `s3` + `S3_*`), `MODEL_NAME`,
+`STORAGE_BACKEND` (`local` until S3 exists, then `s3` + `S3_*`), `MODEL_NAME` (`tiny` = pixel
+thumbnails without weights, for the end-to-end tests in `api/tests/test_e2e_ml_worker.py`),
 `JUDGE_PROVIDER`, thresholds `VERIFY_T_LOW`, `VERIFY_T_HIGH`, `VERIFY_MARGIN`,
 `VERIFY_T_SINGLE`.
 
