@@ -11,7 +11,7 @@ export interface ProgressBarProps {
 
 export function ProgressBar({
   progress,
-  color = '#b5422e', // primary
+  color = '#2c52c4', // primary
   animated = true,
   height = 8,
 }: ProgressBarProps) {
