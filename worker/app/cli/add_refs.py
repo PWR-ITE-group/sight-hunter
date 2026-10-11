@@ -20,10 +20,11 @@ from app.embedder import build_embedder, load_image
 from app.settings import get_settings
 from app.storage import build_storage
 
+# The API generates ids in Python (no column default), hence gen_random_uuid() here.
 _INSERT = text("""
-    INSERT INTO place_refs (place_id, photo_url, source_url, author, license, sha256, model,
+    INSERT INTO place_refs (id, place_id, photo_url, source_url, author, license, sha256, model,
                             embedding)
-    VALUES (:pid, :key, :source_url, :author, :license, :sha, :model, :emb)
+    VALUES (gen_random_uuid(), :pid, :key, :source_url, :author, :license, :sha, :model, :emb)
     ON CONFLICT (place_id, sha256) DO NOTHING
 """)
 

@@ -99,6 +99,28 @@ services:
       api:
         condition: service_started
 
+  # ML recognition worker (worker/, role C): verify_attempt jobs from arq:queue:ml, verdicts
+  # back to arq:queue:api. First build downloads CPU torch and the DINOv2 weights (~1.5 GB).
+  worker:
+    build: worker
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-lowcy}:${POSTGRES_PASSWORD:-change-me}@postgres:5432/${POSTGRES_DB:-lowcy}
+      REDIS_URL: redis://redis:6379/0
+      STORAGE_BACKEND: s3
+      S3_ENDPOINT_URL: http://seaweedfs:8333
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY:-lowcy}
+      S3_SECRET_KEY: ${S3_SECRET_KEY:-change-me}
+      S3_BUCKET: ${S3_BUCKET:-lowcy}
+      S3_REGION: us-east-1
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      seaweedfs-init:
+        condition: service_completed_successfully
+
 
 volumes:
   postgres-data:

@@ -60,14 +60,14 @@ class PlaceAdmin(ModelView, model=Place):
     name = "Miejsce"
     name_plural = "Miejsca"
     icon = "fa-solid fa-landmark"
-    column_list = [Place.name, Place.era, Place.category, Place.geom, Place.radius_m]
-    column_searchable_list = [Place.name]
+    column_list = [Place.slug, Place.name, Place.era, Place.category, Place.geom, Place.radius_m]
+    column_searchable_list = [Place.name, Place.slug]
     column_formatters = {Place.geom: lambda m, _a: wkb_point(m.geom)}
     column_formatters_detail = column_formatters
     # Entered as WKT, e.g. POINT(17.0318 51.1100) — longitude first.
     form_overrides = {"geom": StringField}
     form_args = {"geom": {"label": "geom (WKT: POINT(lng lat))"}}
-    form_columns = [Place.name, Place.era, Place.category, Place.geom, Place.radius_m]
+    form_columns = [Place.slug, Place.name, Place.era, Place.category, Place.geom, Place.radius_m]
 
 
 class TaskAdmin(ModelView, model=Task):

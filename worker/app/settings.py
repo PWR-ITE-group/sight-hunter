@@ -31,7 +31,10 @@ class Settings(BaseSettings):
 
     database_url: str = "postgresql+asyncpg://lowcy:change-me@localhost:5432/lowcy"
     redis_url: str = "redis://localhost:6379/0"
-    arq_queue: str = "arq:queue"
+    # Queue names are the API's contract (api/app/core/redis.py): we consume `verify_attempt`
+    # from arq_queue and hand every verdict back as an `apply_verdict` job on api_queue.
+    arq_queue: str = "arq:queue:ml"
+    api_queue: str = "arq:queue:api"
 
     model_name: str = "facebook/dinov2-base"
     model_device: str = "cpu"
@@ -45,7 +48,9 @@ class Settings(BaseSettings):
     s3_access_key: str | None = None
     s3_secret_key: str | None = None
     s3_region: str = "auto"
-    delete_photo_after_verdict: bool = True
+    # The API deletes the player photo when it applies the verdict (NFT-06); only turn this on
+    # when the worker runs without the API's apply_verdict consumer.
+    delete_photo_after_verdict: bool = False
 
     # Gray-zone judge. "none" = decide with Thresholds.t_single only.
     judge_provider: str = "none"

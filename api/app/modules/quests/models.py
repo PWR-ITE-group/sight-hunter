@@ -6,7 +6,17 @@ from typing import Any
 from geoalchemy2 import Geography
 from geoalchemy2.elements import WKBElement
 from pgvector.sqlalchemy import Vector
-from sqlalchemy import DateTime, ForeignKey, Index, Integer, String, Text, func, text
+from sqlalchemy import (
+    DateTime,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+    func,
+    text,
+)
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -19,6 +29,8 @@ class Place(Base):
     __tablename__ = "places"
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    # Key of the place in content/places.yaml; the content CLIs (seed_dev, add_refs) match on it.
+    slug: Mapped[str | None] = mapped_column(String(60), unique=True)
     name: Mapped[str] = mapped_column(String(200))
     era: Mapped[str | None] = mapped_column(String(60))
     category: Mapped[str | None] = mapped_column(String(60))
@@ -39,14 +51,20 @@ class PlaceRef(Base):
             postgresql_with={"m": 16, "ef_construction": 64},
             postgresql_ops={"embedding": "vector_cosine_ops"},
         ),
+        # add_refs skips a photo it has already embedded for the place (ON CONFLICT).
+        UniqueConstraint("place_id", "sha256", name="uq_place_refs_place_sha256"),
     )
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
     place_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("places.id", ondelete="CASCADE"), index=True
     )
-    photo_url: Mapped[str] = mapped_column(String(500))
+    photo_url: Mapped[str] = mapped_column(String(500))  # storage key of the reference photo
+    source_url: Mapped[str | None] = mapped_column(String(500))  # e.g. Commons file page
     author: Mapped[str | None] = mapped_column(String(200))
+    license: Mapped[str | None] = mapped_column(String(100))
+    sha256: Mapped[str | None] = mapped_column(String(64))
+    model: Mapped[str | None] = mapped_column(String(100))  # embedding model, e.g. dinov2-base
     embedding: Mapped[Any] = mapped_column(Vector(EMBEDDING_DIM))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 

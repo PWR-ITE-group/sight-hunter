@@ -102,6 +102,7 @@ async def seed(session: AsyncSession) -> None:
         await session.merge(
             Place(
                 id=place_id,
+                slug=p["key"],
                 name=p["name"],
                 era=p["era"],
                 category=p["category"],

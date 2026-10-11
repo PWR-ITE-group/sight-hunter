@@ -13,9 +13,9 @@ from app.decision import Reason, Status, Verdict, assess, resolve_gray
 from app.embedder import Embedder, load_image
 from app.judge import Judge, JudgeRequest
 from app.repository import AttemptRepository, Claim
-from app.reward import RewardHook
 from app.settings import Settings
 from app.storage import PhotoStorage
+from app.verdicts import VerdictSink
 
 log = logging.getLogger(__name__)
 
@@ -29,7 +29,7 @@ class Deps:
     storage: PhotoStorage
     embedder: Embedder
     judge: Judge
-    reward: RewardHook
+    verdicts: VerdictSink
 
 
 async def _judge(deps: Deps, claim: Claim, photo: bytes, vec: np.ndarray) -> bool | None:
@@ -73,14 +73,10 @@ async def run_verification(deps: Deps, attempt_id: UUID) -> Verdict | None:
         photo_key = claim.photo_key
         photo = await deps.storage.fetch(photo_key)
         verdict = await _decide(deps, claim, photo)
-        await claim.save(verdict)
 
-    # Verdict is committed. Side effects below must not undo it.
-    if verdict.status is Status.ACCEPTED:
-        try:
-            await deps.reward.on_accepted(attempt_id)
-        except Exception:
-            log.exception("reward hook failed for attempt %s", attempt_id)
+    # The row lock is released; the API applies the verdict (status, reward, photo deletion).
+    # An exception here makes arq retry the job, and the API ignores a duplicate verdict.
+    await deps.verdicts.publish(attempt_id, verdict)
     if deps.settings.delete_photo_after_verdict:
         try:
             await deps.storage.delete(photo_key)
@@ -93,8 +89,17 @@ async def run_verification(deps: Deps, attempt_id: UUID) -> Verdict | None:
     return verdict
 
 
-async def verify_attempt(ctx: dict[str, object], attempt_id: str) -> str | None:
-    """arq job. Enqueue from the API with `_job_id=f"verify:{attempt_id}"` to deduplicate."""
+async def verify_attempt(
+    ctx: dict[str, object],
+    attempt_id: str,
+    photo_key: str | None = None,
+    place_id: str | None = None,
+) -> str | None:
+    """arq job enqueued by the API as `verify_attempt(attempt_id, photo_key, place_id)`.
+
+    `photo_key` and `place_id` are informational: the attempt row is the source of truth and is
+    locked while it is verified. The API enqueues with `_job_id=f"verify:{attempt_id}"`.
+    """
     deps = ctx["deps"]
     assert isinstance(deps, Deps)
     verdict = await run_verification(deps, UUID(attempt_id))

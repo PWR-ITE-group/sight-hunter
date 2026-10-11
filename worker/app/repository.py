@@ -1,4 +1,6 @@
-"""All SQL the worker runs. Table contract: worker/dev/schema.sql."""
+"""All SQL the worker runs: read-only. Tables come from the API's Alembic migrations
+(api/alembic); worker/dev/schema.sql mirrors the columns used here. Verdicts go back to the API
+as jobs (app/verdicts.py), never as writes to `attempts`."""
 
 from collections.abc import AsyncIterator
 from contextlib import AbstractAsyncContextManager, asynccontextmanager
@@ -10,7 +12,7 @@ import numpy as np
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncConnection, AsyncEngine
 
-from app.decision import PlaceScore, Verdict
+from app.decision import PlaceScore
 
 
 class Claim(Protocol):
@@ -27,15 +29,13 @@ class Claim(Protocol):
 
     async def reference_keys(self, place_id: UUID, vec: np.ndarray, n: int) -> list[str]: ...
 
-    async def save(self, verdict: Verdict) -> None: ...
-
 
 class AttemptRepository(Protocol):
     def claim(self, attempt_id: UUID) -> AbstractAsyncContextManager[Claim | None]: ...
 
 
 _CLAIM = text("""
-    SELECT a.id, a.photo_url, t.place_id, p.name
+    SELECT a.id, a.photo_key, t.place_id, p.name
     FROM attempts a
     JOIN task_rounds r ON r.id = a.round_id
     JOIN tasks t ON t.id = r.task_id
@@ -61,14 +61,6 @@ _REF_KEYS = text("""
     ORDER BY embedding <=> :q LIMIT :n
 """)
 
-_SAVE = text("""
-    UPDATE attempts
-    SET status = :status, score = :score, reason = :reason,
-        matched_place_id = :matched, judge = :judge, verified_at = now()
-    WHERE id = :id
-""")
-
-
 @dataclass
 class SqlClaim:
     conn: AsyncConnection
@@ -92,16 +84,6 @@ class SqlClaim:
     async def reference_keys(self, place_id: UUID, vec: np.ndarray, n: int) -> list[str]:
         rows = await self.conn.execute(_REF_KEYS, {"pid": place_id, "q": vec, "n": n})
         return [r[0] for r in rows]
-
-    async def save(self, verdict: Verdict) -> None:
-        await self.conn.execute(_SAVE, {
-            "id": self.attempt_id,
-            "status": verdict.status.value,
-            "score": verdict.score,
-            "reason": verdict.reason.value if verdict.reason else None,
-            "matched": verdict.matched_place_id,
-            "judge": verdict.judge,
-        })
 
 
 class SqlAttemptRepository:

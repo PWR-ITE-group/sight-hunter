@@ -36,16 +36,12 @@ class FakeClaim:
     photo_key: str = "attempts/1.jpg"
     target_place_id: UUID = TARGET
     target_name: str = "Ratusz"
-    saved: Verdict | None = None
 
     async def place_scores(self, vec: np.ndarray, top_k: int) -> list[PlaceScore]:
         return self.scores
 
     async def reference_keys(self, place_id: UUID, vec: np.ndarray, n: int) -> list[str]:
         return ["refs/ratusz/a.jpg"]
-
-    async def save(self, verdict: Verdict) -> None:
-        self.saved = verdict
 
 
 class FakeRepo:
@@ -72,12 +68,12 @@ class FakeStorage:
         self.deleted.append(key)
 
 
-class FakeReward:
+class FakeSink:
     def __init__(self) -> None:
-        self.calls: list[UUID] = []
+        self.published: list[tuple[UUID, Verdict]] = []
 
-    async def on_accepted(self, attempt_id: UUID) -> None:
-        self.calls.append(attempt_id)
+    async def publish(self, attempt_id: UUID, verdict: Verdict) -> None:
+        self.published.append((attempt_id, verdict))
 
 
 class YesJudge:
@@ -93,44 +89,49 @@ class YesJudge:
 
 
 def make(claim: FakeClaim | None, photo: bytes | None = None,
-         judge: object | None = None) -> tuple[Deps, FakeStorage, FakeReward]:
-    storage, reward = FakeStorage(photo or jpeg()), FakeReward()
-    settings = Settings(thresholds=Thresholds(t_low=0.45, t_high=0.7, margin=0.05, t_single=0.6))
+         judge: object | None = None, delete_photo: bool = False,
+         ) -> tuple[Deps, FakeStorage, FakeSink]:
+    storage, sink = FakeStorage(photo or jpeg()), FakeSink()
+    settings = Settings(thresholds=Thresholds(t_low=0.45, t_high=0.7, margin=0.05, t_single=0.6),
+                        delete_photo_after_verdict=delete_photo)
     deps = Deps(settings, FakeRepo(claim), storage, FakeEmbedder(),
-                judge or NoneJudge(), reward)  # type: ignore[arg-type]
-    return deps, storage, reward
+                judge or NoneJudge(), sink)  # type: ignore[arg-type]
+    return deps, storage, sink
 
 
-async def test_accepted_saves_rewards_and_deletes_photo() -> None:
+async def test_accepted_is_published_to_the_api_and_photo_kept() -> None:
     claim = FakeClaim([PlaceScore(TARGET, "Ratusz", 0.9), PlaceScore(OTHER, "X", 0.3)])
-    deps, storage, reward = make(claim)
+    deps, storage, sink = make(claim)
     v = await run_verification(deps, claim.attempt_id)
     assert v is not None and v.status is Status.ACCEPTED
-    assert claim.saved == v
-    assert reward.calls == [claim.attempt_id]
-    assert storage.deleted == ["attempts/1.jpg"]
+    assert v.matched_place_id == TARGET
+    assert sink.published == [(claim.attempt_id, v)]
+    # The API deletes the photo when it applies the verdict.
+    assert storage.deleted == []
 
 
-async def test_wrong_place_no_reward() -> None:
+async def test_wrong_place_is_published_with_the_other_place() -> None:
     claim = FakeClaim([PlaceScore(OTHER, "Kościół", 0.9), PlaceScore(TARGET, "Ratusz", 0.4)])
-    deps, _, reward = make(claim)
+    deps, _, sink = make(claim)
     v = await run_verification(deps, claim.attempt_id)
-    assert v is not None and v.reason is Reason.WRONG_PLACE
-    assert v.wrong_place_name == "Kościół"
-    assert reward.calls == []
+    assert v is not None and v.status is Status.REJECTED and v.reason is Reason.WRONG_PLACE
+    assert v.wrong_place_name == "Kościół" and v.matched_place_id == OTHER
+    assert sink.published == [(claim.attempt_id, v)]
 
 
 async def test_not_queued_is_skipped() -> None:
-    deps, storage, _ = make(None)
+    deps, storage, sink = make(None)
     assert await run_verification(deps, uuid4()) is None
-    assert storage.deleted == []
+    assert sink.published == [] and storage.deleted == []
 
 
 async def test_broken_image_rejected() -> None:
     claim = FakeClaim([PlaceScore(TARGET, "Ratusz", 0.9)])
-    deps, _, _ = make(claim, photo=b"not an image")
+    deps, _, sink = make(claim, photo=b"not an image")
     v = await run_verification(deps, claim.attempt_id)
     assert v is not None and v.status is Status.REJECTED and v.reason is Reason.NOT_MATCHED
+    assert v.matched_place_id is None
+    assert sink.published == [(claim.attempt_id, v)]
 
 
 async def test_gray_zone_asks_enabled_judge() -> None:
@@ -140,3 +141,10 @@ async def test_gray_zone_asks_enabled_judge() -> None:
     v = await run_verification(deps, claim.attempt_id)
     assert v is not None and v.status is Status.ACCEPTED and v.judge == "fake"
     assert len(judge.requests) == 1 and judge.requests[0].place_name == "Ratusz"
+
+
+async def test_photo_deleted_only_when_configured() -> None:
+    claim = FakeClaim([PlaceScore(TARGET, "Ratusz", 0.9)])
+    deps, storage, _ = make(claim, delete_photo=True)
+    await run_verification(deps, claim.attempt_id)
+    assert storage.deleted == ["attempts/1.jpg"]

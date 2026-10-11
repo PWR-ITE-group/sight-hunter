@@ -1,6 +1,6 @@
--- DEV ONLY. Minimal tables the worker reads and writes, for local testing before A's
--- Alembic migrations exist. This is the contract to agree with A: names and columns used
--- by worker/app/repository.py. Do not apply on top of real migrations.
+-- DEV ONLY. Minimal tables the worker reads, for testing the worker without the API.
+-- The real schema is api/alembic; column names here mirror what worker/app/repository.py
+-- and the content CLIs use. seed_dev skips this file when `alembic_version` exists.
 --   docker compose exec -T postgres psql -U lowcy -d lowcy < worker/dev/schema.sql
 
 CREATE EXTENSION IF NOT EXISTS postgis;
@@ -39,18 +39,17 @@ CREATE TABLE IF NOT EXISTS task_rounds (
 CREATE TABLE IF NOT EXISTS attempts (
     id                uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     round_id          uuid NOT NULL REFERENCES task_rounds(id),
-    photo_url         text NOT NULL,              -- storage key of the player photo
+    photo_key         text,                       -- storage key of the player photo
     gps               geography(Point, 4326),
     accuracy_m        real,
     status            text NOT NULL DEFAULT 'awaiting_upload'
                       CHECK (status IN ('awaiting_upload', 'queued', 'accepted', 'rejected')),
-    -- written by the worker:
+    -- written by the API when it applies the worker's verdict (apply_verdict):
     score             real,
     reason            text CHECK (reason IN ('wrong_place', 'not_matched')),
     matched_place_id  uuid REFERENCES places(id), -- wrong_place_name = places.name of this
-    judge             text,                       -- 'none' or the judge provider name
     created_at        timestamptz NOT NULL DEFAULT now(),
-    verified_at       timestamptz
+    verdict_at        timestamptz
 );
 
 CREATE TABLE IF NOT EXISTS place_refs (

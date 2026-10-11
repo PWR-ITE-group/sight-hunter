@@ -16,14 +16,16 @@ poetry run uvicorn app.main:app --reload --port 8000   # Swagger at /docs
 poetry run arq app.worker.WorkerSettings               # applies verdicts, awards rewards
 ```
 
-Or everything in containers: `docker compose up -d --build` from the repo root (migrations run on API start; run the seed with `docker compose exec api python -m app.seed`).
+Or everything in containers: `docker compose up -d --build` from the repo root (migrations run on API start; run the seed with `docker compose exec api python -m app.seed`). The `worker` service is the ML worker; its first build is slow (torch + DINOv2 weights).
+
+Real content (8 places of the demo route, reference photos) is loaded from `worker/` into the same database: `python -m app.cli.seed_dev` (places/tasks from `content/places.yaml`, upsert by `places.slug`) then `python -m app.cli.add_refs` (embeddings into `place_refs`). See `worker/README.md`.
 
 Checks: `poetry run ruff check .`, `poetry run mypy app`, `poetry run pytest` (needs the Postgres and Redis from compose; tests use a separate `<POSTGRES_DB>_test` database and Redis db 9).
 
 ## Settings that matter for the demo
 
 - `DEMO_MODE=true` — the API accepts the position the client sends (long tap on the map).
-- `VERIFY_STUB=true` — no ML worker needed: every submitted photo is accepted. The full loop works on stubs.
+- `VERIFY_STUB=true` — no ML worker needed: every submitted photo is accepted. The full loop works on stubs. Set it to `false` once the `worker` service runs and reference photos are loaded; without refs every photo is `not_matched`.
 - `S3_PUBLIC_ENDPOINT` — address of the storage the **phone** can reach (laptop IP or tunnel); presigned upload URLs are signed for it.
 
 ## Queue contract with the ML worker (`worker/`, role C)
