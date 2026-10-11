@@ -13,7 +13,7 @@
 | API client, endpoints, hooks, stores | ✅ Готовы. `schema.d.ts` перегенерирован из актуального `openapi.yaml` (добавлен `GET /places/next`). `Config.API_BASE_URL` в dev берётся из адреса Metro (ноутбук), переопределяется `EXPO_PUBLIC_API_URL` |
 | Auth (welcome, login, nickname) | ✅ Реальные `useLogin/useRegister/useSetNickname`, обработка `email_taken`, `invalid_credentials`, `nickname_taken`; guard в `_layout.tsx` ведёт welcome → nickname → onboarding → tabs |
 | Карта | ✅ `useNearbyPlaces` + `useLocation`; ненайденные места рисуются по смещённой зоне из API; в demo-режиме долгий тап задаёт позицию |
-| Задание, камера, проверка, результат, next | ✅ Старт раунда при открытии, подсказки через `POST /rounds/{id}/hints`, фото → presigned PUT → submit → поллинг, ошибки `too_far` / `wrong_place` / лимит попыток, награда из ответа API, `GET /places/next` |
+| Задание, камера, проверка, результат, next | ✅ Старт раунда при открытии, подсказки через `POST /rounds/{id}/hints`, фото → PUT на `upload_url` (API) → submit → поллинг, ошибки `too_far` / `wrong_place` / лимит попыток, награда из ответа API, `GET /places/next` |
 | Рилсы, комментарии, лайки, просмотры, покупка | ✅ `expo-video` в `ReelCard`, играет только видимая карточка, просмотр считается после 3 с |
 | Ranking, Profile, Shop, Settings, Onboarding | ✅ На реальных данных; магазин продаёт только публичные рилсы (решение команды — запаса подсказок нет) |
 | Quiz dnia | ⚠️ Экран готов, но в бекенде мини-игры нет (первая в списке на вырезание) — показывает «Quiz wkrótce» |

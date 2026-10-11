@@ -44,7 +44,7 @@ mobile/src/
 ├── hooks/                        # 🔵 AI-LOGIC — Device/platform хуки
 │   ├── useLocation.ts            # expo-location watch + demo mode override
 │   ├── useCamera.ts              # expo-camera permissions + capture + resize (1280px)
-│   ├── usePhotoUpload.ts         # presigned PUT upload до S3/R2
+│   ├── usePhotoUpload.ts         # PUT фото на upload_url (API, локальне сховище)
 │   ├── useVerificationPolling.ts # poll GET /attempts/{id} кожну секунду до verdict
 │   └── useIdempotencyKey.ts      # генерація UUID для Idempotency-Key header
 │
@@ -1196,7 +1196,7 @@ export function useCamera();
 #### `src/hooks/usePhotoUpload.ts`
 ```typescript
 /**
- * Завантажує фото на presigned S3/R2 URL
+ * Завантажує фото на upload_url, виданий API (PUT /api/v1/uploads/{token})
  *
  * Повертає:
  * - upload: (localUri: string, uploadUrl: string) => Promise<void>

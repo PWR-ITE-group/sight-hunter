@@ -29,14 +29,12 @@ class Settings(BaseSettings):
     jwt_access_ttl_s: int = 15 * 60
     jwt_refresh_ttl_s: int = 30 * 24 * 3600
 
-    s3_endpoint: str = "http://localhost:8333"
-    # What the phone can reach (laptop IP or a tunnel). Presigned URLs are signed for this host.
-    s3_public_endpoint: str | None = None
-    s3_access_key: str = "lowcy"
-    s3_secret_key: str = "change-me"
-    s3_bucket: str = "lowcy"
-    s3_region: str = "us-east-1"
+    # Folder for player photos and reference photos, shared with the ML worker.
+    storage_local_root: str = str(_REPO_ENV.parent / ".storage")
+    # Base of the upload URL handed to the phone. Empty = the host the phone called the API on.
+    public_base_url: str | None = None
     upload_url_ttl_s: int = 5 * 60
+    max_upload_mb: int = 15
 
     # Accepts a manually set position from the client (long tap on the map). Never remove.
     demo_mode: bool = False
@@ -69,10 +67,6 @@ class Settings(BaseSettings):
     @property
     def redis_dsn(self) -> str:
         return self.redis_url or f"redis://{self.redis_host}:{self.redis_port}/0"
-
-    @property
-    def public_s3_endpoint(self) -> str:
-        return self.s3_public_endpoint or self.s3_endpoint
 
 
 @lru_cache

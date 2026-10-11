@@ -1,0 +1,34 @@
+TYTUŁ: Ratusz, którego nie zbudowało jedno pokolenie
+ОБЪЕКТ: Stary Ratusz we Wrocławiu, Rynek. Не соседний Nowy Ratusz.
+ИДЕЯ: Один узнаваемый фасад скрывает несколько столетий роста города и его амбиций.
+
+ОЗВУЧКА (PL)
+Ten ratusz nie powstał od razu. Wrocław budował go przez około dwieście pięćdziesiąt lat. Spojrzenie na jego fasadę to podróż przez kolejne pokolenia mieszkańców i ich ambicje. Najstarsze części pochodzą z przełomu trzynastego i czternastego wieku. Potem budynek stale rozbudowywano. Przybywały sale dla rady i sądu. Rosnące miasto potrzebowało coraz więcej miejsca na decyzje. W późnym średniowieczu rozbudowa nadała mu charakter, który rozpoznajesz dziś na wrocławskich pocztówkach. Teraz mieści się tutaj Muzeum Sztuki Mieszczańskiej. Dawna siedziba władz opowiada historię swoich mieszkańców. To nie jeden projekt. To ambicje zapisane w murach.
+
+СЛОВ: 90
+ХРОНОМЕТРАЖ: монтаж 40 секунд. Число слов считается по пробелам; даты написаны для произношения. Длительность голоса пока расчётная: записать польскую озвучку, измерить и подогнать паузы. Не заявлять, что аудио уже длится ровно 40 секунд.
+
+РАСКАДРОВКА
+Сцена | Таймкод | Озвучка PL | Изображение | Камера / переход | Надпись PL | Промпты
+01 | 00-06 | Ten ratusz nie powstał od razu. Wrocław budował go przez około dwieście pięćdziesiąt lat. | Современный узнаваемый восточный фасад с часами, общий план. | Медленное приближение; без заставки. | 250 lat budowania | prompts\ratusz\01_image.txt; prompts\ratusz\01_video.txt
+02 | 06-12 | Spojrzenie na jego fasadę to podróż przez kolejne pokolenia mieszkańców i ich ambicje. | Восточный фасад под небольшим углом, силуэт крыши целиком. | Короткий боковой проезд; прямая склейка. | Kolejne pokolenia | prompts\ratusz\02_image.txt; prompts\ratusz\02_video.txt
+03 | 12-18 | Najstarsze części pochodzą z przełomu trzynastego i czternastego wieku. Potem budynek stale rozbudowywano. | Западная сторона Старой ратуши с башней, только по отдельному референсу. | Плавное приближение, не дорисовывать переход вокруг здания. | XIII / XIV wiek | prompts\ratusz\03_image.txt; prompts\ratusz\03_video.txt
+04 | 18-24 | Przybywały sale dla rady i sądu. Rosnące miasto potrzebowało coraz więcej miejsca na decyzje. | Южный фасад и эркеры в контексте всего здания. Не показывать выдуманный суд. | Медленный проезд вдоль фасада. | Rada i sąd | prompts\ratusz\04_image.txt; prompts\ratusz\04_video.txt
+05 | 24-30 | W późnym średniowieczu rozbudowa nadała mu charakter, który rozpoznajesz dziś na wrocławskich pocztówkach. | Восточный фасад средне-общим планом: часы, готический щипец, часть площади. | Мягкое приближение; часы не заполняют весь экран. | Miasto rośnie | prompts\ratusz\05_image.txt; prompts\ratusz\05_video.txt
+06 | 30-36 | Teraz mieści się tutaj Muzeum Sztuki Mieszczańskiej. Dawna siedziba władz opowiada historię swoich mieszkańców. | Современный вход с западной стороны; башня и объём ратуши видны. | Медленное отдаление. | Muzeum Sztuki Mieszczańskiej | prompts\ratusz\06_image.txt; prompts\ratusz\06_video.txt
+07 | 36-40 | To nie jeden projekt. To ambicje zapisane w murach. | Восточный фасад, композиционно близко к первому кадру. | Небольшое отдаление; завершить движение к четвёртой секунде. | Ambicje zapisane w murach | prompts\ratusz\07_image.txt; prompts\ratusz\07_video.txt
+
+МОНТАЖ И ЗВУК
+Семь исходных клипов по 6 секунд: 42 секунды. Последний обрезать до первых 4 секунд, итого 40. Прямые склейки без сокращения таймлайна. Ратуша узнаваемо присутствует все 40 секунд. Визуал современный; рассказ о прошлом не означает историческую реконструкцию.
+Польский голос: заинтересованно, без дикторского пафоса; короткая пауза после первого предложения. Музыка без слов с лёгким пульсом, разрешённая для публикации; тихий шум площади. Не имитировать исторические реплики. Субтитры PL, 1-2 строки, не закрывать часы и силуэт крыши.
+Экспорт: 9:16, минимум 1080x1920, 30 fps, MP4 / H.264 / AAC. Нативное 4K при качественных исходниках, без обещания улучшить детализацию апскейлом. Естественные цвета; важные элементы вне нижней и правой интерфейсных зон.
+
+РЕФЕРЕНСЫ И ОГРАНИЧЕНИЯ
+Исходные фото: content\refs\ratusz\. К каждой сцене приложить фотографию именно её стороны здания. Если западного или южного ракурса недостаточно, запросить снимок, а не генерировать невидимую архитектуру. Проверить актуальность фото и условия лицензии в sources.yaml. Не заменять Старую ратушу Новым ратушным зданием. Не добавлять псевдоисторических гербов или надписей.
+
+ФАКТЫ И ИСТОЧНИКИ
+1. https://en.wikipedia.org/wiki/Wroc%C5%82aw_Town_Hall
+Прочитано: развитие здания примерно на протяжении 250 лет, ранние части рубежа XIII-XIV веков, расширения помещений совета и суда, позднеготический облик. Это справочный вторичный источник; не используем спорные превосходные степени про ресторан и точную дату начала стройки.
+2. https://muzeum.miejskie.wroclaw.pl/museum/sztuki-mieszczenskiej/
+Официальный сайт Muzeum Miejskie Wrocławia. Подтверждает размещение Muzeum Sztuki Mieszczańskiej в Старой ратуше, позднеготическую архитектуру, залы совета и исторические интерьеры.
+Текст авторский, не цитата из источников. «Ambicje zapisane w murach» — образное завершение, не историческая цитата.

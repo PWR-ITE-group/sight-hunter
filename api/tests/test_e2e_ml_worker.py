@@ -97,8 +97,8 @@ def photos(tmp_path_factory: pytest.TempPathFactory) -> dict[str, Any]:
 
 @pytest.fixture
 def storage_root(tmp_path: Path) -> Path:
-    """The bucket as the ML worker sees it (STORAGE_BACKEND=local)."""
-    return tmp_path / "bucket"
+    """The storage folder as the ML worker sees it (STORAGE_LOCAL_ROOT)."""
+    return tmp_path / "storage"
 
 
 @pytest.fixture
@@ -136,7 +136,7 @@ THRESHOLDS = {
 def ml_worker_env(storage_root: Path) -> dict[str, str]:
     """A minimal, fully pinned environment: nothing is inherited from the shell, and every
     setting the verdict depends on is set here, so a developer's `worker/.env` (thresholds,
-    a real judge, S3) cannot change the outcome."""
+    a real judge) cannot change the outcome."""
     s = get_settings()
     return {
         **{k: os.environ[k] for k in ("PATH", "HOME", "TMPDIR", "LANG") if k in os.environ},
@@ -146,7 +146,6 @@ def ml_worker_env(storage_root: Path) -> dict[str, str]:
         "ARQ_QUEUE": ML_QUEUE,
         "API_QUEUE": API_QUEUE,
         "MODEL_NAME": "tiny",
-        "STORAGE_BACKEND": "local",
         "STORAGE_LOCAL_ROOT": str(storage_root),
         "DELETE_PHOTO_AFTER_VERDICT": "false",
         **THRESHOLDS,
@@ -162,7 +161,7 @@ async def run_ml_worker(storage_root: Path) -> str:
 
 
 async def run_verdict_worker(monkeypatch: pytest.MonkeyPatch, storage: FakeStorage) -> None:
-    """Our own arq worker (app.worker) in burst mode, in-process, on the test's fake bucket."""
+    """Our own arq worker (app.worker) in burst mode, in-process, on the test's fake storage."""
     monkeypatch.setattr("app.worker.get_storage", lambda: storage)
     worker = Worker(
         functions=[apply_verdict],
@@ -195,7 +194,7 @@ async def play(
     attempt_id = created["attempt_id"]
     key = f"attempts/{attempt_id}.jpg"
 
-    # What the phone's presigned PUT does: the bytes land in the bucket.
+    # What the phone's PUT to upload_url does: the bytes land in the shared storage folder.
     target = storage_root / key
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_bytes((photos["dir"] / f"{photo}.jpg").read_bytes())

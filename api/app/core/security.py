@@ -10,7 +10,7 @@ from app.core.config import get_settings
 
 _hasher = PasswordHasher()
 
-TokenType = Literal["access", "refresh"]
+TokenType = Literal["access", "refresh", "upload"]
 
 
 def hash_password(password: str) -> str:
@@ -41,6 +41,23 @@ def make_refresh_token(user_id: uuid.UUID, jti: uuid.UUID) -> tuple[str, datetim
         {"sub": str(user_id), "jti": str(jti), "type": "refresh"},
         get_settings().jwt_refresh_ttl_s,
     )
+
+
+def make_upload_token(attempt_id: uuid.UUID, key: str) -> tuple[str, datetime]:
+    """Authorizes one PUT of the attempt's photo; the token is the whole credential."""
+    return _encode(
+        {"sub": str(attempt_id), "key": key, "type": "upload"}, get_settings().upload_url_ttl_s
+    )
+
+
+def decode_upload_token(token: str) -> tuple[uuid.UUID, str] | None:
+    payload = decode_token(token, "upload")
+    if payload is None or not isinstance(payload.get("key"), str):
+        return None
+    try:
+        return uuid.UUID(payload["sub"]), payload["key"]
+    except (ValueError, TypeError):
+        return None
 
 
 def decode_token(token: str, expected: TokenType) -> dict[str, Any] | None:

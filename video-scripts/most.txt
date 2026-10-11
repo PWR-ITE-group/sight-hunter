@@ -1,0 +1,36 @@
+TYTUŁ: Ile waży miłość? Ten most poznał odpowiedź
+ОБЪЕКТ: Most Tumski we Wrocławiu.
+ИДЕЯ: Романтический обычай оказался реальной нагрузкой для исторического моста.
+
+ОЗВУЧКА (PL)
+Miłość ważyła tu siedemnaście ton. Właśnie tyle kłódek zdjęto z wrocławskiego mostu Tumskiego. Zakochani przypinali je do balustrad, a kluczyki wrzucali do Odry. Symbol miał zostać na zawsze. Ale zabytkowy most nie był przygotowany na taki ciężar. Romantyczny gest stał się problemem. Gdy latem dwa tysiące dziewiętnastego roku rozpoczął się remont, kłódki musiały zniknąć z przeprawy. Oczyszczono konstrukcję i odnowiono jej zabezpieczenie. Po remoncie zawieszanie kolejnych kłódek zostało zakazane. Sam most ma znacznie dłuższą historię: jego stalowa konstrukcja pochodzi z dziewiętnastego wieku. Miłość nie zniknęła. Po prostu most musiał odetchnąć.
+
+СЛОВ: 90
+ХРОНОМЕТРАЖ: 40 секунд после монтажа; темп уточнить по реальной польской TTS-озвучке. Не ускорять перечисление даты: при необходимости уменьшить паузу между сценами.
+
+РАСКАДРОВКА
+Сцена | Таймкод | Озвучка PL | Изображение | Камера / переход | Надпись PL | Промпты
+01 | 00-06 | Miłość ważyła tu siedemnaście ton. Właśnie tyle kłódek zdjęto z wrocławskiego mostu Tumskiego. | Современный мост целиком по диагонали с берега, без выдуманных замков. | Медленное приближение, сразу мост. | 17 ton miłości | prompts\most\01_image.txt; prompts\most\01_video.txt
+02 | 06-12 | Zakochani przypinali je do balustrad, a kluczyki wrzucali do Odry. Symbol miał zostać na zawsze. | Балюстрада передним планом, портал и пролёт остаются крупно видны. | Небольшой проезд вдоль ограждения; без разыгрывания броска ключа. | Symbol na zawsze? | prompts\most\02_image.txt; prompts\most\02_video.txt
+03 | 12-18 | Ale zabytkowy most nie był przygotowany na taki ciężar. Romantyczny gest stał się problemem. | Полный боковой силуэт двух пролётов над Одрой. | Плавная короткая панорама, геометрия не меняется. | Gest, który waży | prompts\most\03_image.txt; prompts\most\03_video.txt
+04 | 18-24 | Gdy latem dwa tysiące dziewiętnastego roku rozpoczął się remont, kłódki musiały zniknąć z przeprawy. | Современный вид через входной портал; никаких сгенерированных рабочих или демонтажа. | Мягкое приближение по оси. | Remont: 2019 | prompts\most\04_image.txt; prompts\most\04_video.txt
+05 | 24-30 | Oczyszczono konstrukcję i odnowiono jej zabezpieczenie. Po remoncie zawieszanie kolejnych kłódek zostało zakazane. | Окрашенная ферма средне-общим планом, виден мост, а не только металл. | Небольшой боковой проезд. | Po remoncie: bez kłódek | prompts\most\05_image.txt; prompts\most\05_video.txt
+06 | 30-36 | Sam most ma znacznie dłuższą historię: jego stalowa konstrukcja pochodzi z dziewiętnastego wieku. | Общий вид моста с противоположного берега по соответствующему референсу. | Медленное отдаление. | Stalowa historia XIX wieku | prompts\most\06_image.txt; prompts\most\06_video.txt
+07 | 36-40 | Miłość nie zniknęła. Po prostu most musiał odetchnąć. | Возврат к общему виду первого кадра, вода движется естественно. | Короткое приближение завершается до четвёртой секунды. | Most musiał odetchnąć | prompts\most\07_image.txt; prompts\most\07_video.txt
+
+МОНТАЖ И ЗВУК
+7 исходных клипов x 6 секунд = 42; у седьмого использовать только первые 4, финал 40. Все 40 секунд виден узнаваемый мост. Костёл может присутствовать на фоне, но не подменять главный объект. Не изображать обрушение, прогибающиеся пролёты или падающие в воду замки.
+Современный визуальный ряд сопровождает рассказ о прошлом; не выдавать современные кадры за архив 2019 года. Надпись «17 ton» добавляется редактором. Музыка с мягким ритмом и подходящей лицензией; тихая вода и шаги, чистый польский голос, без шуточных звуков падения.
+9:16, минимум 1080x1920, 30 fps, MP4 / H.264 / AAC; 4K только из подходящих исходников. Субтитры PL в 1-2 строки, безопасные поля снизу и справа. Фермы и портал не закрывать текстом. Единый дневной свет, реалистичная фактура стали.
+
+РЕФЕРЕНСЫ И ОГРАНИЧЕНИЯ
+Фото: content\refs\most\. Многие туристические снимки сняты до ремонта и показывают замки. Для современного вида нужны актуальные снимки после ремонта. Не считать старое фото доказательством нынешнего состояния. Не добавлять замки, дефекты или исторические таблички по памяти. Для нового ракурса запросить отдельный референс. Проверить лицензии исходников.
+
+ФАКТЫ И ИСТОЧНИКИ
+1. https://www.wroclaw.pl/akademicki-wroclaw/nabor-pomyslow-jakim-miejskim-znakiem-milosci-zastapic-metalowe-klodki
+Официальный городской материал: 17 тонн снятых замков, обычай бросать ключи в Одру, начало ремонта летом 2019 года, запрет оставлять замки после ремонта. Источник прямо описывает нагрузку как угрозу конструкции.
+2. https://www.wroclaw.pl/komunikacja/most-tumski-do-remontu-znikna-klodki
+Официальное описание работ: очистка и антикоррозийное покрытие, удаление замков, историческая стальная конструкция с 1889 года. Не переносить временные сведения о ремонтном закрытии из статьи на сегодняшний день.
+3. https://pl.wikipedia.org/wiki/Most_Tumski
+Дополнительная справка: стальной двухпролётный мост между Wyspa Piasek и Ostrów Tumski. В сценарии оставлен XIX век, без спорной точной даты торжественного открытия.
+Финальное «most musiał odetchnąć» — метафора, а не утверждение о фактическом изменении формы моста.

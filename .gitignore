@@ -221,6 +221,7 @@ __marimo__/
 
 # Project-specific
 
+.storage/
 .env.local
 .env.*.local
 .DS_Store

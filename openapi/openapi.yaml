@@ -242,7 +242,7 @@ paths:
     post:
       operationId: createAttempt
       tags: [attempts]
-      summary: Geofence check before upload; returns a presigned upload URL
+      summary: Geofence check before upload; returns a one-time upload URL
       parameters: [{ $ref: "#/components/parameters/RoundId" }]
       requestBody:
         required: true
@@ -259,11 +259,34 @@ paths:
                 required: [attempt_id, upload_url, upload_expires_at]
                 properties:
                   attempt_id: { type: string, format: uuid }
-                  upload_url: { type: string, format: uri, description: "presigned PUT, ~5 min" }
+                  upload_url:
+                    type: string
+                    format: uri
+                    description: "PUT the photo here (uploadPhoto), ~5 min; no Authorization header"
                   upload_expires_at: { type: string, format: date-time }
         "409": { $ref: "#/components/responses/Error" }  # round_not_active
         "422": { $ref: "#/components/responses/Error" }  # too_far (details.distance_m), mock_location
         "429": { $ref: "#/components/responses/Error" }  # attempts_limit
+
+  /uploads/{token}:
+    put:
+      operationId: uploadPhoto
+      tags: [attempts]
+      summary: Raw photo bytes for an attempt; the token from upload_url is the credential
+      security: []
+      parameters:
+        - { name: token, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          image/jpeg:
+            schema: { type: string, format: binary }
+      responses:
+        "204": { description: Stored; now call submitAttempt }
+        "403": { $ref: "#/components/responses/Error" }  # upload_forbidden (bad or expired token)
+        "409": { $ref: "#/components/responses/Error" }  # upload_not_expected (already submitted)
+        "413": { $ref: "#/components/responses/Error" }  # upload_too_large
+        "415": { $ref: "#/components/responses/Error" }  # upload_not_image
 
   /attempts/{attemptId}/submit:
     post:

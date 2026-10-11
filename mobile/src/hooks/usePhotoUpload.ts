@@ -26,7 +26,8 @@ export function usePhotoUpload() {
       });
 
       if (!uploadResponse.ok) {
-        throw new Error(`Upload failed with status ${uploadResponse.status}`);
+        const body = await uploadResponse.text().catch(() => '');
+        throw new Error(`Upload failed with status ${uploadResponse.status}: ${body}`);
       }
       
       return true;

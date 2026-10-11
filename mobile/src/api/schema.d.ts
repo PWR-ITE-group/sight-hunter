@@ -221,8 +221,25 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Geofence check before upload; returns a presigned upload URL */
+        /** Geofence check before upload; returns a one-time upload URL */
         post: operations["createAttempt"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/uploads/{token}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Raw photo bytes for an attempt; the token from upload_url is the credential */
+        put: operations["uploadPhoto"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -957,7 +974,7 @@ export interface operations {
                         attempt_id: string;
                         /**
                          * Format: uri
-                         * @description presigned PUT, ~5 min
+                         * @description PUT the photo here (uploadPhoto), ~5 min; no Authorization header
                          */
                         upload_url: string;
                         /** Format: date-time */
@@ -968,6 +985,34 @@ export interface operations {
             409: components["responses"]["Error"];
             422: components["responses"]["Error"];
             429: components["responses"]["Error"];
+        };
+    };
+    uploadPhoto: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "image/jpeg": string;
+            };
+        };
+        responses: {
+            /** @description Stored; now call submitAttempt */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            403: components["responses"]["Error"];
+            409: components["responses"]["Error"];
+            413: components["responses"]["Error"];
+            415: components["responses"]["Error"];
         };
     };
     submitAttempt: {
