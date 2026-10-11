@@ -1,3 +1,4 @@
+import logging
 import uuid
 from collections.abc import AsyncIterator
 from datetime import UTC, datetime
@@ -28,6 +29,7 @@ from app.modules.wallet import service as wallet
 from app.modules.wallet.models import LedgerReason
 
 Verdict = Literal["accepted", "rejected"]
+log = logging.getLogger(__name__)
 
 
 async def create_attempt(
@@ -109,6 +111,12 @@ async def receive_upload(
     # Close the read transaction: the body may take a while on a slow phone connection.
     await session.commit()
     if not (content_type or "").lower().startswith("image/"):
+        log.warning(
+            "Photo upload rejected: attempt_id=%s content_type=%r content_length=%s",
+            attempt_id,
+            content_type,
+            content_length,
+        )
         raise AppError("upload_not_image", status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
     max_bytes = get_settings().max_upload_mb * 1024 * 1024
     if content_length is not None and content_length > max_bytes:
