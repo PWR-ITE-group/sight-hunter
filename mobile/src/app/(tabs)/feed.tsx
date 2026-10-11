@@ -9,6 +9,7 @@ import { EmptyState } from '../../components/ui/EmptyState';
 import { ErrorBanner, errorMessage } from '../../components/ui/ErrorBanner';
 import { useReelFeed } from '../../api/hooks/useReels';
 import { useReelActions } from '../../hooks/useReelActions';
+import { HowItWorksCard } from '../../components/reels/HowItWorksCard';
 
 const TAB_BAR_HEIGHT = 80;
 const VIEWABILITY_CONFIG = { itemVisiblePercentThreshold: 60 };
@@ -45,14 +46,6 @@ export default function FeedTab() {
 
   const reels = feed.data ?? [];
 
-  if (feed.isLoading) {
-    return (
-      <View className="flex-1 p-4 bg-black">
-        <Skeleton className="w-full h-[80%] rounded-2xl mb-4" />
-      </View>
-    );
-  }
-
   return (
     <View className="flex-1 bg-black">
       {(feed.error || actions.error) && (
@@ -67,6 +60,7 @@ export default function FeedTab() {
 
       <FlatList
         data={reels}
+        ListHeaderComponent={<HowItWorksCard height={itemHeight} />}
         keyExtractor={(item) => item.id}
         pagingEnabled
         snapToInterval={itemHeight}
@@ -78,7 +72,13 @@ export default function FeedTab() {
         onEndReachedThreshold={1}
         ListEmptyComponent={
           <View style={{ height: itemHeight }}>
-            <EmptyState title="Brak rolek" message="Znajdź pierwsze miejsce, aby odblokować jego historię." />
+            {feed.isLoading ? (
+              <View className="flex-1 p-4 bg-black">
+                <Skeleton className="w-full h-[80%] rounded-2xl mb-4" />
+              </View>
+            ) : (
+              <EmptyState title="Brak rolek" message="Znajdź pierwsze miejsce, aby odblokować jego historię." />
+            )}
           </View>
         }
         refreshControl={

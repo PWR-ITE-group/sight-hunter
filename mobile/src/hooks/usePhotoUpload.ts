@@ -15,7 +15,9 @@ export function usePhotoUpload() {
       }
 
       const response = await fetch(localUri);
-      const blob = await response.blob();
+      const sourceBlob = await response.blob();
+      // The camera produces JPEG; iOS also needs the MIME type on the Blob itself.
+      const blob = sourceBlob.slice(0, sourceBlob.size, 'image/jpeg');
       
       const uploadResponse = await fetch(uploadUrl, {
         method: 'PUT',
