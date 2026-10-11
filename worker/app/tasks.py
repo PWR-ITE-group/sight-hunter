@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from uuid import UUID
 
 import numpy as np
+from arq import Retry
 from PIL import UnidentifiedImageError
 
 from app.decision import Reason, Status, Verdict, assess, resolve_gray
@@ -64,11 +65,26 @@ async def _decide(deps: Deps, claim: Claim, photo: bytes) -> Verdict:
     return resolve_gray(a, th, await _judge(deps, claim, photo, vec), deps.judge.name)
 
 
+# Statuses in which the attempt may still become `queued`: the API's submit transaction is not
+# committed yet (or was rolled back and the client will retry). The job is retried, not dropped.
+NOT_READY = {"awaiting_upload", "queued"}
+RETRY_AFTER_S = 2
+
+
 async def run_verification(deps: Deps, attempt_id: UUID) -> Verdict | None:
+    """Verifies a queued attempt; None when it is already decided or gone.
+
+    Raises `arq.Retry` when the row is not (yet) `queued`, so a job that overtook the API's
+    commit is run again instead of leaving the attempt hanging.
+    """
     started = time.perf_counter()
     async with deps.repo.claim(attempt_id) as claim:
         if claim is None:
-            log.info("attempt %s is not queued (already verified or locked), skipping", attempt_id)
+            status = await deps.repo.status(attempt_id)
+            if status in NOT_READY:
+                log.info("attempt %s is %s, not claimable yet; retrying", attempt_id, status)
+                raise Retry(defer=RETRY_AFTER_S)
+            log.info("attempt %s is %s (already verified or gone), skipping", attempt_id, status)
             return None
         photo_key = claim.photo_key
         photo = await deps.storage.fetch(photo_key)

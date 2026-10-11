@@ -36,8 +36,10 @@ Rules: `app/decision.py`. Pipeline: `app/tasks.py`. The verdict is handed to the
 
 - The API enqueues `verify_attempt(attempt_id, photo_key, place_id)` on `arq:queue:ml`
   (`ARQ_QUEUE`) with `_job_id=f"verify:{attempt_id}"` after setting `attempts.status = 'queued'`.
-  The job reads the attempt row (`photo_key`, the round's task and place), skips attempts that
-  are not `queued`, and locks the row while the photo is verified.
+  The job reads the attempt row (`photo_key`, the round's task and place) and locks it while
+  the photo is verified. The API enqueues inside the transaction that sets `queued`, so the
+  claim waits for that row lock; if the row is still not `queued` the job raises `arq.Retry`
+  (2 s), and only an already decided or missing attempt is skipped.
 - The verdict goes back as `apply_verdict(attempt_id, "accepted" | "rejected", score,
   matched_place_id)` on `arq:queue:api` (`API_QUEUE`), `_job_id=f"verdict:{attempt_id}"`.
   The API (`api/app/worker.py`) sets status, `reason` (`wrong_place` when `matched_place_id`
