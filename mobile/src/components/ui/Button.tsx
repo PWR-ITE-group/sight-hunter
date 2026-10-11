@@ -1,9 +1,9 @@
 import React from 'react';
-import { Text, ActivityIndicator, ViewStyle, StyleProp } from 'react-native';
+import { Pressable, Text, ActivityIndicator, ViewStyle, StyleProp } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
-import { AnimatedPressable } from './interop';
 import * as Haptics from 'expo-haptics';
 
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 export interface ButtonProps {
   title: string;

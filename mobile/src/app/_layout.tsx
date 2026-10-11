@@ -12,7 +12,6 @@ import { useLocation } from '../hooks/useLocation';
 import { getMe } from '../api/endpoints/me';
 import { ApiClientError } from '../api/client';
 import '../../global.css';
-import '../components/ui/interop';
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
