@@ -122,10 +122,25 @@ async def auth(client: AsyncClient) -> dict[str, str]:
     return bearer(await register(client))
 
 
+# The verdicts asserted below assume exactly these thresholds (tiny embedder: same bytes = 1.0,
+# another colour < 0.35) and no external judge.
+THRESHOLDS = {
+    "VERIFY_T_LOW": "0.35",
+    "VERIFY_T_HIGH": "0.61",
+    "VERIFY_MARGIN": "0.09",
+    "VERIFY_T_SINGLE": "0.61",
+    "JUDGE_PROVIDER": "none",
+}
+
+
 def ml_worker_env(storage_root: Path) -> dict[str, str]:
+    """A minimal, fully pinned environment: nothing is inherited from the shell, and every
+    setting the verdict depends on is set here, so a developer's `worker/.env` (thresholds,
+    a real judge, S3) cannot change the outcome."""
     s = get_settings()
     return {
-        **os.environ,
+        **{k: os.environ[k] for k in ("PATH", "HOME", "TMPDIR", "LANG") if k in os.environ},
+        "PYTHONUNBUFFERED": "1",
         "DATABASE_URL": s.db_url,
         "REDIS_URL": s.redis_dsn,
         "ARQ_QUEUE": ML_QUEUE,
@@ -134,6 +149,7 @@ def ml_worker_env(storage_root: Path) -> dict[str, str]:
         "STORAGE_BACKEND": "local",
         "STORAGE_LOCAL_ROOT": str(storage_root),
         "DELETE_PHOTO_AFTER_VERDICT": "false",
+        **THRESHOLDS,
     }
 
 
