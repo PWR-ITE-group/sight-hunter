@@ -93,7 +93,15 @@ export function ReelCard({
         <>
           <LinearGradient
             colors={['transparent', 'rgba(0,0,0,0.8)']}
-            className="absolute bottom-0 w-full h-1/2 justify-end px-4 pb-8"
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              width: '100%',
+              height: '50%',
+              justifyContent: 'flex-end',
+              paddingHorizontal: 16,
+              paddingBottom: 32,
+            }}
           >
             <View className="w-3/4 mb-4">
               <Text className="text-white text-2xl font-bold mb-2">{reel.title}</Text>

@@ -1,13 +1,6 @@
 import React, { useEffect } from 'react';
-import { ViewStyle, StyleProp } from 'react-native';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withRepeat,
-  withTiming,
-  withSequence,
-  Easing,
-} from 'react-native-reanimated';
+import { View, ViewStyle, StyleProp } from 'react-native';
+import Animated, { useAnimatedStyle, useSharedValue, withRepeat, withTiming, withSequence, Easing } from 'react-native-reanimated';
 
 export interface SkeletonProps {
   className?: string;
@@ -23,8 +16,8 @@ export function Skeleton({ className = '', style }: SkeletonProps) {
         withTiming(1, { duration: 1000, easing: Easing.inOut(Easing.ease) }),
         withTiming(0.5, { duration: 1000, easing: Easing.inOut(Easing.ease) })
       ),
-      -1, // infinite
-      true // reverse
+      -1,
+      true
     );
   }, [opacity]);
 
@@ -32,11 +25,11 @@ export function Skeleton({ className = '', style }: SkeletonProps) {
     opacity: opacity.value,
   }));
 
+  // Size and shape come from className on a core View; the animation wraps it.
   return (
-    <Animated.View
-      style={[animatedStyle, style]}
-      className={`bg-app-border rounded-md overflow-hidden ${className}`}
-    />
+    <Animated.View style={animatedStyle}>
+      <View style={style} className={`bg-app-border rounded-md overflow-hidden ${className}`} />
+    </Animated.View>
   );
 }
 

@@ -43,7 +43,13 @@ export default function MapTab() {
       <GameMap
         places={places}
         userPosition={position ? { lat: position.lat, lng: position.lng } : null}
-        onMarkerPress={(taskId) => router.push(`/task/${taskId}`)}
+        onMarkerPress={(taskId) => {
+          const p = places.find((x) => x.id === taskId);
+          router.push({
+            pathname: '/task/[taskId]',
+            params: { taskId, ...(p ? { zlat: String(p.lat), zlng: String(p.lng), zr: String(p.radius_m) } : {}) },
+          });
+        }}
         onLongPress={handleLongPress}
         demoMode={demoMode}
       />

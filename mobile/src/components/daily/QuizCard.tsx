@@ -24,9 +24,9 @@ export function QuizCard({ question, selectedIndex, onSelect }: QuizCardProps) {
   return (
     <Card className="m-4 p-4 items-stretch">
       {question.image_url && (
-        <Image 
-          source={{ uri: question.image_url }} 
-          className="w-full h-[200px] rounded-xl mb-6 bg-app-border"
+        <Image
+          source={{ uri: question.image_url }}
+          style={{ width: '100%', height: 200, borderRadius: 12, marginBottom: 24, backgroundColor: '#d3d9d0' }}
           contentFit="cover"
         />
       )}

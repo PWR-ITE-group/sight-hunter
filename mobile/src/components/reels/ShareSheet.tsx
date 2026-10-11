@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, Share } from 'react-native';
 import { BottomSheet } from '../ui/BottomSheet';
 import { Button } from '../ui/Button';
@@ -13,47 +13,48 @@ interface ShareSheetProps {
 }
 
 export function ShareSheet({ url, visible, onClose }: ShareSheetProps) {
+  const [copied, setCopied] = useState(false);
+
   const handleCopy = async () => {
     await Clipboard.setStringAsync(url);
-    // Optional: show a toast or feedback
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   const handleShare = async () => {
     try {
-      await Share.share({
-        message: `Sprawdź to odkrycie w Łowcy Historii! ${url}`,
-        url: url, // iOS only
-      });
-    } catch (error) {
-      console.error(error);
+      await Share.share({ message: `Sprawdź to odkrycie w Łowcach Historii! ${url}`, url });
+    } catch {
+      // The player closed the system sheet; nothing to report.
     }
   };
 
   return (
     <BottomSheet visible={visible} onClose={onClose} title="Udostępnij">
-      <View className="px-6 py-4 flex-1 items-center">
-        <Text className="text-text-secondary text-center mb-6">
+      <View className="py-2 items-center">
+        <Text className="text-text-secondary text-center mb-5">
           Zaproś znajomych do odkrywania historii Wrocławia razem z Tobą!
         </Text>
-        
-        <View className="flex-row items-center bg-surface p-3 rounded-lg border border-app-border mb-6 w-full">
-          <Text className="flex-1 text-app-text text-sm mr-3" numberOfLines={1} ellipsizeMode="tail">
+
+        <View className="flex-row items-center bg-paper p-3 rounded-xl border border-app-border mb-5 w-full">
+          <Text className="flex-1 text-app-text text-sm mr-3" numberOfLines={1} ellipsizeMode="middle">
             {url}
           </Text>
-          <Button 
-            title=""
-            icon={<Copy color={Colors.primary} size={20} />}
+          <Button
+            title={copied ? 'Skopiowano' : 'Kopiuj'}
+            icon={<Copy color={Colors.primary} size={16} />}
             onPress={handleCopy}
             variant="ghost"
+            size="sm"
           />
         </View>
 
-        <Button 
-          title="Udostępnij systemowo"
-          icon={<ShareIcon color={Colors.background} size={20} />}
+        <Button
+          title="Udostępnij"
+          icon={<ShareIcon color="#FFFFFF" size={20} />}
           onPress={handleShare}
           variant="primary"
-          className="w-full"
+          style={{ width: '100%' }}
         />
       </View>
     </BottomSheet>

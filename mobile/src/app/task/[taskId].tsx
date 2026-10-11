@@ -5,12 +5,15 @@ import { useQueryClient } from '@tanstack/react-query';
 import ScreenWrapper from '../../components/layout/ScreenWrapper';
 import Header from '../../components/layout/Header';
 import RiddleCard from '../../components/game/RiddleCard';
+import TaskMiniMap from '../../components/map/TaskMiniMap';
 import HintDialog from '../../components/game/HintDialog';
 import { Button } from '../../components/ui/Button';
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
 import { ErrorBanner, errorMessage } from '../../components/ui/ErrorBanner';
 import { ShareSheet } from '../../components/reels/ShareSheet';
 import { useTask, useStartRound } from '../../api/hooks/useTask';
+import { useNearbyPlaces } from '../../api/hooks/usePlaces';
+import { useLocationStore } from '../../store/locationStore';
 import { useHint } from '../../api/hooks/useRound';
 import { queryKeys } from '../../api/hooks/queryKeys';
 import { getShareLink } from '../../api/endpoints/tasks';
@@ -26,7 +29,16 @@ type Round = components['schemas']['Round'];
 export default function TaskScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { taskId } = useLocalSearchParams<{ taskId: string }>();
+  const { taskId, zlat, zlng, zr } = useLocalSearchParams<{ taskId: string; zlat?: string; zlng?: string; zr?: string }>();
+  const position = useLocationStore((s) => s.effectivePosition)();
+  const nearby = useNearbyPlaces(
+    zlat ? null : (position?.lat ?? null),
+    zlng ? null : (position?.lng ?? null),
+    5000
+  );
+  const zoneFromParams = zlat && zlng && zr ? { lat: Number(zlat), lng: Number(zlng), radius_m: Number(zr) } : null;
+  const zoneFromNearby = nearby.data?.find((p) => p.task_id === taskId)?.zone ?? null;
+  const zone = zoneFromParams ?? zoneFromNearby;
 
   const task = useTask(taskId ?? null);
   const startRound = useStartRound();
@@ -123,6 +135,14 @@ export default function TaskScreen() {
           }}
         />
 
+        {zone && (
+          <View style={styles.mapSection}>
+            <Text style={styles.sectionTitle}>Gdzie szukać</Text>
+            <TaskMiniMap zone={zone} userPosition={position ? { lat: position.lat, lng: position.lng } : null} />
+            <Text style={styles.hintNote}>Miejsce jest gdzieś w tym kręgu — dokładny punkt odkryjesz na miejscu.</Text>
+          </View>
+        )}
+
         {alreadyFound && (
           <View style={styles.foundBox}>
             <Text style={styles.foundText}>✅ To miejsce już odkryłeś. Jego historia czeka w zakładce Odkrycia.</Text>
@@ -185,6 +205,9 @@ const styles = StyleSheet.create({
   content: {
     padding: Spacing.lg,
     flexGrow: 1,
+  },
+  mapSection: {
+    marginTop: Spacing.xl,
   },
   hintsSection: {
     marginTop: Spacing.xl,

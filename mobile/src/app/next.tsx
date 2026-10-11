@@ -45,7 +45,21 @@ export default function NextScreen() {
         ) : next.allFound || options.length === 0 ? (
           <EmptyState title="Wszystko odkryte!" message="Znalazłeś już każde miejsce w okolicy. Wróć po nowe zagadki." />
         ) : (
-          <NextPlacePicker options={options} onSelect={(taskId) => router.replace(`/task/${taskId}`)} />
+          <NextPlacePicker
+            options={options}
+            onSelect={(taskId) => {
+              const place = Object.values(next.byMode).find((p) => p?.task_id === taskId);
+              router.replace({
+                pathname: '/task/[taskId]',
+                params: {
+                  taskId,
+                  ...(place
+                    ? { zlat: String(place.zone.lat), zlng: String(place.zone.lng), zr: String(place.zone.radius_m) }
+                    : {}),
+                },
+              });
+            }}
+          />
         )}
 
         <View className="mt-8">

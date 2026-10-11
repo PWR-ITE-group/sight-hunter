@@ -77,8 +77,8 @@ export function TextInput({
         
         <View className="flex-1 relative justify-center h-full">
           <Animated.View
-            className="absolute left-0 pointer-events-none"
-            style={labelAnimatedStyle}
+            pointerEvents="none"
+            style={[{ position: 'absolute', left: 0 }, labelAnimatedStyle]}
           >
             <Text
               className={`${

@@ -16,7 +16,7 @@ export default function ShopScreen() {
   const purchase = usePurchase();
 
   const [selected, setSelected] = useState<ShopItem | null>(null);
-  const [result, setResult] = useState<{ success: boolean; coupon_code?: string } | undefined>(undefined);
+  const [result, setResult] = useState<{ success: boolean; coupon_code?: string; message?: string } | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
 
   const balance = shop.data?.balance ?? 0;
@@ -29,8 +29,7 @@ export default function ShopScreen() {
       const res = await purchase.mutateAsync(selected.id);
       setResult({ success: true, coupon_code: res.coupon_code ?? undefined });
     } catch (e) {
-      setError(errorMessage(e));
-      setResult({ success: false });
+      setResult({ success: false, message: errorMessage(e) });
     }
   };
 
@@ -96,6 +95,7 @@ export default function ShopScreen() {
         visible={!!selected}
         onConfirm={handleConfirm}
         onCancel={handleClose}
+        confirming={purchase.isPending}
         result={result}
       />
     </View>

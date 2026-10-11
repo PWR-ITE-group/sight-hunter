@@ -24,9 +24,8 @@ export default function ScreenWrapper({
 }: ScreenWrapperProps) {
   const content = withScrollView ? (
     <ScrollView
-      className="flex-1"
-      contentContainerStyle={[{ padding }, style]}
-      contentContainerClassName="grow"
+      style={{ flex: 1 }}
+      contentContainerStyle={[{ padding, flexGrow: 1 }, style]}
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
     >
@@ -38,12 +37,9 @@ export default function ScreenWrapper({
     </View>
   );
 
+  // SafeAreaView is not a core RN component: plain styles, no className.
   return (
-    <SafeAreaView
-      edges={safeAreaEdges}
-      style={{ backgroundColor }}
-      className="flex-1"
-    >
+    <SafeAreaView edges={safeAreaEdges} style={{ flex: 1, backgroundColor }}>
       <StatusBar barStyle="dark-content" backgroundColor={backgroundColor} />
       {content}
     </SafeAreaView>

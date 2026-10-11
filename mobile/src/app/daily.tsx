@@ -78,11 +78,17 @@ export default function DailyTab() {
           score={data.result.score}
           total={questions.length}
           pointsAwarded={data.result.points_awarded}
-          correct={questions.map((q) => ({
-            questionId: q.id,
-            optionIndex: answers[q.id] ?? -1,
-            isCorrect: answers[q.id] !== undefined && correctByQuestion.get(q.id) === answers[q.id],
-          }))}
+          items={questions.map((q) => {
+            const mine = answers[q.id];
+            const correct = correctByQuestion.get(q.id);
+            return {
+              questionId: q.id,
+              question: q.text,
+              answer: mine !== undefined ? q.options[mine] ?? null : null,
+              correctAnswer: correct !== undefined ? q.options[correct] ?? '—' : '—',
+              isCorrect: mine !== undefined && correct === mine,
+            };
+          })}
         />
       </View>
     );

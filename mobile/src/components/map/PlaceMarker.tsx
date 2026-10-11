@@ -82,7 +82,6 @@ export default function PlaceMarker({ place, onPress }: Props) {
             },
             animatedStyle,
           ]}
-          className="shadow-md"
         />
       </View>
     </Marker>

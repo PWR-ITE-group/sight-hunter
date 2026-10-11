@@ -1,9 +1,8 @@
 import React from 'react';
-import { Pressable, Text, ActivityIndicator, ViewStyle, StyleProp } from 'react-native';
+import { Pressable, Text, ActivityIndicator, View, ViewStyle, StyleProp } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
-
-const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+import { Colors } from '../../constants/colors';
 
 export interface ButtonProps {
   title: string;
@@ -17,6 +16,10 @@ export interface ButtonProps {
   style?: StyleProp<ViewStyle>;
 }
 
+/**
+ * The press animation lives on an outer Animated.View (plain `style`); every `className` sits on
+ * core RN components, which is the only place NativeWind applies it.
+ */
 export function Button({
   title,
   onPress,
@@ -39,32 +42,27 @@ export function Button({
     scale.value = withSpring(1, { damping: 15, stiffness: 200 });
   };
 
-  const baseContainerClasses = 'flex-row items-center justify-center rounded-2xl overflow-hidden';
-  
-  let variantContainerClasses = '';
-  let variantTextClasses = '';
-  let spinnerColor = '';
-
+  let containerClasses = '';
+  let textClasses = '';
+  let spinnerColor = '#FFFFFF';
   switch (variant) {
     case 'primary':
-      variantContainerClasses = 'bg-primary border border-primary';
-      variantTextClasses = 'text-white font-semibold';
-      spinnerColor = '#FFFFFF';
+      containerClasses = 'bg-primary border border-primary';
+      textClasses = 'text-white font-semibold';
       break;
     case 'secondary':
-      variantContainerClasses = 'bg-secondary border border-secondary';
-      variantTextClasses = 'text-white font-semibold';
-      spinnerColor = '#FFFFFF';
+      containerClasses = 'bg-secondary border border-secondary';
+      textClasses = 'text-white font-semibold';
       break;
     case 'outline':
-      variantContainerClasses = 'bg-surface border border-app-border';
-      variantTextClasses = 'text-primary font-semibold';
-      spinnerColor = '#2c52c4'; // primary color
+      containerClasses = 'bg-surface border border-app-border';
+      textClasses = 'text-primary font-semibold';
+      spinnerColor = Colors.primary;
       break;
     case 'ghost':
-      variantContainerClasses = 'bg-transparent border border-transparent';
-      variantTextClasses = 'text-primary font-semibold';
-      spinnerColor = '#2c52c4';
+      containerClasses = 'bg-transparent border border-transparent';
+      textClasses = 'text-primary font-semibold';
+      spinnerColor = Colors.primary;
       break;
   }
 
@@ -86,34 +84,30 @@ export function Button({
   }
 
   const isDisabled = disabled || loading;
-  const containerDisabledClasses = isDisabled ? 'opacity-50' : 'opacity-100';
 
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ scale: scale.value }],
-    };
-  });
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
 
   return (
-    <AnimatedPressable
-      onPress={onPress}
-      onPressIn={handlePressIn}
-      onPressOut={handlePressOut}
-      disabled={isDisabled}
-      style={[animatedStyle, style]}
-      className={`${baseContainerClasses} ${variantContainerClasses} ${sizeClasses} ${containerDisabledClasses} ${className}`}
-    >
-      {loading ? (
-        <ActivityIndicator color={spinnerColor} size="small" />
-      ) : (
-        <>
-          {icon && <Animated.View className="mr-2">{icon}</Animated.View>}
-          <Text className={`${variantTextClasses} ${textSizeClasses} text-center`}>
-            {title}
-          </Text>
-        </>
-      )}
-    </AnimatedPressable>
+    <Animated.View style={[animatedStyle, style]}>
+      <Pressable
+        onPress={onPress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        disabled={isDisabled}
+        className={`flex-row items-center justify-center rounded-2xl overflow-hidden ${containerClasses} ${sizeClasses} ${isDisabled ? 'opacity-50' : ''} ${className}`}
+      >
+        {loading ? (
+          <ActivityIndicator color={spinnerColor} size="small" />
+        ) : (
+          <>
+            {icon && <View className="mr-2">{icon}</View>}
+            <Text className={`${textClasses} ${textSizeClasses} text-center`}>{title}</Text>
+          </>
+        )}
+      </Pressable>
+    </Animated.View>
   );
 }
 
