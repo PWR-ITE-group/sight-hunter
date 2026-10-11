@@ -45,7 +45,6 @@ export default function ReelScreen() {
           reel={reel}
           height={height}
           isActive
-          onLike={() => actions.toggleLike(reel)}
           onComment={() => actions.openComments(reel.id)}
           onShare={() => actions.setShareOpen(true)}
           onUnlock={() => actions.buy(reel)}

@@ -89,7 +89,6 @@ export default function FeedTab() {
             reel={item}
             height={itemHeight}
             isActive={focused && item.id === activeId}
-            onLike={() => actions.toggleLike(item)}
             onComment={() => actions.openComments(item.id)}
             onShare={() => actions.setShareOpen(true)}
             onUnlock={() => actions.buy(item)}

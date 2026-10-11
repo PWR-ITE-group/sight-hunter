@@ -1,5 +1,5 @@
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getReelFeed, countReelView, likeReel, unlikeReel, listComments, addComment } from '../endpoints/reels';
+import { getReelFeed, countReelView, listComments, addComment } from '../endpoints/reels';
 import { queryKeys } from './queryKeys';
 
 export function useReelFeed() {
@@ -14,28 +14,6 @@ export function useReelFeed() {
 
 export function useCountView() {
   return useMutation({ mutationFn: countReelView });
-}
-
-export function useLikeReel() {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: likeReel,
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.reelFeed });
-    },
-  });
-}
-
-export function useUnlikeReel() {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: unlikeReel,
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.reelFeed });
-    },
-  });
 }
 
 export function useComments(reelId: string | null) {

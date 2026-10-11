@@ -452,9 +452,9 @@ export const BorderRadius = {
   - Overlay gradient знизу (transparent → black 50%)
   - Title (bold, white) + finders count
   - Locked: blur background + lock icon + «Kup za {price_points} pkt» button
-- **`ReelOverlay.tsx`** (Props: `reel, onLike, onComment, onShare`):
+- **`ReelOverlay.tsx`** (Props: `findersCount, onComment, onShare`):
   - Правий стовпець (absolute right, bottom):
-    - ❤️ Like button (heart animation: scale + color red при liked_by_me) + likes_count
+    - 👥 Finders counter (`finders_count`, лише для reward-рилсів) — лайків немає (рішення команди 2026-10-11)
     - 💬 Comment button + кількість
     - 🔗 Share button
 - **`CommentSheet.tsx`** (Props: `comments: Comment[], onAdd: (text) => void, visible, onClose`):
@@ -963,24 +963,6 @@ export function useReelFeed() {
 
 export function useCountView() {
   return useMutation({ mutationFn: countReelView });
-}
-
-export function useLikeReel() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: likeReel,
-    // Optimistic update: toggle liked_by_me + increment likes_count
-    onMutate: async (reelId) => {
-      await queryClient.cancelQueries({ queryKey: queryKeys.reelFeed });
-      // Snapshot + optimistic update in cache
-    },
-    onError: (_, __, context) => { /* rollback */ },
-    onSettled: () => queryClient.invalidateQueries({ queryKey: queryKeys.reelFeed }),
-  });
-}
-
-export function useUnlikeReel() {
-  // Mirror of useLikeReel but reverse
 }
 
 export function useComments(reelId: string) {

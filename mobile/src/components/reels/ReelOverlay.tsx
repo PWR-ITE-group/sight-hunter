@@ -1,51 +1,32 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import { IconButton } from '../ui/IconButton';
-import { Heart, MessageCircle, Share2 } from 'lucide-react-native';
+import { MessageCircle, Share2, Users } from 'lucide-react-native';
 import { Colors } from '../../constants/colors';
-import Animated, { useAnimatedStyle, withSpring, useSharedValue, withSequence } from 'react-native-reanimated';
 
 interface ReelOverlayProps {
-  likesCount: number;
-  likedByMe: boolean;
+  /** How many players found the reel's place; undefined for public reels, which have no place. */
+  findersCount?: number;
   /** The feed doesn't carry a comment count; shown only when known. */
   commentsCount?: number;
-  onLike: () => void;
   onComment: () => void;
   onShare: () => void;
 }
 
-export function ReelOverlay({ likesCount, likedByMe, commentsCount, onLike, onComment, onShare }: ReelOverlayProps) {
-  const scale = useSharedValue(1);
-
-  const handleLike = () => {
-    scale.value = withSequence(withSpring(1.2), withSpring(1));
-    onLike();
-  };
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
-
+export function ReelOverlay({ findersCount, commentsCount, onComment, onShare }: ReelOverlayProps) {
   return (
     <View className="absolute bottom-20 right-4 items-center">
-      <View className="items-center mb-6">
-        <Animated.View style={animatedStyle}>
-          <IconButton
-            icon={
-              <Heart
-                color={likedByMe ? Colors.error : Colors.background}
-                fill={likedByMe ? Colors.error : 'transparent'}
-                size={28}
-              />
-            }
-            onPress={handleLike}
-            size={50}
-            color="rgba(0,0,0,0.3)"
-          />
-        </Animated.View>
-        <Text className="text-white text-sm font-bold mt-1">{likesCount}</Text>
-      </View>
+      {findersCount !== undefined && (
+        <View className="items-center mb-6" accessibilityLabel={`${findersCount} łowców odkryło`}>
+          <View
+            className="justify-center items-center rounded-full"
+            style={{ width: 50, height: 50, backgroundColor: 'rgba(0,0,0,0.3)' }}
+          >
+            <Users color={Colors.background} size={28} />
+          </View>
+          <Text className="text-white text-sm font-bold mt-1">{findersCount}</Text>
+        </View>
+      )}
 
       <View className="items-center mb-6">
         <IconButton

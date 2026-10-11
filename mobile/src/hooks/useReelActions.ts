@@ -1,12 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import {
-  useLikeReel,
-  useUnlikeReel,
-  useComments,
-  useAddComment,
-  useCountView,
-} from '../api/hooks/useReels';
+import { useComments, useAddComment, useCountView } from '../api/hooks/useReels';
 import { usePurchase } from '../api/hooks/useShop';
 import { queryKeys } from '../api/hooks/queryKeys';
 import { useAuthStore } from '../store/authStore';
@@ -16,13 +10,11 @@ import type { Reel } from '../components/reels/ReelCard';
 
 const VIEW_AFTER_MS = 3000;
 
-/** Like, comment, share, buy and view-counting for reels; shared by the feed and the full-screen player. */
+/** Comment, share, buy and view-counting for reels; shared by the feed and the full-screen player. */
 export function useReelActions() {
   const queryClient = useQueryClient();
   const refCode = useAuthStore((s) => s.user?.ref_code);
 
-  const like = useLikeReel();
-  const unlike = useUnlikeReel();
   const countView = useCountView();
   const purchase = usePurchase();
   const addComment = useAddComment();
@@ -34,14 +26,6 @@ export function useReelActions() {
 
   const viewed = useRef(new Set<string>());
   const viewTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const toggleLike = useCallback(
-    (reel: Reel) => {
-      const m = reel.liked_by_me ? unlike : like;
-      m.mutate(reel.id, { onError: (e) => setError(errorMessage(e)) });
-    },
-    [like, unlike]
-  );
 
   /** Call when a reel becomes the visible one; a view counts after ~3 s of playback. */
   const onActive = useCallback(
@@ -78,7 +62,6 @@ export function useReelActions() {
   const shareUrl = `${Config.SHARE_BASE_URL}/?ref=${refCode ?? ''}`;
 
   return {
-    toggleLike,
     onActive,
     buy,
     buying: purchase.isPending,

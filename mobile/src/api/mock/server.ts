@@ -43,8 +43,6 @@ interface MockState {
   rounds: Map<string, Round>;
   attempts: Map<string, Attempt & { round_id: string; submitted_at?: number }>;
   unlocked: Set<string>; // reel ids
-  liked: Set<string>;
-  likes: Map<string, number>;
   comments: Map<string, Comment[]>;
   daily: { started: boolean; result: components['schemas']['DailyGameResult'] | null };
 }
@@ -59,12 +57,6 @@ function freshState(): MockState {
     rounds: new Map(),
     attempts: new Map(),
     unlocked: new Set(PUBLIC_REELS.filter((r) => r.price_points === null).map((r) => r.id)),
-    liked: new Set(),
-    likes: new Map([
-      ['reel-how', 15],
-      ['reel-city', 34],
-      ['reel-ratusz', 56],
-    ]),
     comments: new Map([
       [
         'reel-city',
@@ -146,8 +138,6 @@ function reelOut(id: string): Reel {
       playback_url: unlocked ? place.video : null,
       duration_s: 30,
       finders_count: place.finders + (state.found.has(place.task_id) ? 1 : 0),
-      likes_count: state.likes.get(id) ?? 0,
-      liked_by_me: state.liked.has(id),
       price_points: null,
     };
   }
@@ -161,8 +151,6 @@ function reelOut(id: string): Reel {
       playback_url: unlocked ? pub.video : null,
       duration_s: 40,
       finders_count: 0,
-      likes_count: state.likes.get(id) ?? 0,
-      liked_by_me: state.liked.has(id),
       price_points: pub.price_points,
     };
   }
@@ -369,24 +357,6 @@ const routes: [string, RegExp, Handler][] = [
   ['POST', /^\/reels\/([^/]+)\/views$/, (m) => {
     requireUser();
     requireReel(m[1]);
-    return undefined;
-  }],
-  ['PUT', /^\/reels\/([^/]+)\/like$/, (m) => {
-    requireUser();
-    requireReel(m[1]);
-    if (!state.liked.has(m[1])) {
-      state.liked.add(m[1]);
-      state.likes.set(m[1], (state.likes.get(m[1]) ?? 0) + 1);
-    }
-    return undefined;
-  }],
-  ['DELETE', /^\/reels\/([^/]+)\/like$/, (m) => {
-    requireUser();
-    requireReel(m[1]);
-    if (state.liked.has(m[1])) {
-      state.liked.delete(m[1]);
-      state.likes.set(m[1], Math.max(0, (state.likes.get(m[1]) ?? 1) - 1));
-    }
     return undefined;
   }],
   ['GET', /^\/reels\/([^/]+)\/comments$/, (m) => {

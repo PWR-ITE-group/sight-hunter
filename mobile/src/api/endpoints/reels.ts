@@ -14,14 +14,6 @@ export async function countReelView(reelId: string): Promise<void> {
   return apiClient('POST', `/reels/${reelId}/views`);
 }
 
-export async function likeReel(reelId: string): Promise<void> {
-  return apiClient('PUT', `/reels/${reelId}/like`);
-}
-
-export async function unlikeReel(reelId: string): Promise<void> {
-  return apiClient('DELETE', `/reels/${reelId}/like`);
-}
-
 export async function listComments(
   reelId: string,
   cursor?: string

@@ -297,24 +297,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/reels/{reelId}/like": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /** Like a reel */
-        put: operations["likeReel"];
-        post?: never;
-        /** Remove a like */
-        delete: operations["unlikeReel"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/reels/{reelId}/comments": {
         parameters: {
             query?: never;
@@ -568,9 +550,8 @@ export interface components {
              */
             playback_url?: string | null;
             duration_s: number;
+            /** @description players who found the reel's place; 0 for public reels */
             finders_count: number;
-            likes_count: number;
-            liked_by_me: boolean;
             /** @description public reels sold in the shop */
             price_points?: number | null;
         };
@@ -1074,46 +1055,6 @@ export interface operations {
         requestBody?: never;
         responses: {
             /** @description Counted */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    likeReel: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                reelId: components["parameters"]["ReelId"];
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Liked */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    unlikeReel: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                reelId: components["parameters"]["ReelId"];
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Unliked */
             204: {
                 headers: {
                     [name: string]: unknown;
