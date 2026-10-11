@@ -34,6 +34,7 @@ services:
   # S3-compatible storage for player photos and reference images. Replaces MinIO, whose images
   # are no longer published. Bound to all interfaces: the phone PUTs photos here directly.
   seaweedfs:
+    platform: linux/amd64
     image: chrislusf/seaweedfs:4.47
     command: >
       server -ip=seaweedfs -ip.bind=0.0.0.0 -dir=/data -master.volumeSizeLimitMB=256 -volume.max=0
@@ -50,6 +51,7 @@ services:
 
   # One-shot: creates the S3 credentials from .env and the bucket.
   seaweedfs-init:
+    platform: linux/amd64
     image: chrislusf/seaweedfs:4.47
     depends_on:
       seaweedfs:
